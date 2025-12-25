@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOGIST_X | Elite Logistics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #010409; color: #e6edf3; scroll-behavior: smooth; }
+        .btn-gold { background: linear-gradient(135deg, #f59e0b, #b45309); color: #000; font-weight: 900; transition: 0.3s; }
+        .glass { background: rgba(22, 27, 34, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body>
+    <nav class="fixed w-full z-50 glass p-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-black"><i data-lucide="zap" fill="currentColor"></i></div>
+                <span class="font-black italic uppercase text-xl">Logist_X</span>
+            </div>
+            <a href="https://app.logist-x.ru" class="btn-gold px-6 py-2 rounded-xl text-[10px] uppercase">Вход в APP</a>
+        </div>
+    </nav>
+
+    <section class="pt-48 pb-20 px-6 text-center">
+        <h1 class="text-6xl md:text-8xl font-black mb-6 uppercase italic">Elite <br><span class="text-amber-500">Logistics</span></h1>
+        <p class="text-slate-400 text-lg max-w-xl mx-auto mb-12 italic italic">Твой бизнес под полным контролем. Сочи, Орёл, вся Россия.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="https://app.logist-x.ru" class="btn-gold px-12 py-5 rounded-3xl uppercase text-sm tracking-widest flex items-center justify-center gap-2"><i data-lucide="download"></i> Установить Приложение</a>
+            <a href="#pricing" class="glass px-12 py-5 rounded-3xl uppercase text-sm font-bold tracking-widest">Тарифы</a>
+        </div>
+    </section>
+
+    <section id="pricing" class="py-20 px-6">
+        <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="glass p-10 text-center border-amber-500/30 border">
+                <h3 class="text-2xl font-black mb-4 uppercase">Elite Start</h3>
+                <div class="text-6xl font-black mb-10">300 ₽ <span class="text-xs opacity-40">/ мес</span></div>
+                <ul class="text-left space-y-4 mb-10 text-sm opacity-70">
+                    <li class="flex gap-2"><i data-lucide="check" class="text-amber-500"></i> ФИО + Ключ (Жесткая привязка)</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="text-amber-500"></i> GPS-метки в каждом фото</li>
+                    <li class="flex gap-2"><i data-lucide="check" class="text-amber-500"></i> Монтаж / Замена / Pseudo</li>
+                </ul>
+                <a href="https://t.me/gena_krokodi" class="btn-gold block w-full py-4 rounded-2xl text-[10px] uppercase">Подключить</a>
+            </div>
+            <div class="glass p-10 text-center border-blue-500/30 border">
+                <h3 class="text-2xl font-black mb-4 uppercase text-blue-400">Quick Setup</h3>
+                <div class="text-6xl font-black mb-10">200 ₽ <span class="text-xs opacity-40">/ разово</span></div>
+                <p class="text-sm opacity-60 mb-10">Настройка Google аккаунта и облачного архива "под ключ".</p>
+                <a href="https://t.me/gena_krokodi" class="glass block w-full py-4 rounded-2xl text-[10px] uppercase text-white font-bold">Заказать настройку</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-20 text-center opacity-30 text-[10px] font-bold uppercase tracking-[5px]">
+        <p>Designed by NIKITIN EVGENY &copy; logist-x.ru</p>
+    </footer>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>
+
