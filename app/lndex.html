@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>LOGIST_X | Elite Pro Edition</title>
+    <title>LOGIST_X | Elite Pro Robot Edition</title>
     
     <!-- PWA & MOBILE META -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -53,14 +53,19 @@
         
         .card-head { padding: 20px; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); }
         .nav-btn { background: var(--blue); color: #fff; border: none; border-radius: 10px; padding: 10px 14px; font-size: 0.65rem; font-weight: 900; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(47, 129, 247, 0.3); }
+        .nav-btn:active { transform: scale(0.9); background: #fff; color: var(--blue); }
 
         .cl-badges { padding: 10px 20px 0 20px; display: flex; flex-wrap: wrap; gap: 6px; }
         .cl-badge { background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; color: var(--subtext); border: 1px solid var(--border); }
         
         .pods { padding: 16px 20px 25px 20px; display: flex; flex-wrap: wrap; gap: 14px; }
         .p-btn { width: 56px; height: 56px; background: #21262d; border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--subtext); font-size: 1.25rem; transition: 0.1s; cursor: pointer; }
+        .p-btn:active { transform: scale(0.85); background: var(--accent); }
+        
         .p-btn.done-1 { background: var(--green) !important; color: #fff !important; border:none; }
         .p-btn.done-2 { background: var(--red) !important; color: #fff !important; border:none; }
+        .p-btn.done-3 { background: var(--blue) !important; color: #fff !important; border:none; }
+        .p-btn.done-4 { background: var(--purp) !important; color: #fff !important; border:none; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(1, 4, 9, 0.98); backdrop-filter: blur(20px); z-index: 5000; display: none; justify-content: center; align-items: flex-end; }
         .modal { background: #0d1117; width: 100%; max-width: 500px; border-radius: 35px 35px 0 0; border: 1px solid var(--border); max-height: 98vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -90,7 +95,7 @@
 
 <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
 
-<!-- АНТИ-ДЕБАГГЕР И ЗАЩИТА -->
+<!-- ЗАЩИТА -->
 <script>
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.onkeydown = function(e) {
@@ -104,15 +109,18 @@
     })();
 </script>
 
-<!-- LICENSE LOCK WITH WORKER NAME -->
+<!-- LICENSE LOCK -->
 <div id="licenseLock">
     <div style="background: #0d1117; padding: 45px; border-radius: 45px; border: 1px solid var(--border); width: 100%; max-width: 420px; text-align: center;">
         <div style="font-size: 5rem; margin-bottom: 25px;">🔒</div>
         <h1 style="font-weight: 900; color: #fff; font-size: 1.6rem;">LOGIST_X SECURE</h1>
         <div style="margin-top: 30px; text-align: left;">
-            <input type="text" id="lockWorkerName" class="std-input" placeholder="Ваше ФИО (Иван Иванов)">
-            <input type="text" id="lockCloudUrl" class="std-input" placeholder="Google Script URL">
-            <input type="text" id="lockLicenseKey" class="std-input" style="color:var(--accent); font-weight:900;" placeholder="ЛИЦЕНЗИОННЫЙ КЛЮЧ">
+            <label class="stat-label" style="margin-left:10px">Введите ФИО:</label>
+            <input type="text" id="lockWorkerName" class="std-input" placeholder="Иванов Иван">
+            <label class="stat-label" style="margin-left:10px">Cloud URL (Штаб):</label>
+            <input type="text" id="lockCloudUrl" class="std-input" placeholder="https://script.google.com/...">
+            <label class="stat-label" style="margin-left:10px">Лицензионный Ключ:</label>
+            <input type="text" id="lockLicenseKey" class="std-input" style="color:var(--accent); font-weight:900;" placeholder="LX-XXXX-XXXX">
             <div id="lockLicProgress" class="lic-progress"><div id="lockLicBar" class="lic-bar"></div></div>
             <button id="lockBtn" class="btn-act btn-blue" style="margin-top:20px;" onclick="saveAndCheckLock()">АКТИВИРОВАТЬ</button>
         </div>
@@ -123,11 +131,7 @@
 <div id="loader"><div style="font-weight: 900; color: var(--accent); letter-spacing: 10px; font-size: 1.8rem;">LOGIST_X</div><div class="lic-progress" style="display:block; width:150px; margin-top:15px;"><div class="lic-bar" style="width:100%"></div></div></div>
 
 <header>
-    <div class="top-row">
-        <span class="app-name">LOGIST_X</span>
-        <button id="syncIndicator" onclick="showMonitor()">📦 <span id="queueCount">0</span></button>
-        <span id="cityBadge" style="background:rgba(245,158,11,0.1); color: var(--accent); padding: 8px 18px; border-radius: 12px; font-size: 0.7rem; font-weight: 900;">...</span>
-    </div>
+    <div class="top-row"><span class="app-name">LOGIST_X</span><button id="syncIndicator" onclick="showMonitor()">📦 <span id="queueCount">0</span></button><span id="cityBadge" style="background:rgba(245,158,11,0.1); color: var(--accent); padding: 8px 18px; border-radius: 12px; font-size: 0.7rem; font-weight: 900;">...</span></div>
     <input type="text" id="search" class="search-box" placeholder="Поиск по адресу..." oninput="render()">
     <div class="stats-dashboard">
         <div class="stat-block"><span class="stat-label">Доход</span><span id="statMoney" class="stat-val" style="color:#3fb950">0 ₽</span></div>
@@ -140,11 +144,10 @@
 
 <div class="menu-toggle" onclick="toggleMenu()">⚙️ МЕНЮ И НАСТРОЙКИ</div>
 <div id="menu" class="controls">
-    
     <div class="block-box">
         <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
         <input type="text" id="workerName" class="std-input" placeholder="Твое ФИО" oninput="saveCfg()">
-        <input type="text" id="cityName" class="std-input" placeholder="Город" oninput="saveCfg()">
+        <input type="text" id="cityName" class="std-input" placeholder="Город (напр. Сочи)" oninput="saveCfg()">
         <input type="text" id="cloudUrl" class="std-input" placeholder="Cloud URL" oninput="saveCfg()">
         <input type="text" id="licenseKey" class="std-input" placeholder="Ключ" oninput="saveCfg()">
         <div id="menuLicProgress" class="lic-progress"><div id="menuLicBar" class="lic-bar"></div></div>
@@ -164,8 +167,17 @@
         </div>
     </div>
 
-    <div class="block-box" style="text-align: center;">
-        <p style="font-weight: 900; font-size: 0.7rem; color: #fff; margin-bottom: 10px;">DESIGNED BY NIKITIN EVGENY</p>
+    <div class="block-box">
+        <div class="block-title">📦 УПРАВЛЕНИЕ ДАННЫМИ:</div>
+        <button class="btn-act btn-purple" onclick="showArchive()">📁 АРХИВ РАБОТ</button>
+        <button class="btn-act btn-blue" onclick="createFullBackup()">💾 БЭКАП + ФОТО</button>
+        <label class="btn-act btn-dark">🔄 ВОССТАНОВИТЬ<input type="file" style="display:none;" onchange="restoreFullBackup(this)"></label>
+        <label class="btn-act btn-green" style="margin-top:10px">📊 ЗАГРУЗИТЬ EXCEL<input type="file" style="display:none;" onchange="handleExcel(this)"></label>
+    </div>
+
+    <div class="block-box" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent); text-align: center; padding: 15px;">
+        <div class="block-title" style="color: var(--accent); margin-bottom:10px;">👑 РАЗРАБОТЧИК:</div>
+        <div style="font-weight: 900; font-size: 1.1rem; color:#fff; margin-bottom:15px;">Никитин Евгений</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
             <a href="https://t.me/gena_krokodi" target="_blank" class="btn-act btn-blue" style="margin:0; height:50px; display:flex; align-items:center; justify-content:center;">TG</a>
             <a href="tel:+79954470130" class="btn-act btn-green" style="margin:0; height:50px; display:flex; align-items:center; justify-content:center;">CALL</a>
@@ -200,33 +212,38 @@
 </div>
 
 <script>
-    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена", t4: "Pseudo"}, city: "Орёл", cloudUrl: "", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
+    // ТВОЙ DEFAULT ШТАБ
+    const DEFAULT_HQ = "https://script.google.com/macros/s/AKfycbz3ZscxDR4Ls4383w43ENWJnov5SEunvNhG_mUSzZTuawytVg2Pwn67VyOgwJ5f2FfA8A/exec";
+    
+    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", cloudUrl: DEFAULT_HQ, workerName: "", license: {key: "", expiry: 0, status: false}, folderId: "", sheetId: "", history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
     const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
 
     function haptic() { if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(35); }
     function toast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
     function resumeAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    
+    function playSfx(f, t, d) { try { if(!audioCtx) return; let o = audioCtx.createOscillator(), v = audioCtx.createGain(); o.type = t; o.frequency.value = f; v.gain.value = 0.05; o.connect(v); v.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); } catch(e){} }
+    const Sfx = { click: () => playSfx(600, 'sine', 0.08), ok: () => playSfx(800, 'sine', 0.1) };
+
     function openDB() {
-        const req = indexedDB.open("LogistX_Secure_v420", 1);
+        const req = indexedDB.open("LogistX_Secure_v450", 1);
         req.onupgradeneeded = (e) => e.target.result.createObjectStore("sync_queue", { autoIncrement: true });
         req.onsuccess = (e) => { db = e.target.result; updateSyncCount(); syncNow(); };
     }
 
     function saveCfg() {
-        DATA.cloudUrl = document.getElementById('cloudUrl')?.value.trim() || DATA.cloudUrl;
+        DATA.cloudUrl = document.getElementById('cloudUrl')?.value.trim() || DATA.cloudUrl || DEFAULT_HQ;
         DATA.license.key = document.getElementById('licenseKey')?.value.trim().toUpperCase() || DATA.license.key;
         DATA.workerName = document.getElementById('workerName')?.value.trim() || DATA.workerName;
-        DATA.city = document.getElementById('cityName')?.value.trim() || "Орёл";
+        DATA.city = document.getElementById('cityName')?.value.trim() || DATA.city || "Орёл";
         DATA.prices.p1 = parseInt(document.getElementById('p1')?.value) || 500;
         DATA.prices.p3 = parseInt(document.getElementById('p3')?.value) || 300;
         DATA.prices.p4 = parseInt(document.getElementById('p4')?.value) || 100;
         DATA.names.t1 = document.getElementById('t1_name')?.value || "Монтаж";
-        DATA.names.t3 = document.getElementById('t3_name')?.value || "Замена";
-        DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudo";
+        DATA.names.t3 = document.getElementById('t3_name')?.value || "Замена рекламы";
+        DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudomona";
         document.getElementById('cityBadge').innerText = DATA.city.toUpperCase();
-        localStorage.setItem('logist_v420_data', JSON.stringify(DATA));
+        localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
         checkLicenseUI();
     }
 
@@ -243,7 +260,7 @@
     }
 
     async function checkLicense() {
-        const url = DATA.cloudUrl; 
+        const url = DATA.cloudUrl || DEFAULT_HQ; 
         const key = DATA.license.key;
         const worker = DATA.workerName;
         if(!url || !key || !worker) return alert("Заполните ФИО и данные ключа!");
@@ -263,16 +280,18 @@
             if(result.status === "active") {
                 bars.forEach(b => b && (b.style.width = '100%'));
                 DATA.license.expiry = Number(result.newExpiry); 
-                saveCfg(); toast("ЛИЦЕНЗИЯ ПРИНЯТА");
+                DATA.folderId = result.folderId; // Сохраняем ID корневой папки от робота
+                DATA.sheetId = result.sheetId;   // Сохраняем ID таблицы от робота
+                saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН");
                 setTimeout(() => conts.forEach(c => c && (c.style.display = 'none')), 1000);
             } else { alert("ОШИБКА: " + result.message); }
-        } catch(e) { alert("Ошибка связи со Штабом!"); }
+        } catch(e) { alert("Ошибка связи!"); }
         finally { bars.forEach(b => b && (b.style.width = '0%')); }
     }
 
     async function saveAndCheckLock() {
         DATA.workerName = document.getElementById('lockWorkerName').value.trim();
-        DATA.cloudUrl = document.getElementById('lockCloudUrl').value.trim();
+        DATA.cloudUrl = document.getElementById('lockCloudUrl').value.trim() || DEFAULT_HQ;
         DATA.license.key = document.getElementById('lockLicenseKey').value.trim().toUpperCase();
         saveCfg(); await checkLicense();
     }
@@ -290,7 +309,7 @@
                     let cS = head.findIndex(v => v.includes('улица') || v.includes('адрес'));
                     let cH = head.findIndex(v => v.includes('дом'));
                     let cP = head.findIndex(v => v.includes('подъезд'));
-                    if(cS === -1) return alert("Ошибка: Столбец 'Улица' не найден");
+                    if(cS === -1) return alert("Ошибка: Столбец 'Адрес' не найден");
                     let list = [];
                     rows.forEach((row, k) => {
                         if(k === 0 || !row[cS]) return;
@@ -298,7 +317,7 @@
                         row.forEach(cell => { if(cell){ let v=String(cell).toUpperCase(); for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]); } });
                         list.push({s: row[cS], h: row[cH] || "?", p: parseInt(row[cP])||1, clients: [...new Set(cls)], id: 'ID-'+k+'-'+(row[cS]+row[cH]).replace(/\W/g,'')});
                     });
-                    DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); toast("БАЗА ОБНОВЛЕНА");
+                    DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); Sfx.ok(); toast("БАЗА ОБНОВЛЕНА");
                 } finally { setTimeout(() => setLoader(false), 500); }
             }; r.readAsArrayBuffer(f);
         }, 100);
@@ -317,7 +336,7 @@
             }
             html += `<div class="card ${isDone?'is-finished':''}">
                 <div class="card-head">
-                    <div style="flex:1; margin-right:10px; font-size:0.85rem; font-weight:900;">${i.s}, ${i.h}</div>
+                    <div style="flex:1; margin-right:10px;">${i.s}, ${i.h}</div>
                     <button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button>
                 </div>
                 <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
@@ -363,7 +382,6 @@
 
     function setType(t) { haptic(); curType = t; [1,2,3,4].forEach(i => { let b = document.getElementById('bt'+i); if(b) b.style.border = (i===t)?"3px solid #fff":"none"; }); }
 
-    // GET GPS COORDINATES
     function getCoords() {
         return new Promise((resolve) => {
             if (!navigator.geolocation) return resolve("No GPS Support");
@@ -384,7 +402,7 @@
         isSavingReport = true; haptic();
         document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
         
-        const coords = await getCoords(); // ЗАПРОС GPS
+        const coords = await getCoords(); 
 
         if(!DATA.done[curId]) DATA.done[curId] = {};
         DATA.done[curId][curP] = curType;
@@ -395,29 +413,32 @@
 
         for (let client of cls) {
             const entry = { 
-                worker: DATA.workerName, city: DATA.city, 
+                action: "save_report", // Метка для робота
+                worker: DATA.workerName, 
+                city: DATA.city, 
                 image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, 
-                address: `${it.s} ${it.h} п.${curP}`, client: client, 
+                address: `${it.s} ${it.h} п.${curP}`, 
+                client: client, 
                 workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], 
                 price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], 
-                coords: coords, // СОХРАНЯЕМ GPS
-                ts: Date.now(), status: "Ожидание", full: curPhotos[client] 
+                coords: coords, 
+                ts: Date.now(), 
+                status: "Ожидание", 
+                full: curPhotos[client],
+                licenseKey: DATA.license.key,
+                folderId: DATA.folderId, 
+                sheetId: DATA.sheetId
             };
             DATA.history.unshift(entry);
             store.add(entry);
         }
 
-        tx.oncomplete = () => { 
-            saveCfg(); 
-            isSavingReport = false; 
-            document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ";
-            syncNow(); 
-            toast("ОТЧЕТ В ОЧЕРЕДИ"); 
-        };
+        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ ОТПРАВКИ"); };
     }
 
     async function syncNow() {
-        if(syncing || !navigator.onLine || !DATA.cloudUrl || !db || !DATA.license.status) return;
+        const url = DATA.cloudUrl || DEFAULT_HQ;
+        if(syncing || !navigator.onLine || !url || !db || !DATA.license.status) return;
         syncing = true;
         try {
             const txR = db.transaction("sync_queue", "readonly");
@@ -432,8 +453,13 @@
                 await new Promise(r => { let t = db.transaction("sync_queue","readwrite"); items[i].status = "Отправка..."; t.objectStore("sync_queue").put(items[i], keys[i]).onsuccess = r; });
                 try {
                     const { full, ...payload } = items[i];
-                    const res = await fetch(DATA.cloudUrl, { method: 'POST', body: JSON.stringify({...payload, licenseKey: DATA.license.key}) });
-                    if(res.ok) { let t = db.transaction("sync_queue","readwrite"); await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r); haptic(); } else throw 1;
+                    const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+                    const resJ = await res.json();
+                    if(resJ.status === "success") { 
+                        let t = db.transaction("sync_queue","readwrite"); 
+                        await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r); 
+                        haptic(); 
+                    } else throw 1;
                 } catch(e) { 
                     let t = db.transaction("sync_queue","readwrite"); items[i].status = "Ошибка (ждем)"; t.objectStore("sync_queue").put(items[i], keys[i]); 
                     break; 
@@ -469,12 +495,12 @@
         let f = inp.files[0]; if(!f) return;
         const r = new FileReader(); r.onload = async (e) => {
             try {
-                const b = JSON.parse(e.target.result); DATA = b.appData; localStorage.setItem('logist_v420_data', JSON.stringify(DATA));
+                const b = JSON.parse(e.target.result); DATA = b.appData; localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
                 const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
                 await new Promise(r => store.clear().onsuccess = r);
                 if(b.syncQueue) for(let it of b.syncQueue) store.add(it);
                 tx.oncomplete = () => location.reload();
-            } catch(err) { alert("Ошибка файла!"); }
+            } catch(err) { alert("Ошибка!"); }
         }; r.readAsText(f);
     }
 
@@ -503,7 +529,7 @@
         haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; 
         DATA.history.slice(0,50).forEach((it, idx) => { 
             h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})">
-                <div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()} | GPS: ${it.coords || "N/A"}</div>
+                <div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div>
                 <div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (${it.client})</div>
                 <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div>
             </div>`; 
@@ -521,38 +547,28 @@
         document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
     }
 
-    function toggleMenu() { haptic(); document.getElementById('menu').classList.toggle('active'); }
+    function toggleMenu() { haptic(); Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
     function closeModal() { haptic(); document.getElementById('reportModal').style.display = 'none'; monitorOpen = false; }
     function setLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
     
     function showWallet() { 
-        haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
+        Sfx.click(); haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
         let counts = {1:0, 3:0, 4:0}; for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { let t = DATA.done[id][p]; if(counts[t]!==undefined) counts[t] += it.clients.length; } }
         document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`;
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
 
     window.onload = () => {
-        const s = localStorage.getItem('logist_v420_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
+        const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
         if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
         if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
-        if(document.getElementById('cloudUrl')) document.getElementById('cloudUrl').value = DATA.cloudUrl || "";
+        if(document.getElementById('cloudUrl')) document.getElementById('cloudUrl').value = DATA.cloudUrl || DEFAULT_HQ;
         if(document.getElementById('licenseKey')) document.getElementById('licenseKey').value = DATA.license.key || "";
         document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
         document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
         checkLicenseUI(); openDB(); render();
     };
     setInterval(syncNow, 12000);
-
-    // SERVICE WORKER REGISTRATION (FOR PWA)
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            const swCode = `self.addEventListener('fetch', (event) => { event.respondWith(fetch(event.request)); });`;
-            const blob = new Blob([swCode], {type: 'application/javascript'});
-            const url = URL.createObjectURL(blob);
-            navigator.serviceWorker.register(url);
-        });
-    }
 </script>
 </body>
 </html>
