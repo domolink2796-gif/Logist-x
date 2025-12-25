@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LOGIST_X | Elite Pro Edition</title>
+    
+    <!-- PWA & MOBILE META -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#010409">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1162/1162456.png">
+    <link rel="manifest" href='data:application/json,{"name":"Logist_X Elite","short_name":"Logist_X","start_url":".","display":"standalone","background_color":"#010409","theme_color":"#f59e0b","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/1162/1162456.png","sizes":"512x512","type":"image/png"}]}'>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        :root { --bg: #010409; --card: rgba(22, 27, 34, 0.95); --accent: #f59e0b; --green: #238636; --red: #da3633; --blue: #2f81f7; --purp: #8957e5; --text: #e6edf3; --subtext: #8b949e; --border: rgba(48, 54, 61, 1); }
+        
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 160px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; background-image: radial-gradient(circle at 0% 0%, rgba(245, 158, 11, 0.05) 0%, transparent 50%); user-select: none; -webkit-user-select: none; }
+        
+        header { background: rgba(1, 4, 9, 0.92); backdrop-filter: blur(18px); padding: 16px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top, 16px); }
+        .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .app-name { font-weight: 900; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 5px; color: var(--accent); font-style: italic; }
+        
+        #syncIndicator { background: var(--text); color: var(--bg); padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.65rem; border: none; cursor: pointer; display: none; transition: all 0.3s ease; }
+        #syncIndicator.active-sync { background: var(--accent); box-shadow: 0 0 15px var(--accent); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        .search-box { width: 100%; padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 0.95rem; outline: none; background: #0d1117; color: white; box-sizing: border-box; }
+        .stats-dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 15px; }
+        .stat-block { text-align: center; background: #0d1117; padding: 12px 4px; border-radius: 12px; border: 1px solid var(--border); }
+        .stat-label { font-size: 0.5rem; color: var(--subtext); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 4px; }
+        .stat-val { font-weight: 900; font-size: 0.8rem; display: block; }
+
+        .progress-container { background: #161b22; height: 4px; border-radius: 2px; overflow: hidden; margin-top: 15px; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), #fbbf24); transition: width 0.8s ease; width: 0%; }
+
+        .menu-toggle { text-align: center; padding: 14px; font-weight: 800; font-size: 0.7rem; color: var(--subtext); letter-spacing: 2px; cursor: pointer; text-transform: uppercase; border-bottom: 1px solid var(--border); background: #0d1117; }
+        .controls { display: none; background: #010409; padding: 20px; border-bottom: 1px solid var(--border); max-height: 80vh; overflow-y: auto; }
+        .controls.active { display: block; }
+
+        .btn-act { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 16px; font-weight: 900; color: white; cursor: pointer; text-align: center; transition: 0.1s; font-size: 0.75rem; text-transform: uppercase; box-sizing: border-box; text-decoration: none; }
+        .btn-act:active { transform: scale(0.95); opacity: 0.85; filter: brightness(1.2); }
+        .btn-blue { background: var(--blue); } .btn-red { background: var(--red); } .btn-dark { background: #21262d; border: 1px solid var(--border); } .btn-purple { background: var(--purp); } .btn-green { background: var(--green); color: #fff; }
+
+        .block-box { background: #0d1117; padding: 20px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; position: relative; overflow: hidden; }
+        .block-title { font-weight: 900; font-size: 0.6rem; color: var(--subtext); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; }
+        .std-input { width: 100%; padding: 14px; border: 1px solid var(--border); background: #010409; color: #fff; border-radius: 10px; font-size: 0.85rem; box-sizing: border-box; outline: none; margin-bottom: 10px; }
+
+        .card { background: var(--card); border-radius: 24px; margin: 0 16px 20px 16px; border: 1px solid var(--border); overflow: hidden; transition: 0.4s ease; }
+        .card.is-finished { opacity: 0.1; filter: grayscale(100%); pointer-events: none; background: #000; }
+        
+        .card-head { padding: 20px; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); }
+        .nav-btn { background: var(--blue); color: #fff; border: none; border-radius: 10px; padding: 10px 14px; font-size: 0.65rem; font-weight: 900; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(47, 129, 247, 0.3); }
+
+        .cl-badges { padding: 10px 20px 0 20px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .cl-badge { background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; color: var(--subtext); border: 1px solid var(--border); }
+        
+        .pods { padding: 16px 20px 25px 20px; display: flex; flex-wrap: wrap; gap: 14px; }
+        .p-btn { width: 56px; height: 56px; background: #21262d; border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--subtext); font-size: 1.25rem; transition: 0.1s; cursor: pointer; }
+        .p-btn.done-1 { background: var(--green) !important; color: #fff !important; border:none; }
+        .p-btn.done-2 { background: var(--red) !important; color: #fff !important; border:none; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(1, 4, 9, 0.98); backdrop-filter: blur(20px); z-index: 5000; display: none; justify-content: center; align-items: flex-end; }
+        .modal { background: #0d1117; width: 100%; max-width: 500px; border-radius: 35px 35px 0 0; border: 1px solid var(--border); max-height: 98vh; display: flex; flex-direction: column; overflow: hidden; }
+        .modal-head { padding: 25px; font-weight: 900; text-align: center; border-bottom: 1px solid var(--border); background: #161b22; color: var(--accent); }
+        
+        .photo-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 20px; overflow-y: auto; flex: 1; }
+        .photo-frame { background: #010409; border: 2px dashed var(--border); border-radius: 28px; width: 100%; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 260px; }
+        .photo-preview { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 2; border-radius: 26px; }
+
+        .bot-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(13, 17, 23, 0.92); backdrop-filter: blur(25px); padding: 12px 16px 42px 16px; border-top: 1px solid var(--border); display: flex; gap: 14px; z-index: 2000; box-sizing: border-box; }
+        .bb-btn { flex: 1; padding: 24px 10px; border: none; border-radius: 22px; color: white; font-weight: 900; font-size: 1rem; text-transform: uppercase; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+
+        #loader { position: fixed; inset: 0; background: #010409; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        #licenseLock { position: fixed; inset: 0; background: #010409; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
+        
+        .lic-progress { width: 100%; height: 4px; background: #161b22; border-radius: 2px; margin: 10px 0; overflow: hidden; display: none; }
+        .lic-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; box-shadow: 0 0 10px var(--accent); }
+
+        #toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 900; font-size: 0.8rem; z-index: 9999; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .btn-price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        .price-btn-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .price-label { font-size: 0.52rem; font-weight: 800; color: var(--subtext); text-transform: uppercase; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+</head>
+<body onclick="resumeAudio()">
+
+<div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
+
+<!-- АНТИ-ДЕБАГГЕР И ЗАЩИТА -->
+<script>
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123) return false;
+        if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) return false;
+        if (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83)) return false;
+    };
+    (function() {
+        const block = function() { setInterval(function() { (function() {}.constructor("debugger")()); }, 500); };
+        try { block(); } catch (err) {}
+    })();
+</script>
+
+<!-- LICENSE LOCK WITH WORKER NAME -->
+<div id="licenseLock">
+    <div style="background: #0d1117; padding: 45px; border-radius: 45px; border: 1px solid var(--border); width: 100%; max-width: 420px; text-align: center;">
+        <div style="font-size: 5rem; margin-bottom: 25px;">🔒</div>
+        <h1 style="font-weight: 900; color: #fff; font-size: 1.6rem;">LOGIST_X SECURE</h1>
+        <div style="margin-top: 30px; text-align: left;">
+            <input type="text" id="lockWorkerName" class="std-input" placeholder="Ваше ФИО (Иван Иванов)">
+            <input type="text" id="lockCloudUrl" class="std-input" placeholder="Google Script URL">
+            <input type="text" id="lockLicenseKey" class="std-input" style="color:var(--accent); font-weight:900;" placeholder="ЛИЦЕНЗИОННЫЙ КЛЮЧ">
+            <div id="lockLicProgress" class="lic-progress"><div id="lockLicBar" class="lic-bar"></div></div>
+            <button id="lockBtn" class="btn-act btn-blue" style="margin-top:20px;" onclick="saveAndCheckLock()">АКТИВИРОВАТЬ</button>
+        </div>
+        <p style="font-size: 0.6rem; color: var(--subtext); margin-top: 20px;">Designed by NIKITIN EVGENY</p>
+    </div>
+</div>
+
+<div id="loader"><div style="font-weight: 900; color: var(--accent); letter-spacing: 10px; font-size: 1.8rem;">LOGIST_X</div><div class="lic-progress" style="display:block; width:150px; margin-top:15px;"><div class="lic-bar" style="width:100%"></div></div></div>
+
+<header>
+    <div class="top-row">
+        <span class="app-name">LOGIST_X</span>
+        <button id="syncIndicator" onclick="showMonitor()">📦 <span id="queueCount">0</span></button>
+        <span id="cityBadge" style="background:rgba(245,158,11,0.1); color: var(--accent); padding: 8px 18px; border-radius: 12px; font-size: 0.7rem; font-weight: 900;">...</span>
+    </div>
+    <input type="text" id="search" class="search-box" placeholder="Поиск по адресу..." oninput="render()">
+    <div class="stats-dashboard">
+        <div class="stat-block"><span class="stat-label">Доход</span><span id="statMoney" class="stat-val" style="color:#3fb950">0 ₽</span></div>
+        <div class="stat-block"><span class="stat-label">Готово</span><span id="statProgress" class="stat-val">0/0</span></div>
+        <div class="stat-block"><span class="stat-label">Срывы</span><span id="statSryv" class="stat-val" style="color:#f85149">0</span></div>
+        <div class="stat-block"><span class="stat-label">Доступ</span><span id="statLicense" class="stat-val" style="color:var(--accent)">-</span></div>
+    </div>
+    <div class="progress-container"><div id="mainProgress" class="progress-bar"></div></div>
+</header>
+
+<div class="menu-toggle" onclick="toggleMenu()">⚙️ МЕНЮ И НАСТРОЙКИ</div>
+<div id="menu" class="controls">
+    
+    <div class="block-box">
+        <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
+        <input type="text" id="workerName" class="std-input" placeholder="Твое ФИО" oninput="saveCfg()">
+        <input type="text" id="cityName" class="std-input" placeholder="Город" oninput="saveCfg()">
+        <input type="text" id="cloudUrl" class="std-input" placeholder="Cloud URL" oninput="saveCfg()">
+        <input type="text" id="licenseKey" class="std-input" placeholder="Ключ" oninput="saveCfg()">
+        <div id="menuLicProgress" class="lic-progress"><div id="menuLicBar" class="lic-bar"></div></div>
+        <button class="btn-act btn-blue" onclick="checkLicense()">ОБНОВИТЬ СТАТУС</button>
+    </div>
+
+    <div class="block-box">
+        <div class="block-title">🛠 ТАРИФЫ И ВИДЫ РАБОТ:</div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
+            <input type="text" id="t1_name" class="std-input" oninput="saveCfg()"><input type="number" id="p1" class="std-input" oninput="saveCfg()">
+        </div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
+            <input type="text" id="t3_name" class="std-input" oninput="saveCfg()"><input type="number" id="p3" class="std-input" oninput="saveCfg()">
+        </div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
+            <input type="text" id="t4_name" class="std-input" oninput="saveCfg()"><input type="number" id="p4" class="std-input" oninput="saveCfg()">
+        </div>
+    </div>
+
+    <div class="block-box" style="text-align: center;">
+        <p style="font-weight: 900; font-size: 0.7rem; color: #fff; margin-bottom: 10px;">DESIGNED BY NIKITIN EVGENY</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <a href="https://t.me/gena_krokodi" target="_blank" class="btn-act btn-blue" style="margin:0; height:50px; display:flex; align-items:center; justify-content:center;">TG</a>
+            <a href="tel:+79954470130" class="btn-act btn-green" style="margin:0; height:50px; display:flex; align-items:center; justify-content:center;">CALL</a>
+        </div>
+    </div>
+
+    <button class="btn-act btn-red" onclick="if(confirm('Сбросить базу?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС СИСТЕМЫ</button>
+</div>
+
+<div id="content" style="padding-top:20px;"></div>
+
+<div id="reportModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-head" id="modalTitle">ОТЧЕТ</div>
+        <div id="modalBody" class="photo-grid"></div>
+        <div id="reportFooter" style="padding:25px; background:#161b22; display:none;">
+            <div class="btn-price-grid">
+                <div class="price-btn-cell"><div id="lbl1" class="price-label">...</div><button id="bt1" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(1)">0</button></div>
+                <div class="price-btn-cell"><div id="lbl3" class="price-label">...</div><button id="bt3" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(3)">0</button></div>
+                <div class="price-btn-cell"><div id="lbl4" class="price-label">...</div><button id="bt4" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(4)">0</button></div>
+                <div class="price-btn-cell"><div class="price-label">СРЫВ</div><button id="bt2" class="p-btn" style="font-size:0.7rem; width:100%; background:var(--red); color:#fff; border:none;" onclick="setType(2)">0 ₽</button></div>
+            </div>
+            <button class="btn-act btn-green" id="confirmBtn" onclick="confirmReport()">ОТПРАВИТЬ ОТЧЕТ</button>
+        </div>
+        <div style="padding:15px;"><button class="btn-act btn-dark" onclick="closeModal()">ЗАКРЫТЬ</button></div>
+    </div>
+</div>
+
+<div class="bot-bar">
+    <button class="bb-btn" style="background: linear-gradient(135deg, #f59e0b, #b45309); color: #000;" onclick="showWallet()">💰 КОШЕЛЕК</button>
+    <button class="bb-btn" style="background: linear-gradient(135deg, #ef4444, #991b1b); color: #fff;" onclick="showSryvy()">⚠️ СРЫВЫ</button>
+</div>
+
+<script>
+    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена", t4: "Pseudo"}, city: "Орёл", cloudUrl: "", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
+    let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
+    const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
+
+    function haptic() { if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(35); }
+    function toast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
+    function resumeAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    
+    function openDB() {
+        const req = indexedDB.open("LogistX_Secure_v420", 1);
+        req.onupgradeneeded = (e) => e.target.result.createObjectStore("sync_queue", { autoIncrement: true });
+        req.onsuccess = (e) => { db = e.target.result; updateSyncCount(); syncNow(); };
+    }
+
+    function saveCfg() {
+        DATA.cloudUrl = document.getElementById('cloudUrl')?.value.trim() || DATA.cloudUrl;
+        DATA.license.key = document.getElementById('licenseKey')?.value.trim().toUpperCase() || DATA.license.key;
+        DATA.workerName = document.getElementById('workerName')?.value.trim() || DATA.workerName;
+        DATA.city = document.getElementById('cityName')?.value.trim() || "Орёл";
+        DATA.prices.p1 = parseInt(document.getElementById('p1')?.value) || 500;
+        DATA.prices.p3 = parseInt(document.getElementById('p3')?.value) || 300;
+        DATA.prices.p4 = parseInt(document.getElementById('p4')?.value) || 100;
+        DATA.names.t1 = document.getElementById('t1_name')?.value || "Монтаж";
+        DATA.names.t3 = document.getElementById('t3_name')?.value || "Замена";
+        DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudo";
+        document.getElementById('cityBadge').innerText = DATA.city.toUpperCase();
+        localStorage.setItem('logist_v420_data', JSON.stringify(DATA));
+        checkLicenseUI();
+    }
+
+    function checkLicenseUI() {
+        const now = Date.now();
+        const active = DATA.license.key && Number(DATA.license.expiry) > now;
+        DATA.license.status = active;
+        document.getElementById('licenseLock').style.display = active ? 'none' : 'flex';
+        const h = document.getElementById('statLicense');
+        if(active) {
+            const d = Math.ceil((DATA.license.expiry - now) / 86400000);
+            h.innerText = d + " дн."; h.style.color = "var(--accent)";
+        } else { h.innerText = "EXP"; h.style.color = "var(--red)"; }
+    }
+
+    async function checkLicense() {
+        const url = DATA.cloudUrl; 
+        const key = DATA.license.key;
+        const worker = DATA.workerName;
+        if(!url || !key || !worker) return alert("Заполните ФИО и данные ключа!");
+
+        const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
+        const conts = [document.getElementById('lockLicProgress'), document.getElementById('menuLicProgress')];
+        conts.forEach(c => c && (c.style.display = 'block'));
+        bars.forEach(b => b && (b.style.width = '40%'));
+
+        try {
+            const res = await fetch(url, { 
+                method: 'POST', 
+                body: JSON.stringify({action:'check_license', licenseKey: key, workerName: worker}) 
+            });
+            bars.forEach(b => b && (b.style.width = '80%'));
+            const result = await res.json();
+            if(result.status === "active") {
+                bars.forEach(b => b && (b.style.width = '100%'));
+                DATA.license.expiry = Number(result.newExpiry); 
+                saveCfg(); toast("ЛИЦЕНЗИЯ ПРИНЯТА");
+                setTimeout(() => conts.forEach(c => c && (c.style.display = 'none')), 1000);
+            } else { alert("ОШИБКА: " + result.message); }
+        } catch(e) { alert("Ошибка связи со Штабом!"); }
+        finally { bars.forEach(b => b && (b.style.width = '0%')); }
+    }
+
+    async function saveAndCheckLock() {
+        DATA.workerName = document.getElementById('lockWorkerName').value.trim();
+        DATA.cloudUrl = document.getElementById('lockCloudUrl').value.trim();
+        DATA.license.key = document.getElementById('lockLicenseKey').value.trim().toUpperCase();
+        saveCfg(); await checkLicense();
+    }
+
+    function handleExcel(inp) {
+        let f = inp.files[0]; if(!f) return;
+        setLoader(true); 
+        setTimeout(() => {
+            let r = new FileReader();
+            r.onload = (e) => {
+                try {
+                    let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+                    let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
+                    let head = rows[0].map(v => String(v || "").toLowerCase());
+                    let cS = head.findIndex(v => v.includes('улица') || v.includes('адрес'));
+                    let cH = head.findIndex(v => v.includes('дом'));
+                    let cP = head.findIndex(v => v.includes('подъезд'));
+                    if(cS === -1) return alert("Ошибка: Столбец 'Улица' не найден");
+                    let list = [];
+                    rows.forEach((row, k) => {
+                        if(k === 0 || !row[cS]) return;
+                        let cls = [];
+                        row.forEach(cell => { if(cell){ let v=String(cell).toUpperCase(); for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]); } });
+                        list.push({s: row[cS], h: row[cH] || "?", p: parseInt(row[cP])||1, clients: [...new Set(cls)], id: 'ID-'+k+'-'+(row[cS]+row[cH]).replace(/\W/g,'')});
+                    });
+                    DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); toast("БАЗА ОБНОВЛЕНА");
+                } finally { setTimeout(() => setLoader(false), 500); }
+            }; r.readAsArrayBuffer(f);
+        }, 100);
+    }
+
+    function render() {
+        const box = document.getElementById('content'), search = (document.getElementById('search')?.value || "").toLowerCase();
+        let html = "";
+        DATA.list.forEach(i => {
+            if(search && !i.s.toLowerCase().includes(search) && !i.h.toString().includes(search)) return;
+            let finished = 0; if(DATA.done[i.id]) { for(let p=1; p<=i.p; p++) if(DATA.done[i.id][p]) finished++; }
+            const isDone = (finished === i.p && i.p > 0);
+            let pds = ""; for(let p=1; p<=i.p; p++){
+                let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
+                pds += `<div class="p-btn ${st?'done-'+st:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
+            }
+            html += `<div class="card ${isDone?'is-finished':''}">
+                <div class="card-head">
+                    <div style="flex:1; margin-right:10px; font-size:0.85rem; font-weight:900;">${i.s}, ${i.h}</div>
+                    <button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button>
+                </div>
+                <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
+                <div class="pods">${pds}</div>
+            </div>`;
+        });
+        box.innerHTML = html || "<p style='text-align:center; opacity:0.1; padding:50px;'>СПИСОК ПУСТ</p>"; updateStats();
+    }
+
+    function openNav(addr) { haptic(); window.open(`https://yandex.ru/maps/?text=${encodeURIComponent(DATA.city + " " + addr)}`); }
+
+    function openReport(id, p) {
+        if(!DATA.license.status) return checkLicenseUI();
+        haptic(); curId = id; curP = p; curPhotos = {}; const it = DATA.list.find(x => x.id === id);
+        document.getElementById('modalTitle').innerText = `${it.s}, ${it.h} (П. ${p})`;
+        const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
+        document.getElementById('modalBody').innerHTML = cls.map((c, idx) => `
+            <div class="photo-frame" onclick="document.getElementById('cam_${idx}').click()">
+                <div style="text-align:center; opacity:0.4;"><div style="font-weight:900; color:var(--accent); margin-bottom:5px;">${c}</div><div style="font-size:3rem">📸</div></div>
+                <img id="prev_${idx}" class="photo-preview" style="display:none">
+                <input type="file" accept="image/*" capture="environment" id="cam_${idx}" style="display:none" onchange="handleCam(${idx},'${c}')">
+            </div>`).join("");
+        document.getElementById('lbl1').innerText = DATA.names.t1; document.getElementById('bt1').innerText = DATA.prices.p1;
+        document.getElementById('lbl3').innerText = DATA.names.t3; document.getElementById('bt3').innerText = DATA.prices.p3;
+        document.getElementById('lbl4').innerText = DATA.names.t4; document.getElementById('bt4').innerText = DATA.prices.p4;
+        document.getElementById('reportFooter').style.display = 'block'; setType(1); document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function handleCam(idx, client) {
+        const f = document.getElementById(`cam_${idx}`).files[0]; if(!f) return;
+        const r = new FileReader(); r.onload = (e) => {
+            const img = new Image(); img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas'); let w = img.width, h = img.height, max = 1000;
+                if(w > h) { if(w > max) { h *= max/w; w = max; } } else { if(h > max) { w *= max/h; h = max; } }
+                canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                curPhotos[client] = canvas.toDataURL('image/jpeg', 0.6);
+                document.getElementById(`prev_${idx}`).src = curPhotos[client]; document.getElementById(`prev_${idx}`).style.display = 'block';
+                haptic();
+            };
+        }; r.readAsDataURL(f);
+    }
+
+    function setType(t) { haptic(); curType = t; [1,2,3,4].forEach(i => { let b = document.getElementById('bt'+i); if(b) b.style.border = (i===t)?"3px solid #fff":"none"; }); }
+
+    // GET GPS COORDINATES
+    function getCoords() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) return resolve("No GPS Support");
+            navigator.geolocation.getCurrentPosition(
+                (pos) => resolve(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`),
+                () => resolve("GPS Disabled"),
+                { enableHighAccuracy: true, timeout: 5000 }
+            );
+        });
+    }
+
+    async function confirmReport() {
+        if(isSavingReport) return;
+        const it = DATA.list.find(x => x.id === curId);
+        const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
+        if(curType !== 2) { for(let c of cls) if(!curPhotos[c]) return alert(`Нет фото для: ${c}`); }
+        
+        isSavingReport = true; haptic();
+        document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
+        
+        const coords = await getCoords(); // ЗАПРОС GPS
+
+        if(!DATA.done[curId]) DATA.done[curId] = {};
+        DATA.done[curId][curP] = curType;
+        render(); closeModal();
+
+        const tx = db.transaction("sync_queue", "readwrite");
+        const store = tx.objectStore("sync_queue");
+
+        for (let client of cls) {
+            const entry = { 
+                worker: DATA.workerName, city: DATA.city, 
+                image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, 
+                address: `${it.s} ${it.h} п.${curP}`, client: client, 
+                workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], 
+                price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], 
+                coords: coords, // СОХРАНЯЕМ GPS
+                ts: Date.now(), status: "Ожидание", full: curPhotos[client] 
+            };
+            DATA.history.unshift(entry);
+            store.add(entry);
+        }
+
+        tx.oncomplete = () => { 
+            saveCfg(); 
+            isSavingReport = false; 
+            document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ";
+            syncNow(); 
+            toast("ОТЧЕТ В ОЧЕРЕДИ"); 
+        };
+    }
+
+    async function syncNow() {
+        if(syncing || !navigator.onLine || !DATA.cloudUrl || !db || !DATA.license.status) return;
+        syncing = true;
+        try {
+            const txR = db.transaction("sync_queue", "readonly");
+            const items = await new Promise(r => txR.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
+            const keys = await new Promise(r => txR.objectStore("sync_queue").getAllKeys().onsuccess = e => r(e.target.result));
+            if (items.length === 0) { syncing = false; return; }
+            document.getElementById('syncIndicator').style.display = 'block';
+            document.getElementById('syncIndicator').classList.add('active-sync');
+            for(let i=0; i<items.length; i++) {
+                if(items[i].status === "Отправка...") continue;
+                document.getElementById('queueCount').innerText = `${i+1}/${items.length}`;
+                await new Promise(r => { let t = db.transaction("sync_queue","readwrite"); items[i].status = "Отправка..."; t.objectStore("sync_queue").put(items[i], keys[i]).onsuccess = r; });
+                try {
+                    const { full, ...payload } = items[i];
+                    const res = await fetch(DATA.cloudUrl, { method: 'POST', body: JSON.stringify({...payload, licenseKey: DATA.license.key}) });
+                    if(res.ok) { let t = db.transaction("sync_queue","readwrite"); await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r); haptic(); } else throw 1;
+                } catch(e) { 
+                    let t = db.transaction("sync_queue","readwrite"); items[i].status = "Ошибка (ждем)"; t.objectStore("sync_queue").put(items[i], keys[i]); 
+                    break; 
+                }
+            }
+        } finally { syncing = false; document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
+    }
+
+    async function showMonitor() {
+        monitorOpen = true; haptic();
+        const upd = async () => {
+            if(!monitorOpen) return;
+            const tx = db.transaction("sync_queue", "readonly");
+            const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
+            document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ";
+            document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Все доставлено!</p>" : 
+            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem">
+                <b>${it.address} (${it.client})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}
+                <button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();haptic();">🚀 ПНУТЬ ОЧЕРЕДЬ</button></div>`;
+            document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+        };
+        upd(); const intv = setInterval(() => { if(monitorOpen) upd(); else clearInterval(intv); }, 1500);
+    }
+
+    async function createFullBackup() {
+        const tx = db.transaction("sync_queue", "readonly");
+        const queueItems = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
+        const blob = new Blob([JSON.stringify({ appData: DATA, syncQueue: queueItems })], {type:'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click(); toast("БЭКАП ГОТОВ");
+    }
+
+    function restoreFullBackup(inp) {
+        let f = inp.files[0]; if(!f) return;
+        const r = new FileReader(); r.onload = async (e) => {
+            try {
+                const b = JSON.parse(e.target.result); DATA = b.appData; localStorage.setItem('logist_v420_data', JSON.stringify(DATA));
+                const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
+                await new Promise(r => store.clear().onsuccess = r);
+                if(b.syncQueue) for(let it of b.syncQueue) store.add(it);
+                tx.oncomplete = () => location.reload();
+            } catch(err) { alert("Ошибка файла!"); }
+        }; r.readAsText(f);
+    }
+
+    function exportSryvyToExcel() {
+        let gr = {}; 
+        for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p] === 2) { if(!gr[id]) gr[id] = []; gr[id].push(p); } }
+        let reportData = []; for(let id in gr){
+            const it = DATA.list.find(x => x.id === id);
+            if(it) reportData.push({ "Город": DATA.city, "Адрес": `${it.s}, ${it.h}`, "Подъезды (Срывы)": gr[id].sort((a,b)=>a-b).join(", ") });
+        }
+        if(reportData.length === 0) return alert("Срывов нет!");
+        const ws = XLSX.utils.json_to_sheet(reportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Срывы"); XLSX.writeFile(wb, `Sryvy_${DATA.city}.xlsx`);
+    }
+
+    function showSryvy() {
+        haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ";
+        let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } }
+        let h = "<div style='padding:15px'>";
+        for(let id in gr){ const it=DATA.list.find(x=>x.id===id); h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].sort((a,b)=>a-b).join(", ")}</span></div>`; }
+        h += `<button class="btn-act btn-green" style="margin-top:20px" onclick="exportSryvyToExcel();haptic();">💾 СКАЧАТЬ EXCEL</button></div>`;
+        document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Срывов нет</p>";
+        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function showArchive() {
+        haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; 
+        DATA.history.slice(0,50).forEach((it, idx) => { 
+            h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})">
+                <div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()} | GPS: ${it.coords || "N/A"}</div>
+                <div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (${it.client})</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div>
+            </div>`; 
+        });
+        document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; 
+        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function showArchivePhoto(idx) { const it = DATA.history[idx]; if(!it || !it.full) return; document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; }
+
+    function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing) document.getElementById('queueCount').innerText = c; }; }
+    function updateStats() {
+        let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0;
+        for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { const t = DATA.done[id][p]; dn++; if(t !== 2) mon += ([0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t] * it.clients.length); } }
+        document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
+    }
+
+    function toggleMenu() { haptic(); document.getElementById('menu').classList.toggle('active'); }
+    function closeModal() { haptic(); document.getElementById('reportModal').style.display = 'none'; monitorOpen = false; }
+    function setLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
+    
+    function showWallet() { 
+        haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
+        let counts = {1:0, 3:0, 4:0}; for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { let t = DATA.done[id][p]; if(counts[t]!==undefined) counts[t] += it.clients.length; } }
+        document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`;
+        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    window.onload = () => {
+        const s = localStorage.getItem('logist_v420_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
+        if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
+        if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
+        if(document.getElementById('cloudUrl')) document.getElementById('cloudUrl').value = DATA.cloudUrl || "";
+        if(document.getElementById('licenseKey')) document.getElementById('licenseKey').value = DATA.license.key || "";
+        document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
+        document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
+        checkLicenseUI(); openDB(); render();
+    };
+    setInterval(syncNow, 12000);
+
+    // SERVICE WORKER REGISTRATION (FOR PWA)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            const swCode = `self.addEventListener('fetch', (event) => { event.respondWith(fetch(event.request)); });`;
+            const blob = new Blob([swCode], {type: 'application/javascript'});
+            const url = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(url);
+        });
+    }
+</script>
+</body>
+</html>
+
