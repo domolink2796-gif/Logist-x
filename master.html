@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>LOGIST_MASTER | HQ</title>
+    <title>LOGIST_MASTER | HQ ELITE v20.5</title>
     
-    <!-- PWA Настройки для автономности -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#010409">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1162/1162456.png">
-    <link rel="manifest" href='data:application/json,{"name":"Logist Master","short_name":"Master","start_url":"./master.html","display":"standalone","background_color":"#010409","theme_color":"#f59e0b","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/1162/1162456.png","sizes":"512x512","type":"image/png"}]}'>
 
+    <!-- Зависимости: React, Babel, Tailwind, Lucide -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -20,26 +19,44 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background: #010409; color: #e6edf3; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; padding-top: env(safe-area-inset-top); }
+        body { background: #010409; color: #e6edf3; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .glass { background: rgba(13, 17, 23, 0.9); backdrop-filter: blur(20px); border: 1px solid #30363d; border-radius: 28px; }
         .btn-gold { background: linear-gradient(135deg, #f59e0b, #b45309); color: #000; font-weight: 900; transition: 0.2s; }
         .btn-gold:active { transform: scale(0.96); }
         .input-dark { background: #000; border: 1px solid #30363d; color: #fff; outline: none; transition: 0.3s; }
         .input-dark:focus { border-color: #f59e0b; }
-        .modal-overlay { background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 1000; }
+        .modal-overlay { background: rgba(0,0,0,0.98); backdrop-filter: blur(15px); z-index: 1000; }
         ::-webkit-scrollbar { width: 0px; }
     </style>
 </head>
 <body>
 <div id="root"></div>
+
 <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
+
+    // --- ТВОИ ГЛОБАЛЬНЫЕ ДАННЫЕ ---
+    const MY_MAIN_ID = "1FdKuk1uTmKUxikom1i-mTPdET0dQJAaAyn9ITd-huHI";
+    const MY_MASTER_URL = "https://script.google.com/macros/s/AKfycbxzoUD69dgAiHRVPNc-4seydmFcR8L812GM9pU1gqnXA1eG_BQ-3gP3KkkyLbxNyfKpMg/exec";
+
+    // Компонент иконок (для совместимости с автономным Lucide)
+    const Icon = ({ name, size = 20, className = "" }) => {
+        const iconRef = useRef(null);
+        useEffect(() => {
+            if (window.lucide && iconRef.current) {
+                window.lucide.createIcons({
+                    targets: [iconRef.current]
+                });
+            }
+        }, [name]);
+        return <i ref={iconRef} data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+    };
 
     const App = () => {
         const [projects, setProjects] = useState(() => {
-            const saved = localStorage.getItem('master_projects_v14');
+            const saved = localStorage.getItem('master_projects_v20_5');
             return saved ? JSON.parse(saved) : [
-                { name: "Основной Штаб", url: "https://script.google.com/macros/s/AKfycbz3ZscxDR4Ls4383w43ENWJnov5SEunvNhG_mUSzZTuawytVg2Pwn67VyOgwJ5f2FfA8A/exec", techPass: "Евгений Никитин" }
+                { name: "Мой Реестр", url: MY_MASTER_URL, techPass: "Евгений Никитин" }
             ];
         });
 
@@ -50,17 +67,22 @@
         const [loading, setLoading] = useState(false);
         const [showProjects, setShowProjects] = useState(false);
         const [showGen, setShowGen] = useState(false);
+        const [confirmDelete, setConfirmDelete] = useState(null);
+        const [renewDays, setRenewDays] = useState({});
         
-        const [genUrl, setGenUrl] = useState("");
+        const [clientUrl, setClientUrl] = useState("");
         const [genPass, setGenPass] = useState("Elite" + Math.floor(Math.random()*900 + 100));
         const [genResult, setGenResult] = useState("");
 
         const cur = projects[activeIdx];
 
         useEffect(() => {
-            localStorage.setItem('master_projects_v14', JSON.stringify(projects));
-            if (window.lucide) window.lucide.createIcons();
-        }, [projects, isAuth, showGen, showProjects]);
+            localStorage.setItem('master_projects_v20_5', JSON.stringify(projects));
+        }, [projects]);
+
+        useEffect(() => {
+            if (isAuth) sync();
+        }, [isAuth, activeIdx]);
 
         const checkLogin = () => {
             if (passInput.trim().toLowerCase() === 'евгений никитин') setIsAuth(true);
@@ -76,150 +98,246 @@
                     body: JSON.stringify({action:'list_keys', adminPass: cur.techPass}) 
                 });
                 const data = await res.json();
-                setKeys(data.keys || []);
-            } catch(e) { alert("Ошибка связи с Google."); }
-            finally { setLoading(false); }
-        };
-
-        const createAcc = async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            setLoading(true);
-            try {
-                const res = await fetch(cur.url, { 
-                    method: 'POST', 
-                    body: JSON.stringify({
-                        action: 'add_key', 
-                        adminPass: cur.techPass,
-                        workerName: fd.get('w'),
-                        clientName: fd.get('o'),
-                        days: fd.get('d')
-                    })
-                });
-                const r = await res.json();
-                if (r.status === 'success') { sync(); e.target.reset(); alert("Лицензия создана!"); }
+                setKeys((data.keys || []).sort((a, b) => b.expiry - a.expiry));
+            } catch(e) { 
+                console.error(e); 
             } finally { setLoading(false); }
         };
 
-        const copyInvite = (k, w) => {
-            const msg = `🚀 LOGIST_X ACCESS\n👤 Воркер: ${w}\n🔑 Код: ${k}\n🌐 Штаб: ${cur.url}\n📱 App: https://${window.location.hostname}/app/`;
-            const el = document.createElement('textarea');
-            el.value = msg;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            alert("Инструкция скопирована!");
+        const handleAction = async (payload) => {
+            setLoading(true);
+            try {
+                const res = await fetch(cur.url, {
+                    method: 'POST',
+                    body: JSON.stringify({ ...payload, adminPass: cur.techPass })
+                });
+                const r = await res.json();
+                if (r.status === 'success') {
+                    setConfirmDelete(null);
+                    sync();
+                }
+            } finally { setLoading(false); }
         };
 
         const generateRobotCode = () => {
-            let id = genUrl;
-            if(id.includes('/d/')) id = id.split('/d/')[1].split('/')[0];
-            if(!id || id.length < 20) return alert("Неверный URL таблицы");
-            
-            const code = `/**\n * LOGIST_X ROBOT v14\n * SS_ID: ${id}\n */\nconst SS_ID = "${id}";\nconst ADMIN_PASS = "${genPass}";\n\nfunction doPost(e) { /* ... основной код Робота v14 ... */ }`;
+            let clientId = clientUrl;
+            if(clientId.includes('/d/')) clientId = clientId.split('/d/')[1].split('/')[0];
+            if(!clientId) return alert("Вставь ссылку на таблицу");
+
+            const code = `/**
+ * LOGIST_X BRIDGE ROBOT v20.5
+ * CLIENT_SS: ${clientId}
+ * MASTER_NODE: ${MY_MASTER_URL}
+ */
+
+const CLIENT_SS_ID = "${clientId}";
+const MASTER_URL = "${MY_MASTER_URL}";
+const ADMIN_PASS = "${genPass}";
+
+function doPost(e) {
+  let data = JSON.parse(e.postData.contents);
+  const action = data.action;
+
+  if (["check_license", "add_key", "list_keys", "renew_key", "delete_key"].includes(action)) {
+    data.ownerPass = "Евгений Никитин"; 
+    const options = {
+      method: "post", contentType: "application/json",
+      payload: JSON.stringify(data), muteHttpExceptions: true
+    };
+    const response = UrlFetchApp.fetch(MASTER_URL, options);
+    return ContentService.createTextOutput(response.getContentText()).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (action === "save_report") {
+    try {
+      const folder = DriveApp.getFolderById(data.folderId);
+      const cityFolder = getOrCreateFolder(folder, data.city);
+      const dateStr = Utilities.formatDate(new Date(), "GMT+3", "dd.MM.yyyy");
+      const dateFolder = getOrCreateFolder(cityFolder, dateStr);
+      const clientFolder = getOrCreateFolder(dateFolder, data.client);
+      
+      const fileName = data.city + " " + data.address + ".jpg";
+      const blob = Utilities.newBlob(Utilities.base64Decode(data.image), "image/jpeg", fileName);
+      const fileUrl = clientFolder.createFile(blob).getUrl();
+      
+      const reportSS = SpreadsheetApp.openById(CLIENT_SS_ID);
+      reportSS.getSheets()[0].appendRow([new Date(), data.client, data.address, data.workType, data.price, fileUrl, data.coords]);
+      return response({ status: "success" });
+    } catch (err) { return response({ status: "error", message: err.toString() }); }
+  }
+}
+
+function getOrCreateFolder(p, n) {
+  const f = p.getFoldersByName(n || "Общий");
+  return f.hasNext() ? f.next() : p.createFolder(n || "Общий");
+}
+
+function response(o) {
+  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}`;
             setGenResult(code);
         };
-
-        useEffect(() => { if(isAuth) sync(); }, [isAuth, activeIdx]);
 
         if(!isAuth) {
             return (
                 <div className="h-screen flex items-center justify-center p-6 bg-[#010409]">
-                    <div className="glass p-12 w-full max-w-sm text-center shadow-2xl border-t-2 border-amber-500/20">
-                        <div className="w-20 h-20 bg-amber-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 text-black shadow-lg shadow-amber-500/20">
-                            <i data-lucide="shield-check" size={32}></i>
-                        </div>
-                        <h1 className="text-xl font-black mb-8 uppercase tracking-[0.2em] italic">Master HQ</h1>
-                        <input type="password" value={passInput} onChange={e=>setPassInput(e.target.value)} placeholder="Master Password" class="input-dark w-full p-4 rounded-2xl mb-4 text-center font-bold" onKeyDown={e=>e.key==='Enter'&&checkLogin()} />
-                        <button onClick={checkLogin} className="btn-gold w-full py-5 rounded-2xl uppercase text-[10px] tracking-widest">Авторизация</button>
+                    <div className="bg-[#0d1117] p-10 w-full max-w-sm text-center rounded-[3rem] border border-white/5 shadow-2xl">
+                        <Icon name="shield-check" size={48} className="text-amber-500 mx-auto mb-6" />
+                        <h1 className="text-xl font-black mb-8 uppercase tracking-widest italic text-white leading-none">Logist Master</h1>
+                        <input type="password" value={passInput} onChange={e=>setPassInput(e.target.value)} placeholder="Master Password" 
+                               className="input-dark w-full p-4 rounded-2xl mb-4 text-center text-white font-bold" 
+                               onKeyDown={e=>e.key==='Enter'&&checkLogin()} />
+                        <button onClick={checkLogin} className="bg-amber-500 text-black w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Войти в Штаб</button>
                     </div>
                 </div>
             );
         }
 
         return (
-            <div className="p-4 md:p-10 max-w-6xl mx-auto min-h-screen">
-                <header className="flex justify-between items-center mb-8 bg-[#0d1117] p-5 rounded-[2rem] border border-white/5">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-black shadow-lg shadow-amber-500/10">
-                            <i data-lucide="zap" size={20} fill="currentColor"></i>
+            <div className="p-4 md:p-10 max-w-6xl mx-auto min-h-screen bg-[#010409] text-white text-left">
+                <header className="flex justify-between items-center mb-10 bg-[#0d1117] p-6 rounded-[2.5rem] border border-white/5 shadow-xl relative overflow-hidden">
+                    <div className="flex items-center gap-4 relative z-10">
+                        <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-black shadow-lg">
+                            <Icon name="zap" size={24} className="fill-black" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-black italic text-amber-500 uppercase leading-none tracking-tighter">Logist Master</h1>
-                            <p className="text-[9px] opacity-30 mt-1 font-bold uppercase tracking-[3px]">{cur.name}</p>
+                            <h1 className="text-xl font-black italic text-amber-500 uppercase leading-none tracking-tighter">Master HQ</h1>
+                            <div className="flex items-center gap-2 mt-1">
+                                 <span className="text-[10px] opacity-40 font-bold uppercase tracking-[3px] truncate max-w-[120px]">{cur.name}</span>
+                                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex gap-2">
-                        <button onClick={()=>setShowProjects(true)} className="p-4 glass rounded-2xl border-white/10 hover:bg-white/5 transition-all">
-                            <i data-lucide="settings" size={20}></i>
-                        </button>
-                        <button onClick={sync} className="p-4 btn-gold rounded-2xl shadow-lg shadow-amber-500/10 active:scale-95 transition-all">
-                            <i data-lucide="refresh-cw" size={20} className={loading?'animate-spin':''}></i>
-                        </button>
+                    <div className="flex gap-2 relative z-10">
+                        <button onClick={()=>setShowProjects(true)} className="p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all"><Icon name="settings" /></button>
+                        <button onClick={sync} className="p-4 bg-amber-500 text-black rounded-2xl shadow-lg active:scale-90 transition-all"><Icon name="refresh-cw" className={loading?'animate-spin':''} /></button>
                     </div>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                     <div className="lg:col-span-2 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {keys.map(k => (
-                                <div key={k.key} className="glass p-6 hover:border-amber-500/40 transition-all group relative overflow-hidden">
-                                    <div className="flex justify-between mb-6">
-                                        <div className="text-amber-500 font-mono font-black text-base tracking-widest">{k.key}</div>
-                                        <div className="flex gap-3">
-                                            <a href={`https://drive.google.com/drive/folders/${k.folder}`} target="_blank" className="p-2 bg-white/5 rounded-lg opacity-40 hover:opacity-100 hover:text-amber-500 transition-all">
-                                                <i data-lucide="folder-open" size={18}></i>
+                            {keys.map(k => {
+                                const diff = k.expiry - new Date().getTime();
+                                const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                                const isExpired = daysLeft <= 0;
+                                const isUnassigned = !k.worker || k.worker.toLowerCase() === "новый";
+
+                                return (
+                                    <div key={k.key} className={`bg-[#0d1117] p-6 rounded-[2.5rem] border transition-all ${isExpired ? 'border-red-500/20 bg-red-500/5' : isUnassigned ? 'border-blue-500/20' : 'border-white/5 hover:border-amber-500/30'} relative overflow-hidden group`}>
+                                        
+                                        {confirmDelete === k.key && (
+                                            <div className="absolute inset-0 bg-red-600 z-50 flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+                                                <Icon name="alert-circle" size={32} className="mb-2 text-white" />
+                                                <p className="text-[10px] font-black uppercase mb-4 text-white">Удалить этот доступ?</p>
+                                                <div className="flex gap-2 w-full">
+                                                    <button onClick={() => handleAction({action:'delete_key', licenseKey: k.key})} className="flex-1 bg-white text-red-600 py-3 rounded-xl font-black text-[10px] uppercase">Удалить</button>
+                                                    <button onClick={() => setConfirmDelete(null)} className="flex-1 bg-black/20 text-white py-3 rounded-xl font-black text-[10px] uppercase">Отмена</button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div className="text-amber-500 font-mono font-black text-sm tracking-widest">{k.key}</div>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`text-[10px] font-black uppercase ${isExpired ? 'text-red-500' : 'text-emerald-500'}`}>
+                                                    {isExpired ? 'Истек' : `${daysLeft} дн.`}
+                                                </div>
+                                                <button onClick={() => setConfirmDelete(k.key)} className="text-white/10 hover:text-red-500 transition-all"><Icon name="trash-2" size={16} /></button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 mb-1 text-xl font-black uppercase truncate leading-none">
+                                            <span className={isUnassigned ? "text-blue-400" : "text-white"}>{k.worker || "Ожидает воркера"}</span>
+                                        </div>
+                                        <div className="text-[10px] opacity-40 uppercase font-bold italic mb-8 tracking-widest truncate">{k.name}</div>
+                                        
+                                        <div className="flex gap-2 mb-4 bg-black/40 p-2 rounded-2xl border border-white/5">
+                                            <input type="number" placeholder="+Дни" value={renewDays[k.key] || ''} onChange={(e)=>setRenewDays({...renewDays, [k.key]: e.target.value})}
+                                                   className="bg-transparent w-full px-3 text-xs font-bold text-amber-500 outline-none" />
+                                            <button onClick={() => handleAction({action:'renew_key', licenseKey: k.key, days: parseInt(renewDays[k.key])})} className="p-3 bg-white/5 rounded-xl text-amber-500"><Icon name="plus-circle" size={18} /></button>
+                                        </div>
+
+                                        <div className="flex gap-2">
+                                            <button onClick={() => {
+                                                const msg = `🚀 LOGIST_X ACCESS\n🔑 Код: ${k.key}\n🌐 Штаб: ${cur.url}\n📱 App: https://${window.location.hostname}/app/\n\n*Введите имя при входе для активации.`;
+                                                navigator.clipboard.writeText(msg);
+                                                alert("Инструкция скопирована!");
+                                            }} className="flex-1 py-4 bg-amber-500 text-black rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 active:scale-95 transition-all">
+                                                <Icon name="copy" size={14}/> Доступ
+                                            </button>
+                                            <a href={`https://drive.google.com/drive/folders/${k.folder}`} target="_blank" className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white/40 hover:text-amber-500 transition-all">
+                                                <Icon name="folder-open" size={16} />
                                             </a>
                                         </div>
                                     </div>
-                                    <div className="text-white font-black uppercase truncate mb-1 text-xl leading-none">{k.worker || "Ожидает входа"}</div>
-                                    <div className="text-[10px] opacity-40 uppercase font-bold italic mb-8 tracking-widest">{k.name}</div>
-                                    
-                                    <button onClick={()=>copyInvite(k.key, k.worker)} className="w-full py-4 bg-amber-500 text-black rounded-2xl text-[10px] font-black uppercase flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all">
-                                        <i data-lucide="copy" size={14}/> Копировать доступ
-                                    </button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
-                        {keys.length === 0 && !loading && (
-                            <div className="text-center py-20 opacity-10 font-black uppercase tracking-[10px]">База пуста</div>
-                        )}
                     </div>
 
-                    <div className="lg:sticky lg:top-10">
-                        <form onSubmit={createAcc} className="glass p-10 space-y-6 border-t-4 border-amber-500 shadow-2xl bg-[#0d1117]">
-                            <h2 className="text-center font-black uppercase text-[11px] tracking-[4px] italic text-amber-500 mb-2">Новая Лицензия</h2>
-                            <div className="space-y-4">
-                                <input name="w" placeholder="ФИО сотрудника" required className="input-dark w-full p-4 rounded-xl font-bold border-white/5" />
-                                <input name="o" placeholder="Объект / Город" required className="input-dark w-full p-4 rounded-xl font-bold border-white/5" />
-                                <input name="d" type="number" defaultValue="30" className="input-dark w-full p-4 rounded-xl font-bold border-white/5" />
+                    <div className="space-y-6">
+                        <div className="bg-[#0d1117] p-10 rounded-[3rem] space-y-6 border border-white/5 shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+                            <div className="text-center mb-6">
+                                 <h2 className="font-black uppercase text-[11px] tracking-[4px] italic text-amber-500 mb-1">Создать Лицензию</h2>
+                                 <p className="text-[8px] opacity-30 font-bold uppercase tracking-widest">Объект: {cur.name}</p>
                             </div>
-                            <button className="w-full btn-gold py-6 rounded-3xl uppercase text-[11px] font-black tracking-widest shadow-xl active:scale-95 transition-all">
-                                Запустить Робота
-                            </button>
-                        </form>
-                        <button onClick={()=>setShowGen(true)} className="w-full mt-4 glass p-4 text-[10px] font-black uppercase tracking-widest text-blue-400 border-blue-500/20 hover:bg-blue-500/5 transition-all">
-                            🤖 Генератор Кода Робота
+                            <form onSubmit={(e)=>{e.preventDefault(); const fd=new FormData(e.target); handleAction({action:'add_key', workerName: fd.get('w'), clientName: fd.get('o'), days: fd.get('d')}); e.target.reset();}} className="space-y-4">
+                                <input name="w" placeholder="ФИО (или пусто)" className="input-dark w-full p-4 rounded-xl font-bold" />
+                                <input name="o" placeholder="Название Объекта" required className="input-dark w-full p-4 rounded-xl font-bold" />
+                                <input name="d" type="number" defaultValue="30" className="input-dark w-full p-4 rounded-xl font-bold" />
+                                <button className="w-full bg-amber-500 text-black py-5 rounded-2xl uppercase text-[11px] font-black tracking-widest shadow-xl active:scale-95 transition-all mt-4">Выпустить Ключ</button>
+                            </form>
+                        </div>
+                        
+                        <button onClick={()=>setShowGen(true)} className="w-full bg-blue-600/10 border border-blue-500/20 p-5 rounded-3xl text-[10px] font-black uppercase tracking-widest text-blue-400 flex items-center justify-center gap-3 hover:bg-blue-600/20">
+                            <Icon name="cpu" /> Генератор Bridge v20.5
                         </button>
                     </div>
                 </div>
 
-                {/* МОДАЛКА ШТАБОВ */}
+                {/* MODALS (Projects & Generator) */}
+                {showGen && (
+                    <div className="fixed inset-0 modal-overlay flex items-center justify-center p-6 z-[2000]">
+                        <div className="bg-[#0d1117] w-full max-w-2xl p-10 rounded-[4rem] border border-white/10 flex flex-col max-h-[90vh]">
+                            <h3 className="font-black uppercase mb-8 text-blue-400 italic text-xl leading-none text-center">Настройка Нового Клиента</h3>
+                            <div className="space-y-6 mb-8">
+                                <div>
+                                    <label className="text-[10px] uppercase opacity-40 font-black mb-3 block tracking-widest">1. Ссылка на таблицу КЛИЕНТА:</label>
+                                    <input value={clientUrl} onChange={e=>setClientUrl(e.target.value)} placeholder="https://..." className="input-dark w-full p-4 rounded-2xl text-xs" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] uppercase opacity-40 font-black mb-3 block tracking-widest">2. Пароль для этого штаба:</label>
+                                    <input value={genPass} onChange={e=>setGenPass(e.target.value)} className="input-dark w-full p-4 rounded-2xl text-xs" />
+                                </div>
+                                <button onClick={generateRobotCode} className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl active:scale-95">Сформировать Мост</button>
+                            </div>
+                            {genResult && (
+                                <div className="flex-1 flex flex-col min-h-0 bg-black/50 rounded-[2rem] border border-white/5 p-6">
+                                    <textarea readOnly value={genResult} className="flex-1 bg-transparent text-emerald-400 font-mono text-[10px] resize-none mb-4 outline-none" />
+                                    <button onClick={() => {navigator.clipboard.writeText(genResult); alert("Код скопирован!");}} className="bg-white text-black py-4 rounded-xl font-black text-[10px] uppercase flex items-center justify-center gap-2">
+                                        <Icon name="copy" size={14} /> Копировать скрипт
+                                    </button>
+                                </div>
+                            )}
+                            <button onClick={()=>setShowGen(false)} className="mt-8 text-[11px] font-black uppercase opacity-20 hover:opacity-100 transition-all tracking-[4px] text-center">Закрыть</button>
+                        </div>
+                    </div>
+                )}
+
                 {showProjects && (
                     <div className="fixed inset-0 modal-overlay flex items-center justify-center p-6 z-[2000]">
-                        <div className="glass w-full max-w-md p-10 border-amber-500/30">
-                            <h3 className="font-black uppercase mb-8 text-amber-500 italic text-xl tracking-tighter">Управление Штабами</h3>
-                            <div className="space-y-3 mb-8 max-h-60 overflow-y-auto pr-2">
+                        <div className="bg-[#0d1117] w-full max-w-md p-10 rounded-[3rem] border border-white/10 shadow-2xl">
+                            <h3 className="font-black uppercase mb-8 text-amber-500 italic text-xl text-center">Список Объектов</h3>
+                            <div className="space-y-3 mb-8 max-h-48 overflow-y-auto pr-2">
                                 {projects.map((p, i) => (
-                                    <div key={i} className={`p-5 rounded-2xl border transition-all flex justify-between items-center ${i===activeIdx?'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/5':'border-white/5 bg-black'}`}>
+                                    <div key={i} className={`p-5 rounded-2xl border flex justify-between items-center transition-all ${i===activeIdx?'border-amber-500 bg-amber-500/10':'border-white/5 bg-black'}`}>
                                         <div onClick={()=>{setActiveIdx(i); setShowProjects(false)}} className="cursor-pointer flex-1">
-                                            <div className="font-black text-sm uppercase">{p.name} {i===activeIdx && "✅"}</div>
-                                            <div className="text-[8px] opacity-20 truncate mt-1 font-mono">{p.url}</div>
+                                            <div className="font-black text-sm uppercase leading-none mb-1">{p.name}</div>
+                                            <div className="text-[8px] opacity-20 truncate">{p.url}</div>
                                         </div>
-                                        <button onClick={()=>{if(projects.length>1)setProjects(projects.filter((_,idx)=>idx!==i))}} className="text-red-500/40 hover:text-red-500 ml-4 p-2 transition-all">
-                                            <i data-lucide="trash-2" size={18}></i>
-                                        </button>
+                                        <button onClick={()=>{if(projects.length>1)setProjects(projects.filter((_,idx)=>idx!==i))}} className="text-red-500/40 hover:text-red-500 p-2"><Icon name="trash-2" size={18} /></button>
                                     </div>
                                 ))}
                             </div>
@@ -228,10 +346,10 @@
                                     <input name="n" placeholder="Имя штаба" required className="input-dark w-full p-4 rounded-xl text-xs font-bold" />
                                     <input name="p" placeholder="Тех. пароль" required className="input-dark w-full p-4 rounded-xl text-xs font-bold" />
                                 </div>
-                                <input name="u" placeholder="Ссылка /exec из Google Script" required className="input-dark w-full p-4 rounded-xl text-[10px] font-mono" />
-                                <button className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-blue-600/10">Добавить Штаб</button>
+                                <input name="u" placeholder="Ссылка /exec" required className="input-dark w-full p-4 rounded-xl text-[10px]" />
+                                <button className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest active:scale-95">Добавить Объект</button>
                             </form>
-                            <button onClick={()=>setShowProjects(false)} className="w-full mt-6 text-[10px] font-black uppercase opacity-20 hover:opacity-100 transition-all tracking-widest">Закрыть</button>
+                            <button onClick={()=>setShowProjects(false)} className="mt-8 text-[11px] font-black uppercase opacity-20 hover:opacity-100 transition-all tracking-[4px] w-full text-center">Закрыть</button>
                         </div>
                     </div>
                 )}
