@@ -1,17 +1,34 @@
 {
-  "name": "Logist_X Terminal Pro",
+  "name": "Logist_X Elite Pro",
   "short_name": "Logist_X",
-  "description": "Терминал контроля мобильных сотрудников: Монтаж, Реклама, Расклейка объявлений, Pseudomona",
+  "description": "Система контроля мобильных сотрудников: Монтаж, Реклама, Расклейка, Контроль",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#010409",
   "theme_color": "#f59e0b",
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/1162/1162456.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1162/1162456.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Рабочий стол"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1162/1162456.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Мобильный интерфейс"
     }
   ]
 }
