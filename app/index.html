@@ -10,9 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#010409">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1162/1162456.png">
-    
-    <!-- ИСПРАВЛЕННАЯ ССЫЛКА НА ВНЕШНИЙ МАНИФЕСТ -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href='data:application/json,{"name":"Logist_X Elite","short_name":"Logist_X","start_url":".","display":"standalone","background_color":"#010409","theme_color":"#f59e0b","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/1162/1162456.png","sizes":"512x512","type":"image/png"}]}'>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -64,13 +62,10 @@
         .p-btn { width: 56px; height: 56px; background: #21262d; border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--subtext); font-size: 1.25rem; transition: 0.1s; cursor: pointer; }
         .p-btn:active { transform: scale(0.85); background: var(--accent); }
         
-        /* Цвета для кнопок в зависимости от типа работ */
         .p-btn.done-1 { background: var(--green) !important; color: #fff !important; border:none; }
         .p-btn.done-2 { background: var(--red) !important; color: #fff !important; border:none; }
         .p-btn.done-3 { background: var(--blue) !important; color: #fff !important; border:none; }
         .p-btn.done-4 { background: var(--purp) !important; color: #fff !important; border:none; }
-        .p-btn.done-5 { background: #fb923c !important; color: #fff !important; border:none; } /* Расклейка - Оранж */
-        .p-btn.done-6 { background: #ec4899 !important; color: #fff !important; border:none; } /* Контроль - Розовый */
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(1, 4, 9, 0.98); backdrop-filter: blur(20px); z-index: 5000; display: none; justify-content: center; align-items: flex-end; }
         .modal { background: #0d1117; width: 100%; max-width: 500px; border-radius: 35px 35px 0 0; border: 1px solid var(--border); max-height: 98vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -91,16 +86,16 @@
 
         #toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 900; font-size: 0.8rem; z-index: 9999; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        .btn-price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 25px; }
+        .btn-price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
         .price-btn-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .price-label { font-size: 0.45rem; font-weight: 800; color: var(--subtext); text-transform: uppercase; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .price-label { font-size: 0.52rem; font-weight: 800; color: var(--subtext); text-transform: uppercase; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
 </head>
 <body onclick="resumeAudio()">
 
 <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
 
-<!-- ОРИГИНАЛЬНАЯ ЗАЩИТА -->
+<!-- ЗАЩИТА -->
 <script>
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.onkeydown = function(e) {
@@ -108,6 +103,10 @@
         if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) return false;
         if (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83)) return false;
     };
+    (function() {
+        const block = function() { setInterval(function() { (function() {}.constructor("debugger")()); }, 500); };
+        try { block(); } catch (err) {}
+    })();
 </script>
 
 <!-- LICENSE LOCK -->
@@ -148,7 +147,7 @@
     <div class="block-box">
         <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
         <input type="text" id="workerName" class="std-input" placeholder="Твое ФИО" oninput="saveCfg()">
-        <input type="text" id="cityName" class="std-input" placeholder="Город" oninput="saveCfg()">
+        <input type="text" id="cityName" class="std-input" placeholder="Город (напр. Сочи)" oninput="saveCfg()">
         <input type="text" id="cloudUrl" class="std-input" placeholder="Cloud URL" oninput="saveCfg()">
         <input type="text" id="licenseKey" class="std-input" placeholder="Ключ" oninput="saveCfg()">
         <div id="menuLicProgress" class="lic-progress"><div id="menuLicBar" class="lic-bar"></div></div>
@@ -156,22 +155,36 @@
     </div>
 
     <div class="block-box">
-        <div class="block-title">🛠 ТАРИФЫ И ВИДЫ РАБОТ (5 ПУНКТОВ):</div>
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:5px;"><input type="text" id="t1_name" class="std-input" oninput="saveCfg()"><input type="number" id="p1" class="std-input" oninput="saveCfg()"></div>
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:5px;"><input type="text" id="t3_name" class="std-input" oninput="saveCfg()"><input type="number" id="p3" class="std-input" oninput="saveCfg()"></div>
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:5px;"><input type="text" id="t4_name" class="std-input" oninput="saveCfg()"><input type="number" id="p4" class="std-input" oninput="saveCfg()"></div>
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:5px;"><input type="text" id="t5_name" class="std-input" oninput="saveCfg()"><input type="number" id="p5" class="std-input" oninput="saveCfg()"></div>
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;"><input type="text" id="t6_name" class="std-input" oninput="saveCfg()"><input type="number" id="p6" class="std-input" oninput="saveCfg()"></div>
+        <div class="block-title">🛠 ТАРИФЫ И ВИДЫ РАБОТ:</div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
+            <input type="text" id="t1_name" class="std-input" oninput="saveCfg()"><input type="number" id="p1" class="std-input" oninput="saveCfg()">
+        </div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
+            <input type="text" id="t3_name" class="std-input" oninput="saveCfg()"><input type="number" id="p3" class="std-input" oninput="saveCfg()">
+        </div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
+            <input type="text" id="t4_name" class="std-input" oninput="saveCfg()"><input type="number" id="p4" class="std-input" oninput="saveCfg()">
+        </div>
     </div>
 
     <div class="block-box">
+        <div class="block-title">📦 УПРАВЛЕНИЕ ДАННЫМИ:</div>
         <button class="btn-act btn-purple" onclick="showArchive()">📁 АРХИВ РАБОТ</button>
         <button class="btn-act btn-blue" onclick="createFullBackup()">💾 БЭКАП + ФОТО</button>
         <label class="btn-act btn-dark">🔄 ВОССТАНОВИТЬ<input type="file" style="display:none;" onchange="restoreFullBackup(this)"></label>
         <label class="btn-act btn-green" style="margin-top:10px">📊 ЗАГРУЗИТЬ EXCEL<input type="file" style="display:none;" onchange="handleExcel(this)"></label>
     </div>
-    
-    <button class="btn-act btn-red" onclick="if(confirm('Сбросить базу?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС</button>
+
+    <div class="block-box" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent); text-align: center; padding: 15px;">
+        <div class="block-title" style="color: var(--accent); margin-bottom:10px;">👑 РАЗРАБОТЧИК:</div>
+        <div style="font-weight: 900; font-size: 1.1rem; color:#fff; margin-bottom:15px;">Никитин Евгений</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <a href="https://t.me/gena_krokodi" target="_blank" class="btn-act btn-blue" style="margin:0; height:50px; display:flex; align-items:center; justify-content:center;">TG</a>
+            <a href="tel:+79954470130" class="btn-act btn-green" style="margin:0; height:50px; display:flex; align-items:center; justify-content:center;">CALL</a>
+        </div>
+    </div>
+
+    <button class="btn-act btn-red" onclick="if(confirm('Сбросить базу?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС СИСТЕМЫ</button>
 </div>
 
 <div id="content" style="padding-top:20px;"></div>
@@ -182,12 +195,10 @@
         <div id="modalBody" class="photo-grid"></div>
         <div id="reportFooter" style="padding:25px; background:#161b22; display:none;">
             <div class="btn-price-grid">
-                <div class="price-btn-cell"><div id="lbl1" class="price-label">...</div><button id="bt1" class="p-btn" style="font-size:0.6rem; width:100%;" onclick="setType(1)">0</button></div>
-                <div class="price-btn-cell"><div id="lbl3" class="price-label">...</div><button id="bt3" class="p-btn" style="font-size:0.6rem; width:100%;" onclick="setType(3)">0</button></div>
-                <div class="price-btn-cell"><div id="lbl4" class="price-label">...</div><button id="bt4" class="p-btn" style="font-size:0.6rem; width:100%;" onclick="setType(4)">0</button></div>
-                <div class="price-btn-cell"><div id="lbl5" class="price-label">...</div><button id="bt5" class="p-btn" style="font-size:0.6rem; width:100%;" onclick="setType(5)">0</button></div>
-                <div class="price-btn-cell"><div id="lbl6" class="price-label">...</div><button id="bt6" class="p-btn" style="font-size:0.6rem; width:100%;" onclick="setType(6)">0</button></div>
-                <div class="price-btn-cell"><div class="price-label">СРЫВ</div><button id="bt2" class="p-btn" style="font-size:0.6rem; width:100%; background:var(--red); color:#fff; border:none;" onclick="setType(2)">0 ₽</button></div>
+                <div class="price-btn-cell"><div id="lbl1" class="price-label">...</div><button id="bt1" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(1)">0</button></div>
+                <div class="price-btn-cell"><div id="lbl3" class="price-label">...</div><button id="bt3" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(3)">0</button></div>
+                <div class="price-btn-cell"><div id="lbl4" class="price-label">...</div><button id="bt4" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(4)">0</button></div>
+                <div class="price-btn-cell"><div class="price-label">СРЫВ</div><button id="bt2" class="p-btn" style="font-size:0.7rem; width:100%; background:var(--red); color:#fff; border:none;" onclick="setType(2)">0 ₽</button></div>
             </div>
             <button class="btn-act btn-green" id="confirmBtn" onclick="confirmReport()">ОТПРАВИТЬ ОТЧЕТ</button>
         </div>
@@ -201,58 +212,37 @@
 </div>
 
 <script>
+    // ТВОЙ DEFAULT ШТАБ
     const DEFAULT_HQ = "https://script.google.com/macros/s/AKfycbz3ZscxDR4Ls4383w43ENWJnov5SEunvNhG_mUSzZTuawytVg2Pwn67VyOgwJ5f2FfA8A/exec";
     const MASTER_KEY = "DEV-MASTER-999";
     
-    // ДОБАВЛЕНЫ НОВЫЕ ТИПЫ РАБОТ В СТРУКТУРУ ДАННЫХ
-    let DATA = { 
-        list: [], 
-        done: {}, 
-        prices: {p1:500, p3:300, p4:100, p5:150, p6:200}, 
-        names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona", t5: "Расклейка объявлений", t6: "Контроль сотрудников"}, 
-        city: "Орёл", 
-        cloudUrl: DEFAULT_HQ, 
-        workerName: "", 
-        license: {key: "", expiry: 0, status: false}, 
-        history: [] 
-    };
-    
+    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", cloudUrl: DEFAULT_HQ, workerName: "", license: {key: "", expiry: 0, status: false}, folderId: "", sheetId: "", history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
     const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
 
-    // SFX & HAPTICS
     function haptic() { if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(35); }
     function toast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
     function resumeAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
     function playSfx(f, t, d) { try { if(!audioCtx) return; let o = audioCtx.createOscillator(), v = audioCtx.createGain(); o.type = t; o.frequency.value = f; v.gain.value = 0.05; o.connect(v); v.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); } catch(e){} }
     const Sfx = { click: () => playSfx(600, 'sine', 0.08), ok: () => playSfx(800, 'sine', 0.1) };
 
-    // INDEXED DB
     function openDB() {
         const req = indexedDB.open("LogistX_Secure_v450", 1);
         req.onupgradeneeded = (e) => e.target.result.createObjectStore("sync_queue", { autoIncrement: true });
         req.onsuccess = (e) => { db = e.target.result; updateSyncCount(); syncNow(); };
     }
 
-    // CONFIG & LICENSE
     function saveCfg() {
         DATA.cloudUrl = document.getElementById('cloudUrl')?.value.trim() || DATA.cloudUrl || DEFAULT_HQ;
         DATA.license.key = document.getElementById('licenseKey')?.value.trim().toUpperCase() || DATA.license.key;
         DATA.workerName = document.getElementById('workerName')?.value.trim() || DATA.workerName;
-        DATA.city = document.getElementById('cityName')?.value.trim() || DATA.city;
-        
-        DATA.prices.p1 = parseInt(document.getElementById('p1').value) || 500;
-        DATA.prices.p3 = parseInt(document.getElementById('p3').value) || 300;
-        DATA.prices.p4 = parseInt(document.getElementById('p4').value) || 100;
-        DATA.prices.p5 = parseInt(document.getElementById('p5').value) || 150;
-        DATA.prices.p6 = parseInt(document.getElementById('p6').value) || 200;
-        
-        DATA.names.t1 = document.getElementById('t1_name').value || "Монтаж";
-        DATA.names.t3 = document.getElementById('t3_name').value || "Замена рекламы";
-        DATA.names.t4 = document.getElementById('t4_name').value || "Pseudomona";
-        DATA.names.t5 = document.getElementById('t5_name').value || "Расклейка объявлений";
-        DATA.names.t6 = document.getElementById('t6_name').value || "Контроль сотрудников";
-        
+        DATA.city = document.getElementById('cityName')?.value.trim() || DATA.city || "Орёл";
+        DATA.prices.p1 = parseInt(document.getElementById('p1')?.value) || 500;
+        DATA.prices.p3 = parseInt(document.getElementById('p3')?.value) || 300;
+        DATA.prices.p4 = parseInt(document.getElementById('p4')?.value) || 100;
+        DATA.names.t1 = document.getElementById('t1_name')?.value || "Монтаж";
+        DATA.names.t3 = document.getElementById('t3_name')?.value || "Замена рекламы";
+        DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudomona";
         document.getElementById('cityBadge').innerText = DATA.city.toUpperCase();
         localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
         checkLicenseUI();
@@ -273,26 +263,63 @@
 
     async function checkLicense() {
         if (DATA.license.key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("ДОСТУП РАЗРЕШЕН"); return; }
-        const url = DATA.cloudUrl || DEFAULT_HQ;
+        const url = DATA.cloudUrl || DEFAULT_HQ; 
+        const key = DATA.license.key;
+        const worker = DATA.workerName;
+        if(!url || !key || !worker) return alert("Заполните ФИО и данные ключа!");
+
+        const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
+        const conts = [document.getElementById('lockLicProgress'), document.getElementById('menuLicProgress')];
+        conts.forEach(c => c && (c.style.display = 'block'));
+        bars.forEach(b => b && (b.style.width = '40%'));
+
         try {
-            const res = await fetch(url, { method: 'POST', body: JSON.stringify({action:'check_license', licenseKey: DATA.license.key, workerName: DATA.workerName}) });
+            const res = await fetch(url, { 
+                method: 'POST', 
+                body: JSON.stringify({action:'check_license', licenseKey: key, workerName: worker}) 
+            });
+            bars.forEach(b => b && (b.style.width = '80%'));
             const result = await res.json();
-            if(result.status === "active") { DATA.license.expiry = Number(result.newExpiry); saveCfg(); Sfx.ok(); toast("ОБНОВЛЕНО"); }
-            else { alert("Ошибка ключа: " + result.message); }
+            if(result.status === "active") {
+                bars.forEach(b => b && (b.style.width = '100%'));
+                DATA.license.expiry = Number(result.newExpiry); 
+                DATA.folderId = result.folderId; 
+                DATA.sheetId = result.sheetId;   
+                saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН");
+                setTimeout(() => conts.forEach(c => c && (c.style.display = 'none')), 1000);
+            } else { alert("ОШИБКА: " + result.message); }
         } catch(e) { alert("Ошибка связи!"); }
+        finally { bars.forEach(b => b && (b.style.width = '0%')); }
     }
 
     async function saveAndCheckLock() {
-        DATA.workerName = document.getElementById('lockWorkerName').value.trim();
-        DATA.cloudUrl = document.getElementById('lockCloudUrl').value.trim() || DEFAULT_HQ;
-        DATA.license.key = document.getElementById('lockLicenseKey').value.trim().toUpperCase();
+        const inputKey = document.getElementById('lockLicenseKey').value.trim().toUpperCase();
+        const inputName = document.getElementById('lockWorkerName').value.trim();
+        const inputUrl = document.getElementById('lockCloudUrl').value.trim();
+        
+        if (inputKey === MASTER_KEY) {
+            DATA.license.key = inputKey;
+            DATA.workerName = inputName || "Разработчик";
+            DATA.cloudUrl = inputUrl || DEFAULT_HQ;
+            DATA.license.expiry = Date.now() + 315360000000;
+            DATA.license.status = true;
+            localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
+            document.getElementById('licenseLock').style.display = 'none';
+            checkLicenseUI();
+            render();
+            toast("ДОСТУП РАЗРЕШЕН");
+            return;
+        }
+
+        DATA.workerName = inputName;
+        DATA.cloudUrl = inputUrl || DEFAULT_HQ;
+        DATA.license.key = inputKey;
         saveCfg(); await checkLicense();
     }
 
-    // EXCEL & RENDER
     function handleExcel(inp) {
         let f = inp.files[0]; if(!f) return;
-        setLoader(true);
+        setLoader(true); 
         setTimeout(() => {
             let r = new FileReader();
             r.onload = (e) => {
@@ -303,7 +330,7 @@
                     let cS = head.findIndex(v => v.includes('улица') || v.includes('адрес'));
                     let cH = head.findIndex(v => v.includes('дом'));
                     let cP = head.findIndex(v => v.includes('подъезд'));
-                    if(cS === -1) return alert("Адрес не найден");
+                    if(cS === -1) return alert("Ошибка: Столбец 'Адрес' не найден");
                     let list = [];
                     rows.forEach((row, k) => {
                         if(k === 0 || !row[cS]) return;
@@ -311,8 +338,8 @@
                         row.forEach(cell => { if(cell){ let v=String(cell).toUpperCase(); for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]); } });
                         list.push({s: row[cS], h: row[cH] || "?", p: parseInt(row[cP])||1, clients: [...new Set(cls)], id: 'ID-'+k+'-'+(row[cS]+row[cH]).replace(/\W/g,'')});
                     });
-                    DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); Sfx.ok(); toast("БАЗА ЗАГРУЖЕНА");
-                } finally { setLoader(false); }
+                    DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); Sfx.ok(); toast("БАЗА ОБНОВЛЕНА");
+                } finally { setTimeout(() => setLoader(false), 500); }
             }; r.readAsArrayBuffer(f);
         }, 100);
     }
@@ -326,38 +353,36 @@
             const isDone = (finished === i.p && i.p > 0);
             let pds = ""; for(let p=1; p<=i.p; p++){
                 let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
-                pds += `<div class="p-btn done-${st}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
+                pds += `<div class="p-btn ${st?'done-'+st:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
             }
             html += `<div class="card ${isDone?'is-finished':''}">
-                <div class="card-head"><div>${i.s}, ${i.h}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
+                <div class="card-head">
+                    <div style="flex:1; margin-right:10px;">${i.s}, ${i.h}</div>
+                    <button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button>
+                </div>
                 <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
                 <div class="pods">${pds}</div>
             </div>`;
         });
-        box.innerHTML = html || "<p style='text-align:center; opacity:0.1; padding:50px;'>ПУСТО</p>"; updateStats();
+        box.innerHTML = html || "<p style='text-align:center; opacity:0.1; padding:50px;'>СПИСОК ПУСТ</p>"; updateStats();
     }
 
     function openNav(addr) { haptic(); window.open(`https://yandex.ru/maps/?text=${encodeURIComponent(DATA.city + " " + addr)}`); }
 
-    // REPORT LOGIC
     function openReport(id, p) {
         if(!DATA.license.status) return checkLicenseUI();
         haptic(); curId = id; curP = p; curPhotos = {}; const it = DATA.list.find(x => x.id === id);
-        document.getElementById('modalTitle').innerText = `${it.s} (П. ${p})`;
+        document.getElementById('modalTitle').innerText = `${it.s}, ${it.h} (П. ${p})`;
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         document.getElementById('modalBody').innerHTML = cls.map((c, idx) => `
             <div class="photo-frame" onclick="document.getElementById('cam_${idx}').click()">
-                <div style="text-align:center; opacity:0.4;"><div>${c}</div><div style="font-size:3rem">📸</div></div>
+                <div style="text-align:center; opacity:0.4;"><div style="font-weight:900; color:var(--accent); margin-bottom:5px;">${c}</div><div style="font-size:3rem">📸</div></div>
                 <img id="prev_${idx}" class="photo-preview" style="display:none">
                 <input type="file" accept="image/*" capture="environment" id="cam_${idx}" style="display:none" onchange="handleCam(${idx},'${c}')">
             </div>`).join("");
-        
         document.getElementById('lbl1').innerText = DATA.names.t1; document.getElementById('bt1').innerText = DATA.prices.p1;
         document.getElementById('lbl3').innerText = DATA.names.t3; document.getElementById('bt3').innerText = DATA.prices.p3;
         document.getElementById('lbl4').innerText = DATA.names.t4; document.getElementById('bt4').innerText = DATA.prices.p4;
-        document.getElementById('lbl5').innerText = DATA.names.t5; document.getElementById('bt5').innerText = DATA.prices.p5;
-        document.getElementById('lbl6').innerText = DATA.names.t6; document.getElementById('bt6').innerText = DATA.prices.p6;
-
         document.getElementById('reportFooter').style.display = 'block'; setType(1); document.getElementById('reportModal').style.display = 'flex';
     }
 
@@ -376,12 +401,16 @@
         }; r.readAsDataURL(f);
     }
 
-    function setType(t) { haptic(); curType = t; [1,2,3,4,5,6].forEach(i => { let b = document.getElementById('bt'+i); if(b) b.style.border = (i===t)?"3px solid #fff":"none"; }); }
+    function setType(t) { haptic(); curType = t; [1,2,3,4].forEach(i => { let b = document.getElementById('bt'+i); if(b) b.style.border = (i===t)?"3px solid #fff":"none"; }); }
 
     function getCoords() {
-        return new Promise((res) => {
-            if (!navigator.geolocation) return res("No GPS");
-            navigator.geolocation.getCurrentPosition(p => res(`${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`), () => res("Off"), {timeout: 5000});
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) return resolve("No GPS Support");
+            navigator.geolocation.getCurrentPosition(
+                (pos) => resolve(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`),
+                () => resolve("GPS Disabled"),
+                { enableHighAccuracy: true, timeout: 5000 }
+            );
         });
     }
 
@@ -393,161 +422,174 @@
         
         isSavingReport = true; haptic();
         document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
-        const coords = await getCoords();
+        
+        const coords = await getCoords(); 
 
         if(!DATA.done[curId]) DATA.done[curId] = {};
         DATA.done[curId][curP] = curType;
         render(); closeModal();
 
-        const store = db.transaction("sync_queue", "readwrite").objectStore("sync_queue");
+        const tx = db.transaction("sync_queue", "readwrite");
+        const store = tx.objectStore("sync_queue");
+
         for (let client of cls) {
             const entry = { 
-                action: "save_report", worker: DATA.workerName, city: DATA.city, 
+                action: "save_report", 
+                worker: DATA.workerName, 
+                city: DATA.city, 
                 image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, 
-                address: `${it.s} ${it.h} п.${curP}`, client: client, 
-                workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4,DATA.names.t5,DATA.names.t6][curType], 
-                price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4, DATA.prices.p5, DATA.prices.p6][curType], 
-                coords: coords, ts: Date.now(), status: "Ожидание", licenseKey: DATA.license.key
+                address: `${it.s} ${it.h} п.${curP}`, 
+                client: client, 
+                workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], 
+                price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], 
+                coords: coords, 
+                ts: Date.now(), 
+                status: "Ожидание", 
+                full: curPhotos[client],
+                licenseKey: DATA.license.key,
+                folderId: DATA.folderId, 
+                sheetId: DATA.sheetId
             };
-            DATA.history.unshift({...entry, full: curPhotos[client]});
+            DATA.history.unshift(entry);
             store.add(entry);
         }
-        saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ");
+
+        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ ОТПРАВКИ"); };
     }
 
-    // SYNC & UTILS
     async function syncNow() {
-        if(syncing || !navigator.onLine || !db) return;
+        const url = DATA.cloudUrl || DEFAULT_HQ;
+        if(syncing || !navigator.onLine || !url || !db || !DATA.license.status) return;
         syncing = true;
         try {
-            const tx = db.transaction("sync_queue", "readonly");
-            const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
-            const keys = await new Promise(r => tx.objectStore("sync_queue").getAllKeys().onsuccess = e => r(e.target.result));
-            if (items.length === 0) return;
-            
+            const txR = db.transaction("sync_queue", "readonly");
+            const items = await new Promise(r => txR.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
+            const keys = await new Promise(r => txR.objectStore("sync_queue").getAllKeys().onsuccess = e => r(e.target.result));
+            if (items.length === 0) { syncing = false; return; }
             document.getElementById('syncIndicator').style.display = 'block';
+            document.getElementById('syncIndicator').classList.add('active-sync');
             for(let i=0; i<items.length; i++) {
+                if(items[i].status === "Отправка...") continue;
+                document.getElementById('queueCount').innerText = `${i+1}/${items.length}`;
+                await new Promise(r => { let t = db.transaction("sync_queue","readwrite"); items[i].status = "Отправка..."; t.objectStore("sync_queue").put(items[i], keys[i]).onsuccess = r; });
                 try {
-                    const res = await fetch(DATA.cloudUrl, { method: 'POST', body: JSON.stringify(items[i]) });
+                    const { full, ...payload } = items[i];
+                    const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
                     const resJ = await res.json();
-                    if(resJ.status === "success") { db.transaction("sync_queue", "readwrite").objectStore("sync_queue").delete(keys[i]); }
-                    else throw 1;
-                } catch(e) { break; }
+                    if(resJ.status === "success") { 
+                        let t = db.transaction("sync_queue","readwrite"); 
+                        await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r); 
+                        haptic(); 
+                    } else throw 1;
+                } catch(e) { 
+                    let t = db.transaction("sync_queue","readwrite"); items[i].status = "Ошибка (ждем)"; t.objectStore("sync_queue").put(items[i], keys[i]); 
+                    break; 
+                }
             }
-        } finally { syncing = false; updateSyncCount(); }
-    }
-
-    function updateStats() {
-        let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0;
-        for(let id in DATA.done) { 
-            const it = DATA.list.find(x => x.id === id); if(!it) continue;
-            for(let p in DATA.done[id]) { 
-                const t = DATA.done[id][p]; dn++; 
-                if(t !== 2) mon += ([0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4, DATA.prices.p5, DATA.prices.p6][t] * it.clients.length); 
-            } 
-        }
-        document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; 
-        document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
-    }
-
-    function showArchive() {
-        haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; 
-        let h = "<div style='padding:15px'>"; 
-        DATA.history.slice(0,50).forEach((it, idx) => { 
-            h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})">
-                <div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div>
-                <div style="font-weight:800; color:var(--blue)">${it.address}</div>
-                <div style="display:flex; justify-content:space-between; font-size:0.7rem;"><span>${it.workType}</span><b>${it.price}₽</b></div>
-            </div>`; 
-        });
-        document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center'>Пусто</p>"; 
-        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
-    }
-
-    function showArchivePhoto(idx) { 
-        const it = DATA.history[idx]; if(!it || !it.full) return; 
-        document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; 
-    }
-
-    function showSryvy() {
-        haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ";
-        let h = "<div style='padding:15px'>";
-        for(let id in DATA.done){ 
-            let srv = []; for(let p in DATA.done[id]) if(DATA.done[id][p]===2) srv.push(p);
-            if(srv.length){ const it=DATA.list.find(x=>x.id===id); h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}</b><br><span style="color:var(--red)">П: ${srv.join(", ")}</span></div>`; }
-        }
-        document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center'>Срывов нет</p>";
-        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
-    }
-
-    function showWallet() { 
-        haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
-        let counts = {1:0, 3:0, 4:0, 5:0, 6:0}; 
-        for(let id in DATA.done) { 
-            const it = DATA.list.find(x => x.id === id); if(!it) continue;
-            for(let p in DATA.done[id]) { let t = DATA.done[id][p]; if(counts[t]!==undefined) counts[t] += it.clients.length; } 
-        }
-        document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center">
-            <p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p>
-            <p>${DATA.names.t5}: ${counts[5]}</p><p>${DATA.names.t6}: ${counts[6]}</p>
-            <h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1>
-        </div>`;
-        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+        } finally { syncing = false; document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
     }
 
     async function showMonitor() {
         monitorOpen = true; haptic();
         const upd = async () => {
+            if(!monitorOpen) return;
             const tx = db.transaction("sync_queue", "readonly");
             const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
-            document.getElementById('modalTitle').innerText = "ОЧЕРЕДЬ ("+items.length+")";
-            document.getElementById('modalBody').innerHTML = `<div style="padding:15px">${items.map(it => `<div style="font-size:0.7rem; background:#161b22; margin-bottom:5px; padding:8px; border-radius:8px;">${it.address}<br>${it.status}</div>`).join("")}</div>`;
+            document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ";
+            document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Все доставлено!</p>" : 
+            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem">
+                <b>${it.address} (${it.client})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}
+                <button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();haptic();">🚀 ПНУТЬ ОЧЕРЕДЬ</button></div>`;
+            document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
         };
-        upd();
-        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+        upd(); const intv = setInterval(() => { if(monitorOpen) upd(); else clearInterval(intv); }, 1500);
     }
 
-    function createFullBackup() {
+    async function createFullBackup() {
         const tx = db.transaction("sync_queue", "readonly");
-        tx.objectStore("sync_queue").getAll().onsuccess = e => {
-            const blob = new Blob([JSON.stringify({ appData: DATA, syncQueue: e.target.result })], {type:'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LogistX_Backup.json`; a.click(); toast("ГОТОВО");
-        };
+        const queueItems = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
+        const blob = new Blob([JSON.stringify({ appData: DATA, syncQueue: queueItems })], {type:'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click(); toast("БЭКАП ГОТОВ");
     }
 
     function restoreFullBackup(inp) {
         let f = inp.files[0]; if(!f) return;
-        const r = new FileReader(); r.onload = (e) => {
-            const b = JSON.parse(e.target.result); DATA = b.appData; localStorage.setItem('logist_v450_data', JSON.stringify(DATA)); location.reload();
+        const r = new FileReader(); r.onload = async (e) => {
+            try {
+                const b = JSON.parse(e.target.result); DATA = b.appData; localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
+                const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
+                await new Promise(r => store.clear().onsuccess = r);
+                if(b.syncQueue) for(let it of b.syncQueue) store.add(it);
+                tx.oncomplete = () => location.reload();
+            } catch(err) { alert("Ошибка!"); }
         }; r.readAsText(f);
     }
 
-    function toggleMenu() { Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
-    function closeModal() { document.getElementById('reportModal').style.display = 'none'; monitorOpen = false; }
+    function exportSryvyToExcel() {
+        let gr = {}; 
+        for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p] === 2) { if(!gr[id]) gr[id] = []; gr[id].push(p); } }
+        let reportData = []; for(let id in gr){
+            const it = DATA.list.find(x => x.id === id);
+            if(it) reportData.push({ "Город": DATA.city, "Адрес": `${it.s}, ${it.h}`, "Подъезды (Срывы)": gr[id].sort((a,b)=>a-b).join(", ") });
+        }
+        if(reportData.length === 0) return alert("Срывов нет!");
+        const ws = XLSX.utils.json_to_sheet(reportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Срывы"); XLSX.writeFile(wb, `Sryvy_${DATA.city}.xlsx`);
+    }
+
+    function showSryvy() {
+        haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ";
+        let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } }
+        let h = "<div style='padding:15px'>";
+        for(let id in gr){ const it=DATA.list.find(x=>x.id===id); h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].sort((a,b)=>a-b).join(", ")}</span></div>`; }
+        h += `<button class="btn-act btn-green" style="margin-top:20px" onclick="exportSryvyToExcel();haptic();">💾 СКАЧАТЬ EXCEL</button></div>`;
+        document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Срывов нет</p>";
+        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function showArchive() {
+        haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; 
+        DATA.history.slice(0,50).forEach((it, idx) => { 
+            h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})">
+                <div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div>
+                <div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (${it.client})</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div>
+            </div>`; 
+        });
+        document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; 
+        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function showArchivePhoto(idx) { const it = DATA.history[idx]; if(!it || !it.full) return; document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; }
+
+    function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing) document.getElementById('queueCount').innerText = c; }; }
+    function updateStats() {
+        let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0;
+        for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { const t = DATA.done[id][p]; dn++; if(t !== 2) mon += ([0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t] * it.clients.length); } }
+        document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
+    }
+
+    function toggleMenu() { haptic(); Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
+    function closeModal() { haptic(); document.getElementById('reportModal').style.display = 'none'; monitorOpen = false; }
     function setLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
-    function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => document.getElementById('queueCount').innerText = e.target.result; }
+    
+    function showWallet() { 
+        Sfx.click(); haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
+        let counts = {1:0, 3:0, 4:0}; for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { let t = DATA.done[id][p]; if(counts[t]!==undefined) counts[t] += it.clients.length; } }
+        document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`;
+        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+    }
 
     window.onload = () => {
         const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
-        document.getElementById('workerName').value = DATA.workerName || "";
-        document.getElementById('cityName').value = DATA.city || "";
-        document.getElementById('cloudUrl').value = DATA.cloudUrl || DEFAULT_HQ;
-        document.getElementById('licenseKey').value = DATA.license.key || "";
-        document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3;
-        document.getElementById('p4').value = DATA.prices.p4; document.getElementById('p5').value = DATA.prices.p5;
-        document.getElementById('p6').value = DATA.prices.p6;
-        document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3;
-        document.getElementById('t4_name').value = DATA.names.t4; document.getElementById('t5_name').value = DATA.names.t5;
-        document.getElementById('t6_name').value = DATA.names.t6;
+        if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
+        if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
+        if(document.getElementById('cloudUrl')) document.getElementById('cloudUrl').value = DATA.cloudUrl || DEFAULT_HQ;
+        if(document.getElementById('licenseKey')) document.getElementById('licenseKey').value = DATA.license.key || "";
+        document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
+        document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
         checkLicenseUI(); openDB(); render();
     };
-    
-    // РЕГИСТРАЦИЯ SERVICE WORKER (ДЛЯ MICROSOFT)
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Error:', err));
-        });
-    }
+    setInterval(syncNow, 12000);
 </script>
 </body>
 </html>
