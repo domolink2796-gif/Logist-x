@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LOGIST_X | Профессиональный контроль полевых сотрудников</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f59e0b">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -87,7 +90,6 @@
 </head>
 <body class="dot-pattern">
 
-    <!-- НАВИГАЦИЯ -->
     <nav class="fixed top-0 w-full z-[100] nav-blur border-b border-white/5">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center gap-2">
@@ -104,7 +106,6 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <!-- ССЫЛКА ИСПРАВЛЕНА НА /app/ -->
                 <a href="app/" class="hidden md:flex items-center gap-2 btn-outline px-5 py-2.5 rounded-xl text-[9px] uppercase tracking-widest">
                     <i data-lucide="user" size="14" class="text-amber-500"></i> Вход для персонала
                 </a>
@@ -113,7 +114,6 @@
         </div>
     </nav>
 
-    <!-- ГЛАВНЫЙ ЭКРАН -->
     <section class="relative pt-48 pb-32 px-6 overflow-hidden">
         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-amber-500/5 blur-[130px] rounded-full"></div>
         
@@ -123,10 +123,9 @@
                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
                     <span class="text-[10px] font-black uppercase tracking-[4px] text-amber-500 font-mono">Elite Pro Edition 2025</span>
                 </div>
-                <!-- ПЛАШКА "В РАЗРАБОТКЕ" -->
                 <div class="flex items-center gap-2 px-4 py-2 rounded-full badge-dev">
                     <i data-lucide="smartphone" size="12"></i>
-                    <span class="text-[9px] font-bold uppercase tracking-widest">Native Mobile App in Dev</span>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">PWA Technology Ready</span>
                 </div>
             </div>
             
@@ -140,29 +139,13 @@
             <div class="flex flex-col sm:flex-row gap-6 justify-center animate__animated animate__fadeInUp">
                 <a href="#pricing" class="btn-main px-12 py-6 rounded-[2rem] text-[12px] uppercase tracking-widest shadow-2xl">Развернуть систему</a>
                 
-                <!-- ССЫЛКА ИСПРАВЛЕНА НА /app/ -->
-                <a href="app/" class="bg-white/5 border border-white/10 hover:bg-white/10 px-12 py-6 rounded-[2rem] font-black uppercase text-[12px] tracking-widest transition-all flex items-center justify-center gap-3">
-                   <i data-lucide="layout" size="18" class="text-amber-500"></i> Терминал сотрудника
-                </a>
+                <button id="installApp" class="bg-white/5 border border-white/10 hover:bg-white/10 px-12 py-6 rounded-[2rem] font-black uppercase text-[12px] tracking-widest transition-all flex items-center justify-center gap-3">
+                   <i data-lucide="plus-circle" size="18" class="text-amber-500"></i> Установить терминал
+                </button>
             </div>
         </div>
     </section>
 
-    <!-- МОБИЛЬНОЕ ПРИЛОЖЕНИЕ (NEW SECTION) -->
-    <section class="py-10 px-6">
-        <div class="max-w-4xl mx-auto glass-card p-6 md:p-10 rounded-[2.5rem] border-blue-500/20 bg-blue-500/5 flex flex-col md:flex-row items-center gap-8 shadow-2xl shadow-blue-500/5">
-            <div class="w-20 h-20 bg-blue-500/20 rounded-3xl flex items-center justify-center text-blue-400">
-                <i data-lucide="app-window" size="40"></i>
-            </div>
-            <div class="text-center md:text-left flex-1">
-                <h3 class="text-xl font-black uppercase italic mb-2">Нативная мобильная версия</h3>
-                <p class="opacity-50 text-sm font-medium">Мы уже работаем над полноценным приложением для iOS и Android. Скоро: пуш-уведомления, работа оффлайн и расширенная аналитика в одном касании.</p>
-            </div>
-            <div class="px-6 py-2 rounded-full border border-blue-500/30 text-[10px] font-black uppercase text-blue-400 tracking-widest">Coming Soon</div>
-        </div>
-    </section>
-
-    <!-- ТАРИФЫ -->
     <section id="pricing" class="py-32 px-6">
         <div class="max-w-4xl mx-auto text-center mb-20">
             <h2 class="text-5xl md:text-6xl font-black mb-6 italic uppercase tracking-tighter">Честная <span class="text-amber-500">стоимость</span></h2>
@@ -170,7 +153,6 @@
         </div>
 
         <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
-            <!-- ТАРИФ: НАСТРОЙКА -->
             <div class="pricing-card p-14 rounded-[4.5rem] text-center border-white/5 flex flex-col justify-between">
                 <div>
                     <div class="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-10 text-blue-400 border border-blue-500/20">
@@ -183,7 +165,6 @@
                 <a href="https://t.me/gena_krokodi" target="_blank" class="w-full py-6 rounded-3xl bg-white/5 border border-white/10 font-black uppercase text-[10px] tracking-widest transition-all">Заказать запуск</a>
             </div>
 
-            <!-- ТАРИФ: СОТРУДНИКИ -->
             <div class="pricing-card p-14 rounded-[4.5rem] text-center border-amber-500/40 relative overflow-hidden flex flex-col justify-between hover:scale-[1.02] transition-all">
                 <div class="absolute top-0 right-0 bg-amber-500 text-black px-12 py-2 text-[9px] font-black uppercase tracking-[3px]">Subscription</div>
                 <div>
@@ -200,7 +181,6 @@
         </div>
     </section>
 
-    <!-- ФУТЕР -->
     <footer class="py-24 px-6 border-t border-white/5 bg-black">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-14">
             <div class="text-center md:text-left">
@@ -227,6 +207,7 @@
     <script>
         lucide.createIcons();
         
+        // Логика анимаций
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -240,7 +221,45 @@
             el.style.opacity = '0';
             observer.observe(el);
         });
+
+        // --- ЛОГИКА УСТАНОВКИ ПРИЛОЖЕНИЯ (PWA) ---
+        let deferredPrompt;
+        const installBtn = document.getElementById('installApp');
+
+        // По умолчанию кнопка просто ведет в приложение, 
+        // но если браузер готов к установке - она вызовет окно
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Кнопка становится ярче, сигнализируя о возможности установки
+            installBtn.classList.add('border-amber-500/50');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('Пользователь установил приложение');
+                    installBtn.style.display = 'none';
+                }
+                deferredPrompt = null;
+            } else {
+                // Если установка недоступна или уже установлена - просто переход
+                window.location.href = 'app/';
+            }
+        });
+
+        // Регистрация Service Worker (ОБЯЗАТЕЛЬНО)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    console.log('SW Registered');
+                }).catch(err => {
+                    console.log('SW Failed', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
-
