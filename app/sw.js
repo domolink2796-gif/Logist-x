@@ -1,30 +1,38 @@
 const CACHE_NAME = 'logist-x-v1';
-const ASSETS = [
-  'index.html',
-  'manifest.json',
-  'https://cdn-icons-png.flaticon.com/512/1162/1162456.png'
+// Список файлов для кэширования (теперь пути учитывают папку app)
+const urlsToCache = [
+  './',
+  './index.html',
+  '../index.html' // Лендинг в корне тоже кэшируем
 ];
 
-// Установка: сохраняем важные файлы в память телефона
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(urlsToCache))
   );
-  self.skipWaiting();
 });
 
-// Активация: чистим старые кэши
-self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
-});
-
-// Запросы: если интернета нет, берем из памяти (Reliability)
+// Это критически важно для появления кнопки "Установить"
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+    caches.match(event.request)
+      .then((response) => {
+        return response || fetch(event.request);
+      })
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
     })
   );
 });
