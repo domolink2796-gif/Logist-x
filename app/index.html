@@ -243,6 +243,9 @@
         DATA.prices.p4 = parseInt(document.getElementById('p4')?.value) || 100;
         DATA.names.t1 = document.getElementById('t1_name')?.value || "Монтаж";
         DATA.names.t3 = document.getElementById('t3_name')?.value || "Замена рекламы";
+        <option value="Расклейка объявлений">Расклейка объявлений</option>
+<option value="Контроль сотрудников">Контроль сотрудников</option>
+
         DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudomona";
         document.getElementById('cityBadge').innerText = DATA.city.toUpperCase();
         localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
@@ -592,6 +595,12 @@
     };
     setInterval(syncNow, 12000);
 </script>
+    <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
 </body>
 </html>
 
