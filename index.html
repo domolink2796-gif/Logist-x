@@ -77,6 +77,12 @@
             background: rgba(1, 4, 9, 0.7);
             backdrop-filter: blur(20px);
         }
+        
+        .badge-dev {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
     </style>
 </head>
 <body class="dot-pattern">
@@ -91,17 +97,15 @@
                 <span class="text-2xl font-black tracking-tighter uppercase italic">LOGIST<span class="text-amber-500">_X</span></span>
             </div>
             
-            <!-- Центральное меню -->
             <div class="hidden lg:flex gap-8 text-[9px] font-black uppercase tracking-[3px] opacity-40">
                 <a href="#features" class="hover:text-amber-500 transition-colors">Технологии</a>
                 <a href="#pricing" class="hover:text-amber-500 transition-colors">Стоимость</a>
                 <a href="#workflow" class="hover:text-amber-500 transition-colors">Процесс</a>
             </div>
 
-            <!-- Правый блок кнопок -->
             <div class="flex items-center gap-4">
-                <!-- КНОПКА ВХОДА ДЛЯ СОТРУДНИКОВ В ШАПКЕ -->
-                <a href="terminal.html" class="hidden md:flex items-center gap-2 btn-outline px-5 py-2.5 rounded-xl text-[9px] uppercase tracking-widest">
+                <!-- ССЫЛКА ИСПРАВЛЕНА НА /app/ -->
+                <a href="app/" class="hidden md:flex items-center gap-2 btn-outline px-5 py-2.5 rounded-xl text-[9px] uppercase tracking-widest">
                     <i data-lucide="user" size="14" class="text-amber-500"></i> Вход для персонала
                 </a>
                 <a href="https://t.me/gena_krokodi" target="_blank" class="btn-main px-6 py-2.5 rounded-full text-[9px] uppercase tracking-widest">Заказать</a>
@@ -114,10 +118,18 @@
         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-amber-500/5 blur-[130px] rounded-full"></div>
         
         <div class="max-w-5xl mx-auto text-center relative z-10">
-            <div class="inline-flex items-center gap-3 px-5 py-2 mb-10 rounded-full bg-amber-500/10 border border-amber-500/20 animate__animated animate__fadeInDown">
-                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                <span class="text-[10px] font-black uppercase tracking-[4px] text-amber-500 font-mono">Elite Pro Edition 2025</span>
+            <div class="inline-flex flex-col sm:flex-row items-center gap-3 mb-10 animate__animated animate__fadeInDown">
+                <div class="flex items-center gap-3 px-5 py-2 rounded-full bg-amber-500/10 border border-amber-500/20">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span class="text-[10px] font-black uppercase tracking-[4px] text-amber-500 font-mono">Elite Pro Edition 2025</span>
+                </div>
+                <!-- ПЛАШКА "В РАЗРАБОТКЕ" -->
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full badge-dev">
+                    <i data-lucide="smartphone" size="12"></i>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Native Mobile App in Dev</span>
+                </div>
             </div>
+            
             <h1 class="text-6xl md:text-8xl font-black mb-10 leading-[0.9] tracking-tighter uppercase animate__animated animate__fadeInUp">
                 Ваша команда <br><span class="gold-text italic underline decoration-amber-500/30">как на ладони</span>
             </h1>
@@ -128,43 +140,25 @@
             <div class="flex flex-col sm:flex-row gap-6 justify-center animate__animated animate__fadeInUp">
                 <a href="#pricing" class="btn-main px-12 py-6 rounded-[2rem] text-[12px] uppercase tracking-widest shadow-2xl">Развернуть систему</a>
                 
-                <!-- ГЛАВНАЯ КНОПКА ВХОДА В ТЕРМИНАЛ -->
-                <a href="terminal.html" class="bg-white/5 border border-white/10 hover:bg-white/10 px-12 py-6 rounded-[2rem] font-black uppercase text-[12px] tracking-widest transition-all flex items-center justify-center gap-3">
+                <!-- ССЫЛКА ИСПРАВЛЕНА НА /app/ -->
+                <a href="app/" class="bg-white/5 border border-white/10 hover:bg-white/10 px-12 py-6 rounded-[2rem] font-black uppercase text-[12px] tracking-widest transition-all flex items-center justify-center gap-3">
                    <i data-lucide="layout" size="18" class="text-amber-500"></i> Терминал сотрудника
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- БЛОК ПРО ПЕРСОНАЛЬНЫЙ АККАУНТ -->
-    <section class="py-20 px-6">
-        <div class="max-w-7xl mx-auto">
-            <div class="glass-card p-10 md:p-20 rounded-[4rem] border-amber-500/10 bg-gradient-to-br from-slate-900/30 to-black overflow-hidden relative">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    <div>
-                        <div class="text-[11px] font-black text-amber-500 uppercase tracking-[5px] mb-6">Security & Privacy</div>
-                        <h2 class="text-4xl md:text-5xl font-black mb-8 italic uppercase tracking-tighter">Собственный <br><span class="text-amber-500">рабочий аккаунт</span></h2>
-                        <p class="text-xl opacity-50 leading-relaxed mb-10 font-medium italic">При подключении мы создаем для вашей компании **автономную экосистему**. Все таблицы, папки и фотографии принадлежат только вам и хранятся на вашем Google Диске.</p>
-                        <div class="flex gap-10">
-                            <div><div class="text-2xl font-black text-white italic">100%</div><div class="text-[9px] uppercase font-black opacity-30 tracking-widest">Контроль данных</div></div>
-                            <div><div class="text-2xl font-black text-white italic">0.5s</div><div class="text-[9px] uppercase font-black opacity-30 tracking-widest">Скорость отчета</div></div>
-                        </div>
-                    </div>
-                    <div class="relative">
-                        <div class="glass-card p-10 rounded-[3rem] border-white/10 shadow-2xl bg-black/40">
-                             <div class="flex items-center gap-4 mb-6">
-                                <i data-lucide="cloud" class="text-amber-500"></i>
-                                <span class="font-black text-[10px] uppercase tracking-widest opacity-40 text-white">Private Server Online</span>
-                             </div>
-                             <div class="space-y-3">
-                                <div class="h-1.5 bg-white/5 rounded-full w-full"></div>
-                                <div class="h-1.5 bg-white/5 rounded-full w-2/3"></div>
-                                <div class="h-1.5 bg-amber-500/20 rounded-full w-1/2"></div>
-                             </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- МОБИЛЬНОЕ ПРИЛОЖЕНИЕ (NEW SECTION) -->
+    <section class="py-10 px-6">
+        <div class="max-w-4xl mx-auto glass-card p-6 md:p-10 rounded-[2.5rem] border-blue-500/20 bg-blue-500/5 flex flex-col md:flex-row items-center gap-8 shadow-2xl shadow-blue-500/5">
+            <div class="w-20 h-20 bg-blue-500/20 rounded-3xl flex items-center justify-center text-blue-400">
+                <i data-lucide="app-window" size="40"></i>
             </div>
+            <div class="text-center md:text-left flex-1">
+                <h3 class="text-xl font-black uppercase italic mb-2">Нативная мобильная версия</h3>
+                <p class="opacity-50 text-sm font-medium">Мы уже работаем над полноценным приложением для iOS и Android. Скоро: пуш-уведомления, работа оффлайн и расширенная аналитика в одном касании.</p>
+            </div>
+            <div class="px-6 py-2 rounded-full border border-blue-500/30 text-[10px] font-black uppercase text-blue-400 tracking-widest">Coming Soon</div>
         </div>
     </section>
 
@@ -172,7 +166,7 @@
     <section id="pricing" class="py-32 px-6">
         <div class="max-w-4xl mx-auto text-center mb-20">
             <h2 class="text-5xl md:text-6xl font-black mb-6 italic uppercase tracking-tighter">Честная <span class="text-amber-500">стоимость</span></h2>
-            <p class="text-xl opacity-40 font-medium">Никаких подписок на "воздух". Вы платите за настройку и за активных пользователей.</p>
+            <p class="text-xl opacity-40 font-medium italic">Развертывание собственной экосистемы контроля за считанные минуты.</p>
         </div>
 
         <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -182,7 +176,7 @@
                     <div class="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-10 text-blue-400 border border-blue-500/20">
                         <i data-lucide="server" size="40"></i>
                     </div>
-                    <h3 class="text-[10px] font-black uppercase tracking-[6px] mb-4 opacity-30 tracking-widest">Настройка системы</h3>
+                    <h3 class="text-[10px] font-black uppercase tracking-[6px] mb-4 opacity-30 tracking-widest text-center">Настройка системы</h3>
                     <div class="text-7xl font-black mb-8 italic tracking-tighter text-white">1 500 <span class="text-2xl not-italic opacity-30 font-bold">₽</span></div>
                     <p class="text-sm opacity-40 mb-12 font-medium">Единоразовый платеж за создание вашего персонального сервера, базы данных и настройку облачного хранилища.</p>
                 </div>
@@ -196,7 +190,7 @@
                     <div class="w-20 h-20 bg-amber-500/10 rounded-3xl flex items-center justify-center mx-auto mb-10 text-amber-500 border border-amber-500/20">
                         <i data-lucide="users" size="40"></i>
                     </div>
-                    <h3 class="text-[10px] font-black uppercase tracking-[6px] mb-4 opacity-30 tracking-widest">Месячный доступ</h3>
+                    <h3 class="text-[10px] font-black uppercase tracking-[6px] mb-4 opacity-30 tracking-widest text-center">Месячный доступ</h3>
                     <div class="text-7xl font-black mb-2 italic tracking-tighter text-white">300 <span class="text-2xl not-italic opacity-30 font-bold">₽</span></div>
                     <div class="text-[10px] font-black uppercase text-amber-500 mb-10 tracking-[3px]">в месяц за сотрудника</div>
                     <p class="text-sm opacity-40 mb-12 font-medium">Абонентская плата за каждого активного пользователя. Безлимитное количество отчетов и фото 24/7.</p>
@@ -206,7 +200,7 @@
         </div>
     </section>
 
-    <!-- ТЕХНИЧЕСКИЙ ФУТЕР -->
+    <!-- ФУТЕР -->
     <footer class="py-24 px-6 border-t border-white/5 bg-black">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-14">
             <div class="text-center md:text-left">
