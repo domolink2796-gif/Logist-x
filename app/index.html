@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>LOGIST_X | Elite Pro Robot Edition</title>
     
-    <!-- PWA & MOBILE META -->
+    <link rel="manifest" href="../manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Logist_X">
     <meta name="theme-color" content="#010409">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1162/1162456.png">
-    <link rel="manifest" href='data:application/json,{"name":"Logist_X Elite","short_name":"Logist_X","start_url":".","display":"standalone","background_color":"#010409","theme_color":"#f59e0b","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/1162/1162456.png","sizes":"512x512","type":"image/png"}]}'>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -95,7 +96,6 @@
 
 <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
 
-<!-- ЗАЩИТА -->
 <script>
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.onkeydown = function(e) {
@@ -109,7 +109,6 @@
     })();
 </script>
 
-<!-- LICENSE LOCK -->
 <div id="licenseLock">
     <div style="background: #0d1117; padding: 45px; border-radius: 45px; border: 1px solid var(--border); width: 100%; max-width: 420px; text-align: center;">
         <div style="font-size: 5rem; margin-bottom: 25px;">🔒</div>
@@ -593,4 +592,3 @@
 </script>
 </body>
 </html>
-
