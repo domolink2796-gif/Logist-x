@@ -1,0 +1,16 @@
+{
+"name": "Logist_X Terminal",
+"short_name": "Logist_X",
+"start_url": "index.html",
+"display": "standalone",
+"background_color": "#010409",
+"theme_color": "#f59e0b",
+"description": "Рабочий терминал: Монтаж, Реклама, Pseudomona",
+"icons": [
+{
+"src": "https://www.google.com/search?q=https://cdn-icons-png.flaticon.com/512/1162/1162280.png",
+"sizes": "512x512",
+"type": "image/png"
+}
+]
+}
