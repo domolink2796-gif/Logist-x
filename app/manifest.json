@@ -1,8 +1,7 @@
 {
   "name": "Logist_X",
   "short_name": "Logist_X",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#010409",
   "theme_color": "#010409",
