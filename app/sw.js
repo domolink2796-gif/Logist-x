@@ -1,29 +1,29 @@
-const CACHE_NAME = 'logist-x-elite-v1';
+const CACHE_NAME = 'logist-x-elite-pro-v2';
 
-// Список файлов для кэширования (теперь всё локально в папке app)
+// ВАЖНО: кэшируем и корень, и папку app, чтобы браузер видел ПРИЛОЖЕНИЕ целиком
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-1024.png'
+  '../',                // Главная страница (лендинг)
+  '../index.html',      // Файл лендинга
+  './',                 // Папка app
+  './index.html',       // Рабочий терминал
+  './manifest.json',    // Мозги
+  './icon-1024.png'     // Та самая иконка
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Кэш открыт, сохраняем иконку и манифест');
+        console.log('Elite Pro Cache: Все файлы (корень + app) сохранены');
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-// Критически важно для появления кнопки "Установить" и иконки
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Возвращаем файл из кэша, если он там есть, иначе идем в сеть
         return response || fetch(event.request);
       })
   );
