@@ -1,65 +1,59 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>LOGIST_X | Elite Pro</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Установка LOGIST_X</title>
     <link rel="manifest" href="app/manifest.json">
-    <meta name="theme-color" content="#010409">
-    <link rel="apple-touch-icon" href="app/icon-1024.png">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #010409; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; text-align: center; }
+        #btn { background: #f59e0b; color: black; border: none; padding: 20px 40px; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: pointer; }
+    </style>
 </head>
-<body class="bg-[#010409] text-white flex items-center justify-center min-h-screen text-center p-6">
-    <div class="max-w-md">
-        <h1 class="text-6xl font-black mb-4 italic text-amber-500">LOGIST_X</h1>
-        <p class="text-xl opacity-40 mb-10 italic">Умная система управления персоналом</p>
-        
-        <button id="installBtn" onclick="window.location.href='app/index.html'" class="w-full bg-amber-500 text-black font-black px-8 py-6 rounded-3xl text-xl uppercase shadow-2xl transition-all active:scale-95">
-            СТАРТ ТЕРМИНАЛА
-        </button>
-        
-        <p class="mt-8 text-[10px] opacity-20 uppercase tracking-[5px]">Elite Pro Robot Edition</p>
+<body>
+    <div>
+        <h1 style="color: #f59e0b;">LOGIST_X</h1>
+        <p id="status">Проверка системы...</p>
+        <button id="btn" style="display: none;">УСТАНОВИТЬ ПРИЛОЖЕНИЕ</button>
+        <br><br>
+        <a href="app/index.html" style="color: white; opacity: 0.5;">Просто войти в терминал</a>
     </div>
 
-    <script type="text/javascript">
-       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106053460', 'ym');ym(106053460, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
-    </script>
-
     <script>
-        // ЛОГИКА УСТАНОВКИ
         let deferredPrompt;
-        const btn = document.getElementById('installBtn');
+        const btn = document.getElementById('btn');
+        const status = document.getElementById('status');
 
-        // Слушаем, когда браузер поймет, что можно установить приложение
+        // 1. Регистрация двигателя
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('app/sw.js', { scope: '/app/' });
+        }
+
+        // 2. Ловим момент, когда телефон готов к установке
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // Меняем текст кнопки, когда установка готова
-            btn.innerText = "УСТАНОВИТЬ ПРИЛОЖЕНИЕ";
-            btn.style.boxShadow = "0 0 30px rgba(245, 158, 11, 0.4)";
+            status.innerText = "Система готова к установке!";
+            btn.style.display = "inline-block";
         });
 
-        btn.addEventListener('click', async (e) => {
+        // 3. Нажатие на кнопку вызывает системное окно
+        btn.addEventListener('click', async () => {
             if (deferredPrompt) {
-                // Если установка доступна - запускаем её
-                e.preventDefault();
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
-                    deferredPrompt = null;
-                    btn.innerText = "СТАРТ ТЕРМИНАЛА";
+                    status.innerText = "Установка началась!";
+                    btn.style.display = "none";
                 }
+                deferredPrompt = null;
             }
         });
 
-        // Регистрация двигателя (sw.js)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('app/sw.js', { scope: '/' });
-            });
-        }
+        // Если через 5 секунд кнопка не появилась - значит уже установлено или ошибка
+        setTimeout(() => {
+            if (!deferredPrompt) status.innerText = "Если кнопки нет - нажмите 'Войти в терминал' и проверьте меню браузера";
+        }, 5000);
     </script>
 </body>
 </html>
