@@ -9,22 +9,28 @@
   "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/1162/1162456.png",
+      "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "screenshots": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/1162/1162456.png",
+      "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Рабочий стол"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/1162/1162456.png",
+      "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
