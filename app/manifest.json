@@ -1,15 +1,30 @@
 {
-  "name": "Logist_X",
+  "name": "LOGIST_X: Terminal Management System",
   "short_name": "Logist_X",
+  "description": "Профессиональная система управления логистикой, отчетами и GPS-мониторингом.",
   "start_url": "index.html",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["fullscreen", "minimal-ui"],
+  "orientation": "portrait-primary",
   "background_color": "#010409",
-  "theme_color": "#010409",
+  "theme_color": "#f59e0b",
+  "categories": ["business", "productivity"],
   "icons": [
     {
       "src": "icon-1024.png",
       "sizes": "1024x1024",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": [],
+  "lang": "ru-RU",
+  "dir": "ltr"
 }
