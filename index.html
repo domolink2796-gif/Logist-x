@@ -99,19 +99,6 @@
             margin-left: 20px; 
             padding-left: 20px; 
         }
-
-        .wallet-glow {
-            box-shadow: 0 0 80px -20px rgba(245, 158, 11, 0.15);
-        }
-
-        .hero-glow {
-            background: radial-gradient(circle at center, rgba(245, 158, 11, 0.1) 0%, transparent 70%);
-        }
-
-        .feature-icon {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
-            border: 1px solid rgba(245, 158, 11, 0.1);
-        }
     </style>
 </head>
 <body class="dot-pattern text-white">
@@ -124,7 +111,7 @@
                 </div>
                 <span class="text-2xl font-black tracking-tighter uppercase italic">LOGIST<span class="text-amber-500">_X</span></span>
             </div>
-            <div class="flex items-center gap-6 text-white">
+            <div class="flex items-center gap-6">
                 <a href="#pricing" class="hidden md:block text-[10px] font-bold uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity">Тарифы</a>
                 <a href="app/" class="btn-outline px-5 py-2.5 rounded-xl text-[9px] uppercase tracking-widest flex items-center gap-2">
                     <i data-lucide="user" size="14"></i> Кабинет
@@ -134,21 +121,21 @@
         </div>
     </nav>
 
-    <header class="relative pt-60 pb-32 px-6 hero-glow overflow-hidden">
+    <header class="relative pt-60 pb-32 px-6 overflow-hidden">
         <div class="max-w-6xl mx-auto text-center relative z-10">
-            <div class="inline-block px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[9px] font-black uppercase tracking-[3px] mb-8 animate__animated animate__fadeInDown">
+            <div class="inline-block px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[9px] font-black uppercase tracking-[3px] mb-8">
                 Next-Gen Control System
             </div>
-            <h1 class="text-6xl md:text-[110px] font-black mb-10 leading-[0.85] tracking-tighter uppercase animate__animated animate__fadeInUp">
+            <h1 class="text-6xl md:text-[110px] font-black mb-10 leading-[0.85] tracking-tighter uppercase">
                 Контроль, который <br><span class="gold-text italic underline decoration-amber-500/20">невозможно обмануть</span>
             </h1>
-            <p class="max-w-2xl mx-auto text-lg opacity-40 mb-12 italic leading-relaxed animate__animated animate__fadeInUp animate__delay-1s text-white text-white">
+            <p class="max-w-2xl mx-auto text-lg opacity-40 mb-12 italic leading-relaxed">
                 Автоматизация фотоотчетов для тех, кто устал от хаоса в папках и вранья сотрудников. 
                 GPS-верификация, авто-расчет ЗП и моментальный порядок.
             </p>
-            <div class="flex flex-col sm:flex-row gap-6 justify-center animate__animated animate__fadeInUp animate__delay-1s text-white">
+            <div class="flex flex-col sm:flex-row gap-6 justify-center">
                 <a href="#how-it-works" class="btn-outline px-14 py-7 rounded-[2.5rem] text-[12px] uppercase tracking-widest">Как это работает?</a>
-                <button id="installApp" class="btn-main px-14 py-7 rounded-[2.5rem] font-black uppercase text-[12px] tracking-widest flex items-center justify-center gap-4 text-black text-black text-black">
+                <button id="installApp" class="btn-main px-14 py-7 rounded-[2.5rem] font-black uppercase text-[12px] tracking-widest flex items-center justify-center gap-4 text-black">
                    <i data-lucide="plus-circle" size="20"></i> Установить терминал
                 </button>
             </div>
@@ -158,41 +145,37 @@
     <section class="py-24 px-6 relative">
         <div class="max-w-6xl mx-auto">
             <div class="glass-card p-12 md:p-20 rounded-[4rem] border-amber-500/10 overflow-hidden relative">
-                <div class="absolute top-0 right-0 p-10 opacity-5 hidden md:block">
-                    <i data-lucide="folder-tree" size="300"></i>
-                </div>
-                <div class="grid md:grid-cols-2 gap-16 items-center relative z-10 text-white">
-                    <div class="text-left text-white">
+                <div class="grid md:grid-cols-2 gap-16 items-center relative z-10">
+                    <div class="text-left">
                         <h2 class="text-4xl md:text-5xl font-black mb-8 uppercase italic tracking-tighter leading-tight">
                             <span class="text-amber-500">Автоматическая</span> <br>структура архива
                         </h2>
-                        <p class="opacity-40 text-lg mb-10 italic text-white text-white">
-                            Вам больше не нужно переименовывать файлы или искать, кто скинул фото. 
-                            Система сама создает идеальную иерархию на вашем Google Диске.
+                        <p class="opacity-40 text-lg mb-10 italic">
+                            Вам больше не нужно переименовывать файлы. Система сама создает идеальную иерархию на вашем Google Диске.
                         </p>
-                        <div class="space-y-8 text-white">
+                        <div class="space-y-8">
                             <div class="flex gap-6">
-                                <div class="feature-icon p-4 rounded-2xl text-amber-500 h-fit text-white"><i data-lucide="layers" size="24"></i></div>
+                                <div class="p-4 rounded-2xl bg-amber-500/10 text-amber-500 h-fit"><i data-lucide="layers" size="24"></i></div>
                                 <div>
-                                    <h4 class="font-black uppercase text-sm mb-2 text-white text-white">Мгновенная сортировка</h4>
-                                    <p class="opacity-40 text-sm text-white">Сотрудник нажал "Отправить" — через секунду фото в папке "Город/Дата/Объект".</p>
+                                    <h4 class="font-black uppercase text-sm mb-2">Мгновенная сортировка</h4>
+                                    <p class="opacity-40 text-sm">Сотрудник нажал "Отправить" — через секунду фото в папке "Город/Дата/Объект".</p>
                                 </div>
                             </div>
                             <div class="flex gap-6">
-                                <div class="feature-icon p-4 rounded-2xl text-blue-500 h-fit text-white"><i data-lucide="map" size="24"></i></div>
+                                <div class="p-4 rounded-2xl bg-blue-500/10 text-blue-500 h-fit"><i data-lucide="map" size="24"></i></div>
                                 <div>
-                                    <h4 class="font-black uppercase text-sm mb-2 text-white">GPS Верификация</h4>
-                                    <p class="opacity-40 text-sm text-white">Подделать местоположение невозможно. Каждое фото имеет цифровую метку координат.</p>
+                                    <h4 class="font-black uppercase text-sm mb-2">GPS Верификация</h4>
+                                    <p class="opacity-40 text-sm">Подделать местоположение невозможно. Каждое фото имеет цифровую метку координат.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-black/40 rounded-[3rem] p-8 md:p-12 border border-white/5 font-mono text-sm shadow-2xl">
+                    <div class="bg-black/40 rounded-[3rem] p-8 md:p-12 border border-white/5 font-mono text-sm">
                         <div class="flex items-center gap-3 text-amber-500 mb-6 border-b border-white/10 pb-4">
                             <i data-lucide="hard-drive" size="18"></i>
-                            <span class="text-[10px] uppercase font-black tracking-widest text-white">Cloud Storage / LOGIST_X</span>
+                            <span class="text-[10px] uppercase font-black tracking-widest">Cloud Storage / LOGIST_X</span>
                         </div>
-                        <div class="space-y-3 opacity-80 text-white text-white">
+                        <div class="space-y-3 opacity-80">
                             <div class="flex items-center gap-3"><i data-lucide="folder" size="16"></i> Иванов_Монтаж</div>
                             <div class="folder-line">
                                 <div class="flex items-center gap-3 text-amber-500/60"><i data-lucide="folder" size="16"></i> Сочи</div>
@@ -212,203 +195,107 @@
     </section>
 
     <section class="py-24 px-6">
-        <div class="max-w-6xl mx-auto">
-            <div class="glass-card p-12 md:p-20 rounded-[4rem] border-amber-500/20 wallet-glow relative overflow-hidden">
-                <div class="grid md:grid-cols-2 gap-20 items-center text-white">
-                    <div class="order-2 md:order-1 text-left text-white">
-                        <h2 class="text-4xl md:text-5xl font-black mb-8 uppercase italic tracking-tighter text-white">
-                            <span class="text-amber-500">Авто-расчет</span> <br>зарплаты
-                        </h2>
-                        <p class="opacity-40 text-lg mb-10 italic text-white text-white">
-                            Забудьте о ручных сверках в конце месяца. Система автоматически считает стоимость работ и обновляет кошелек сотрудника.
-                        </p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-white text-white text-white">
-                            <div class="p-6 bg-white/5 rounded-3xl border border-white/5">
-                                <i data-lucide="hammer" class="text-green-500 mb-4" size="24"></i>
-                                <h4 class="font-black uppercase text-[10px] mb-2 tracking-widest text-white">Монтаж</h4>
-                                <p class="opacity-30 text-[10px] text-white">Установка любых конструкций по вашему прайсу.</p>
-                            </div>
-                            <div class="p-6 bg-white/5 rounded-3xl border border-white/5">
-                                <i data-lucide="refresh-cw" class="text-blue-500 mb-4" size="24"></i>
-                                <h4 class="font-black uppercase text-[10px] mb-2 tracking-widest text-white">Замена</h4>
-                                <p class="opacity-30 text-[10px] text-white text-white">Замена рекламы, баннеров и POS-материалов.</p>
-                            </div>
-                            <div class="p-6 bg-white/5 rounded-3xl border border-white/5 text-white">
-                                <i data-lucide="zap" class="text-amber-500 mb-4" size="24"></i>
-                                <h4 class="font-black uppercase text-[10px] mb-2 tracking-widest text-white">Pseudomona</h4>
-                                <p class="opacity-30 text-[10px] text-white">Спецзадачи и дополнительные сервисные работы.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="order-1 md:order-2 text-white text-white">
-                        <div class="relative bg-gradient-to-b from-[#161b22] to-black border border-white/10 rounded-[4rem] p-10 shadow-2xl max-w-[350px] mx-auto rotate-2 hover:rotate-0 transition-transform duration-500 text-white text-white">
-                            <div class="flex justify-between items-center mb-10 text-white">
-                                <div class="bg-amber-500/20 p-3 rounded-2xl text-amber-500 text-white"><i data-lucide="wallet"></i></div>
-                                <div class="text-[10px] font-black uppercase tracking-widest opacity-30 text-white">Balance App</div>
-                            </div>
-                            <div class="text-[11px] uppercase tracking-[4px] opacity-20 mb-3 font-black text-white">Доступно к выводу</div>
-                            <div class="text-6xl font-black mb-12 italic tracking-tighter text-white">8 450 ₽</div>
-                            <div class="space-y-4 text-white text-white">
-                                <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5 text-white">
-                                    <span class="text-[9px] uppercase font-black opacity-30 text-white">Сегодня</span>
-                                    <span class="text-sm font-black text-green-500">+ 2 100 ₽</span>
-                                </div>
-                                <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5 text-white">
-                                    <span class="text-[9px] uppercase font-black opacity-30 text-white">Вчера</span>
-                                    <span class="text-sm font-black text-white">+ 3 400 ₽</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <div class="max-w-6xl mx-auto text-center">
+            <h2 class="text-4xl md:text-5xl font-black mb-20 uppercase italic tracking-tighter text-white">Авто-расчет <span class="text-amber-500">зарплаты</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass-card p-10 rounded-[3rem] text-center">
+                    <i data-lucide="hammer" class="text-green-500 mx-auto mb-6" size="40"></i>
+                    <h4 class="font-black uppercase text-sm mb-4">Монтаж</h4>
+                    <p class="opacity-30 text-xs italic">Автоматический расчет по прайсу за каждую точку.</p>
+                </div>
+                <div class="glass-card p-10 rounded-[3rem] text-center">
+                    <i data-lucide="refresh-cw" class="text-blue-500 mx-auto mb-6" size="40"></i>
+                    <h4 class="font-black uppercase text-sm mb-4">Замена</h4>
+                    <p class="opacity-30 text-xs italic">Фиксация замены рекламных материалов и расходников.</p>
+                </div>
+                <div class="glass-card p-10 rounded-[3rem] text-center">
+                    <i data-lucide="zap" class="text-amber-500 mx-auto mb-6" size="40"></i>
+                    <h4 class="font-black uppercase text-sm mb-4">Pseudomona</h4>
+                    <p class="opacity-30 text-xs italic">Контроль сервисных работ и специфических задач.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="how-it-works" class="py-32 px-6 bg-white/2">
-        <div class="max-w-6xl mx-auto text-center mb-24">
-            <h2 class="text-5xl md:text-6xl font-black uppercase italic tracking-tighter text-white">3 шага к <span class="text-amber-500 text-white">полному контролю</span></h2>
-        </div>
-        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-12 text-white">
-            <div class="text-center group text-white">
-                <div class="w-24 h-24 bg-white/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 group-hover:bg-amber-500 transition-colors duration-500 text-white text-white">
-                    <i data-lucide="file-up" class="text-amber-500 group-hover:text-black transition-colors" size="40"></i>
-                </div>
-                <h3 class="text-xl font-black uppercase mb-6 text-white text-white">01. Дайте Excel</h3>
-                <p class="opacity-40 text-sm leading-relaxed italic text-white text-white">Загрузите список адресов. Система сама распределит их по маршрутам и создаст карточки объектов.</p>
+    <section id="pricing" class="py-32 px-6">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
+            <div class="pricing-card p-12 rounded-[4rem] text-left">
+                <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-30 mb-8">Настройка</h3>
+                <div class="text-6xl font-black mb-4 italic">7 500 ₽</div>
+                <div class="text-[9px] font-black uppercase mb-10 text-blue-400">Единоразово</div>
+                <ul class="space-y-4 text-[11px] opacity-40 italic">
+                    <li>• Развертывание облачного сервера</li>
+                    <li>• Настройка Google Drive API</li>
+                    <li>• Настройка видов работ</li>
+                </ul>
+                <a href="https://t.me/gena_krokodi" class="block w-full py-6 rounded-2xl bg-white/5 text-center text-[10px] font-black uppercase mt-12">Заказать</a>
             </div>
-            <div class="text-center group text-white text-white">
-                <div class="w-24 h-24 bg-white/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 group-hover:bg-amber-500 transition-colors duration-500 text-white text-white text-white">
-                    <i data-lucide="aperture" class="text-amber-500 group-hover:text-black transition-colors" size="40"></i>
-                </div>
-                <h3 class="text-xl font-black uppercase mb-6 text-white text-white">02. Фото в поле</h3>
-                <p class="opacity-40 text-sm leading-relaxed italic text-white text-white">Монтажник делает фото через терминал. GPS, время и ID сотрудника вшиваются в файл автоматически.</p>
+            <div class="pricing-card p-12 rounded-[4rem] border-amber-500/50 bg-amber-500/5 scale-105 shadow-2xl text-left relative">
+                <div class="absolute top-0 right-0 bg-amber-500 text-black px-6 py-2 text-[8px] font-black uppercase italic">BEST</div>
+                <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-50 mb-8">Абонентская</h3>
+                <div class="text-6xl font-black mb-4 italic">900 ₽</div>
+                <div class="text-[9px] font-black uppercase mb-10 text-amber-500">В месяц за чел.</div>
+                <ul class="space-y-4 text-[11px] opacity-80 italic">
+                    <li>• Доступ к терминалу 24/7</li>
+                    <li>• GPS верификация фото</li>
+                    <li>• Авто-кошелек выплат</li>
+                </ul>
+                <a href="https://t.me/gena_krokodi" class="btn-main block w-full py-6 rounded-2xl text-center text-[10px] font-black uppercase mt-12">Подключить</a>
             </div>
-            <div class="text-center group text-white text-white text-white">
-                <div class="w-24 h-24 bg-white/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 group-hover:bg-amber-500 transition-colors duration-500 text-white text-white text-white">
-                    <i data-lucide="check-circle-2" class="text-amber-500 group-hover:text-black transition-colors" size="40"></i>
-                </div>
-                <h3 class="text-xl font-black uppercase mb-6 text-white text-white text-white">03. Готовый отчет</h3>
-                <p class="opacity-40 text-sm leading-relaxed italic text-white text-white">Через секунду отчет на вашем диске. Никаких мессенджеров, никаких архивов в почте.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-32 px-6 text-white text-white text-white text-white">
-        <div class="max-w-6xl mx-auto text-center text-white text-white text-white text-white">
-            <h2 class="text-4xl md:text-5xl font-black mb-20 uppercase italic tracking-tighter text-white">Кому это <span class="text-amber-500">необходимо</span>?</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-white text-white text-white text-white">
-                <div class="glass-card p-10 rounded-[3rem] flex flex-col items-center text-center text-white text-white">
-                    <div class="w-20 h-20 feature-icon rounded-[2rem] flex items-center justify-center text-amber-500 mb-8"><i data-lucide="megaphone" size="32"></i></div>
-                    <h4 class="font-black uppercase text-sm mb-4 tracking-widest text-white">Рекламные агентства</h4>
-                    <p class="opacity-30 text-xs italic leading-relaxed text-white text-white text-white text-white text-white">Контроль монтажа баннеров, оклейки и тех. обслуживания конструкций.</p>
-                </div>
-                <div class="glass-card p-10 rounded-[3rem] flex flex-col items-center text-center text-white text-white text-white">
-                    <div class="w-20 h-20 feature-icon rounded-[2rem] flex items-center justify-center text-blue-500 mb-8 text-white text-white"><i data-lucide="sparkles" size="32"></i></div>
-                    <h4 class="font-black uppercase text-sm mb-4 tracking-widest text-white">Клининг и Сервис</h4>
-                    <p class="opacity-30 text-xs italic leading-relaxed text-white text-white text-white text-white">Фотофиксация уборки объектов, состояния помещений и выполненного ремонта.</p>
-                </div>
-                <div class="glass-card p-10 rounded-[3rem] flex flex-col items-center text-center text-white text-white">
-                    <div class="w-20 h-20 feature-icon rounded-[2rem] flex items-center justify-center text-green-500 mb-8 text-white text-white text-white text-white text-white text-white"><i data-lucide="wrench" size="32"></i></div>
-                    <h4 class="font-black uppercase text-sm mb-4 tracking-widest text-white text-white text-white text-white text-white text-white">Тех. Обслуживание</h4>
-                    <p class="opacity-30 text-xs italic leading-relaxed text-white text-white text-white text-white text-white text-white">Ремонт банкоматов, терминалов и кондиционеров. Полная база выездов.</p>
-                </div>
-                <div class="glass-card p-10 rounded-[3rem] flex flex-col items-center text-center text-white text-white text-white text-white">
-                    <div class="w-20 h-20 feature-icon rounded-[2rem] flex items-center justify-center text-purple-500 mb-8 text-white text-white text-white text-white text-white text-white"><i data-lucide="shopping-bag" size="32"></i></div>
-                    <h4 class="font-black uppercase text-sm mb-4 tracking-widest text-white text-white text-white text-white text-white text-white">Мерчендайзинг</h4>
-                    <p class="opacity-30 text-xs italic leading-relaxed text-white text-white text-white text-white text-white text-white text-white text-white">Проверка выкладки товара, наличия ценников и рекламных стоек в ритейле.</p>
-                </div>
+            <div class="pricing-card p-12 rounded-[4rem] text-left">
+                <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-30 mb-8">Команда 10+</h3>
+                <div class="text-6xl font-black mb-4 italic">7 200 ₽</div>
+                <div class="text-[9px] font-black uppercase mb-10 text-green-400">Скидка включена</div>
+                <ul class="space-y-4 text-[11px] opacity-40 italic">
+                    <li>• Приоритетная поддержка</li>
+                    <li>• Индивидуальные доработки</li>
+                    <li>• Персональный менеджер</li>
+                </ul>
+                <a href="https://t.me/gena_krokodi" class="block w-full py-6 rounded-2xl bg-white/5 text-center text-[10px] font-black uppercase mt-12">Обсудить</a>
             </div>
         </div>
     </section>
 
-    <section id="pricing" class="py-32 px-6 relative">
-        <div class="max-w-6xl mx-auto text-center mb-20 text-white">
-            <h2 class="text-5xl md:text-6xl font-black uppercase italic tracking-tighter text-white">Прозрачные <span class="text-amber-500 text-white">инвестиции</span></h2>
-        </div>
-        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 text-white">
-            <div class="pricing-card p-12 rounded-[4rem] flex flex-col justify-between text-left text-white text-white">
-                <div>
-                    <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-30 mb-8 text-white text-white">Настройка</h3>
-                    <div class="text-6xl font-black mb-4 italic text-white text-white">7 500 ₽</div>
-                    <div class="text-[9px] font-black uppercase mb-10 text-blue-400 text-white">Единоразово</div>
-                    <ul class="space-y-4 text-[11px] opacity-40 italic text-white text-white text-white">
-                        <li>• Развертывание облачного сервера</li>
-                        <li>• Интеграция с Google Drive API</li>
-                        <li>• Настройка видов работ и прайсов</li>
-                        <li>• Личное обучение администратора</li>
-                    </ul>
+    <section class="py-32 px-6 bg-white/2">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-4xl font-black mb-20 uppercase italic tracking-tighter text-center">FAQ</h2>
+            <div class="space-y-6">
+                <div class="glass-card p-10 rounded-[2.5rem]">
+                    <h4 class="text-amber-500 font-black uppercase mb-4 text-xs italic">Как контролировать на удаленке?</h4>
+                    <p class="opacity-40 text-sm italic">Система LOGIST_X фиксирует GPS и время в момент снимка. Подделать или выбрать фото из галереи нельзя.</p>
                 </div>
-                <a href="https://t.me/gena_krokodi" target="_blank" class="w-full py-6 rounded-2xl bg-white/5 border border-white/10 text-center text-[10px] font-black uppercase tracking-widest mt-12 hover:bg-white/10 transition-colors text-white text-white text-white">Заказать</a>
-            </div>
-            <div class="pricing-card p-12 rounded-[4rem] border-amber-500/50 bg-amber-500/5 scale-105 shadow-2xl flex flex-col justify-between text-left relative text-white text-white">
-                <div class="absolute top-0 right-0 bg-amber-500 text-black px-6 py-2 text-[8px] font-black uppercase tracking-widest italic text-white">Рекомендуем</div>
-                <div>
-                    <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-50 mb-8 text-white text-white text-white">Абонентская</h3>
-                    <div class="text-6xl font-black mb-4 italic text-white text-white text-white">900 ₽</div>
-                    <div class="text-[9px] font-black uppercase mb-10 text-amber-500 text-white text-white text-white">В месяц за сотрудника</div>
-                    <ul class="space-y-4 text-[11px] opacity-80 italic text-white text-white text-white text-white">
-                        <li>• Доступ к терминалу 24/7</li>
-                        <li>• GPS верификация каждого фото</li>
-                        <li>• Автоматический кошелек выплат</li>
-                        <li>• Безлимитное хранилище отчетов</li>
-                    </ul>
-                </div>
-                <a href="https://t.me/gena_krokodi" target="_blank" class="btn-main w-full py-6 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest mt-12 text-black text-black">Подключить</a>
-            </div>
-            <div class="pricing-card p-12 rounded-[4rem] flex flex-col justify-between text-left text-white text-white text-white">
-                <div>
-                    <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-30 mb-8 text-white text-white text-white">Команда 10+</h3>
-                    <div class="text-6xl font-black mb-4 italic text-white text-white text-white">7 200 ₽</div>
-                    <div class="text-[9px] font-black uppercase mb-10 text-green-400 text-white text-white text-white">Скидка 20% включена</div>
-                    <ul class="space-y-4 text-[11px] opacity-40 italic text-white text-white text-white text-white text-white">
-                        <li>• Все функции системы</li>
-                        <li>• Приоритетная техподдержка</li>
-                        <li>• Индивидуальные доработки</li>
-                        <li>• Персональный менеджер</li>
-                    </ul>
-                </div>
-                <a href="https://t.me/gena_krokodi" target="_blank" class="w-full py-6 rounded-2xl bg-white/5 border border-white/10 text-center text-[10px] font-black uppercase tracking-widest mt-12 hover:bg-white/10 transition-colors text-white text-white text-white text-white text-white">Обсудить пакет</a>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-32 px-6 bg-white/2 text-white">
-        <div class="max-w-4xl mx-auto text-white">
-            <h2 class="text-4xl font-black mb-20 uppercase italic tracking-tighter text-center text-white">Частые <span class="text-amber-500">вопросы</span></h2>
-            <div class="space-y-6 text-white text-white text-white text-white">
-                <div class="glass-card p-10 rounded-[2.5rem] text-white">
-                    <h4 class="text-amber-500 font-black uppercase mb-4 text-xs italic text-white">Как контролировать монтажников на удаленке?</h4>
-                    <p class="opacity-40 text-sm italic leading-relaxed text-white text-white text-white">Система LOGIST_X фиксирует GPS и время в момент снимка. Сотрудник не может выбрать фото из галереи — только живая камера, только реальный объект.</p>
-                </div>
-                <div class="glass-card p-10 rounded-[2.5rem] text-white">
-                    <h4 class="text-amber-500 font-black uppercase mb-4 text-xs italic text-white">Если на объекте нет интернета (подвалы, трассы)?</h4>
-                    <p class="opacity-40 text-sm italic leading-relaxed text-white">Приложение работает полностью автономно. Фото сохраняется в локальное хранилище телефона и отправляется на ваш Диск автоматически, как только появится связь.</p>
-                </div>
-                <div class="glass-card p-10 rounded-[2.5rem] text-white">
-                    <h4 class="text-amber-500 font-black uppercase mb-4 text-xs italic text-white">Кто имеет доступ к моим фотографиям и данным?</h4>
-                    <p class="opacity-40 text-sm italic leading-relaxed text-white">Только вы. Мы настраиваем систему так, чтобы отчеты летели напрямую на ваш личный или корпоративный Google Диск. Никаких промежуточных серверов.</p>
-                </div>
-                <div class="glass-card p-10 rounded-[2.5rem] text-white">
-                    <h4 class="text-amber-500 font-black uppercase mb-4 text-xs italic text-white">Как быстро происходит расчет зарплаты?</h4>
-                    <p class="opacity-40 text-sm italic leading-relaxed text-white">Мгновенно. В системе предустановлены ваши тарифы на Монтаж, Замену и Pseudomona. Как только монтажник закрыл задачу — сумма в его кошельке обновилась.</p>
+                <div class="glass-card p-10 rounded-[2.5rem]">
+                    <h4 class="text-amber-500 font-black uppercase mb-4 text-xs italic">Если нет интернета?</h4>
+                    <p class="opacity-40 text-sm italic">Фото сохраняется в памяти телефона и улетает на диск автоматически при появлении связи.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="py-20 text-center opacity-10 text-[10px] font-black uppercase tracking-[10px] text-white text-white">
+    <footer class="py-20 text-center opacity-10 text-[10px] font-black uppercase tracking-[10px]">
         LOGIST_X SYSTEM © 2025 | Developed by Nikitin Evgeny
     </footer>
 
     <script type="text/javascript">
-       // Твой код Яндекс.Метрики здесь
-    </script>
+       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+       m[i].l=1*new Date();
+       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+       })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106053460', 'ym');
 
+       ym(106053460, 'init', {
+            ssr:true, 
+            webvisor:true, 
+            clickmap:true, 
+            ecommerce:"dataLayer", 
+            accurateTrackBounce:true, 
+            trackLinks:true
+       });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/106053460" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <script>
         lucide.createIcons();
         
-        const observerOptions = { threshold: 0.1 };
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -416,9 +303,9 @@
                     entry.target.style.opacity = '1';
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.1 });
 
-        document.querySelectorAll('.glass-card, .pricing-card, section h2').forEach(el => {
+        document.querySelectorAll('.glass-card, .pricing-card').forEach(el => {
             el.style.opacity = '0';
             observer.observe(el);
         });
