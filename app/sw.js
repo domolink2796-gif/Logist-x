@@ -1,34 +1,28 @@
-const CACHE_NAME = 'logist-x-elite-pro-v2';
+const CACHE_NAME = 'logist-x-elite-pro-v3';
 
-// ВАЖНО: кэшируем и корень, и папку app, чтобы браузер видел ПРИЛОЖЕНИЕ целиком
+// Список файлов, которые SW должен забрать в память телефона
+// ВАЖНО: прописаны пути выхода из папки app в корень (../)
 const urlsToCache = [
-  '../',                // Главная страница (лендинг)
-  '../index.html',      // Файл лендинга
-  './',                 // Папка app
-  './index.html',       // Рабочий терминал
-  './manifest.json',    // Мозги
-  './icon-1024.png'     // Та самая иконка
+  './',                 // Сама папка app
+  './index.html',       // Терминал (700+ строк)
+  './manifest.json',    // Настройки PWA
+  './icon-1024.png',    // Твоя главная иконка
+  '../',                // Выход в корень (Лендинг)
+  '../index.html'       // Файл лендинга
 ];
 
+// Установка: сохраняем всё в кэш
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Elite Pro Cache: Все файлы (корень + app) сохранены');
+        console.log('LOGIST_X SW: КэшированиеElite Pro завершено');
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        return response || fetch(event.request);
-      })
-  );
-});
-
+// Активация: удаляем старые версии кэша, если они были
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -40,5 +34,16 @@ self.addEventListener('activate', (event) => {
         })
       );
     })
+  );
+});
+
+// Fetch: работа в офлайне и быстрая загрузка иконки
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // Если файл есть в кэше — отдаем его, если нет — тянем из сети
+        return response || fetch(event.request);
+      })
   );
 });
