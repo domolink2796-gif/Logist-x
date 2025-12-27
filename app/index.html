@@ -5,15 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>LOGIST_X | Elite Pro Robot Edition</title>
     
-    <link rel="manifest" href="../manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Logist_X">
     <meta name="theme-color" content="#010409">
-    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="apple-touch-icon" href="icon-1024.png">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('Система Logist_X готова к установке'))
+            .catch(err => console.log('Ошибка установки:', err));
+        });
+      }
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         :root { --bg: #010409; --card: rgba(22, 27, 34, 0.95); --accent: #f59e0b; --green: #238636; --red: #da3633; --blue: #2f81f7; --purp: #8957e5; --text: #e6edf3; --subtext: #8b949e; --border: rgba(48, 54, 61, 1); }
@@ -115,10 +126,6 @@
         if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) return false;
         if (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83)) return false;
     };
-    (function() {
-        const block = function() { setInterval(function() { (function() {}.constructor("debugger")()); }, 500); };
-        try { block(); } catch (err) {}
-    })();
 </script>
 
 <div id="licenseLock">
@@ -409,7 +416,6 @@
 
     function setType(t) { haptic(); curType = t; [1,2,3,4].forEach(i => { let b = document.getElementById('bt'+i); if(b) b.style.border = (i===t)?"3px solid #fff":"none"; }); }
 
-    // УЛУЧШЕННЫЙ GPS С ТАЙМАУТОМ 15 СЕКУНД
     function getCoords() {
         return new Promise((resolve) => {
             if (!navigator.geolocation) return resolve("No GPS Support");
@@ -580,16 +586,18 @@
         document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; document.getElementById('statSryv').innerText = sryvCount; document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
     }
 
-    function toggleMenu() { haptic(); Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
+    function toggleMenu() { haptic(); document.getElementById('menu').classList.toggle('active'); }
     function closeModal() { haptic(); document.getElementById('reportModal').style.display = 'none'; monitorOpen = false; }
     function setLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
     
     function showWallet() { 
-        Sfx.click(); haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
+        haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
         let counts = {1:0, 3:0, 4:0}; for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { let t = DATA.done[id][p]; if(counts[t]!==undefined) counts[t] += it.clients.length; } }
         document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`;
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
+
+    function resumeAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
     window.onload = () => {
         const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
