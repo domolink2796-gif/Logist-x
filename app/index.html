@@ -1,17 +1,3 @@
-<script>
-  // Этот скрипт регистрирует "двигатель" прямо из этой же страницы
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register(URL.createObjectURL(new Blob([`
-      self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request)));
-    `], {type: 'text/javascript'})));
-  }
-</script>
-
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-<link rel="manifest" href="data:application/manifest+json,{'name':'Logist_X','short_name':'Logist_X','start_url':'.','display':'standalone','background_color':'#010409','theme_color':'#010409'}">
 <!DOCTYPE html>
 <html lang="ru">
 <head>
