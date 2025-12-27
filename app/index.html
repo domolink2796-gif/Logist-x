@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>LOGIST_X | Elite Pro Robot Edition</title>
     
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="../manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Logist_X">
     <meta name="theme-color" content="#010409">
-    <link rel="apple-touch-icon" href="icon-1024.png">
+    <link rel="apple-touch-icon" href="icon.png">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -27,14 +27,6 @@
         #syncIndicator { background: var(--text); color: var(--bg); padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.65rem; border: none; cursor: pointer; display: none; transition: all 0.3s ease; }
         #syncIndicator.active-sync { background: var(--accent); box-shadow: 0 0 15px var(--accent); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-
-        /* ПУЛЬСАЦИЯ КНОПКИ УСТАНОВКИ */
-        @keyframes menu-pulse {
-            0% { background: #0d1117; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
-            70% { background: rgba(245, 158, 11, 0.1); box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
-            100% { background: #0d1117; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-        }
-        .pulse-active { animation: menu-pulse 2s infinite !important; color: var(--accent) !important; border-bottom: 1px solid var(--accent) !important; }
 
         .search-box { width: 100%; padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 0.95rem; outline: none; background: #0d1117; color: white; box-sizing: border-box; }
         .stats-dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 15px; }
@@ -161,7 +153,7 @@
     <div class="progress-container"><div id="mainProgress" class="progress-bar"></div></div>
 </header>
 
-<div id="menuBtn" class="menu-toggle" onclick="handleMenuLogic()">⚙️ МЕНЮ И НАСТРОЙКИ</div>
+<div class="menu-toggle" onclick="toggleMenu()">⚙️ МЕНЮ И НАСТРОЙКИ</div>
 <div id="menu" class="controls">
     <div class="block-box">
         <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
@@ -192,6 +184,15 @@
         <button class="btn-act btn-blue" onclick="createFullBackup()">💾 БЭКАП + ФОТО</button>
         <label class="btn-act btn-dark">🔄 ВОССТАНОВИТЬ<input type="file" style="display:none;" onchange="restoreFullBackup(this)"></label>
         <label class="btn-act btn-green" style="margin-top:10px">📊 ЗАГРУЗИТЬ EXCEL<input type="file" style="display:none;" onchange="handleExcel(this)"></label>
+    </div>
+
+    <div class="block-box" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent); text-align: center; padding: 15px;">
+        <div class="block-title" style="color: var(--accent); margin-bottom:10px;">👑 РАЗРАБОТЧИК:</div>
+        <div style="font-weight: 900; font-size: 1.1rem; color:#fff; margin-bottom:15px;">Никитин Евгений</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <a href="https://t.me/gena_krokodi" target="_blank" class="btn-act btn-blue" style="margin:0; height:50px; display:flex; align-items:center; justify-content:center;">TG</a>
+            <a href="tel:+79954470130" class="btn-act btn-green" style="margin:0; height:50px; display:flex; align-items:center; justify-content:center;">CALL</a>
+        </div>
     </div>
 
     <button class="btn-act btn-red" onclick="if(confirm('Сбросить базу?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС СИСТЕМЫ</button>
@@ -228,33 +229,6 @@
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", cloudUrl: DEFAULT_HQ, workerName: "", license: {key: "", expiry: 0, status: false}, folderId: "", sheetId: "", history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
     const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
-
-    // PWA LOGIC
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const btn = document.getElementById('menuBtn');
-        if (btn) {
-            btn.classList.add('pulse-active');
-            btn.innerText = "⚙️ УСТАНОВИТЬ ПРИЛОЖЕНИЕ";
-        }
-    });
-
-    async function handleMenuLogic() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                deferredPrompt = null;
-                const btn = document.getElementById('menuBtn');
-                btn.classList.remove('pulse-active');
-                btn.innerText = "⚙️ МЕНЮ И НАСТРОЙКИ";
-            }
-        } else {
-            toggleMenu();
-        }
-    }
 
     function haptic() { if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(35); }
     function toast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
@@ -308,12 +282,17 @@
         conts.forEach(c => c && (c.style.display = 'block'));
         bars.forEach(b => b && (b.style.width = '40%'));
         try {
-            const res = await fetch(url, { method: 'POST', body: JSON.stringify({action:'check_license', licenseKey: key, workerName: worker}) });
+            const res = await fetch(url, { 
+                method: 'POST', 
+                body: JSON.stringify({action:'check_license', licenseKey: key, workerName: worker}) 
+            });
             bars.forEach(b => b && (b.style.width = '80%'));
             const result = await res.json();
             if(result.status === "active") {
                 bars.forEach(b => b && (b.style.width = '100%'));
-                DATA.license.expiry = Number(result.newExpiry); DATA.folderId = result.folderId; DATA.sheetId = result.sheetId;   
+                DATA.license.expiry = Number(result.newExpiry); 
+                DATA.folderId = result.folderId; 
+                DATA.sheetId = result.sheetId;   
                 saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН");
                 setTimeout(() => conts.forEach(c => c && (c.style.display = 'none')), 1000);
             } else { alert("ОШИБКА: " + result.message); }
@@ -333,9 +312,14 @@
             DATA.license.status = true;
             localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
             document.getElementById('licenseLock').style.display = 'none';
-            checkLicenseUI(); render(); toast("ДОСТУП РАЗРЕШЕН"); return;
+            checkLicenseUI();
+            render();
+            toast("ДОСТУП РАЗРЕШЕН");
+            return;
         }
-        DATA.workerName = inputName; DATA.cloudUrl = inputUrl || DEFAULT_HQ; DATA.license.key = inputKey;
+        DATA.workerName = inputName;
+        DATA.cloudUrl = inputUrl || DEFAULT_HQ;
+        DATA.license.key = inputKey;
         saveCfg(); await checkLicense();
     }
 
@@ -425,10 +409,26 @@
 
     function setType(t) { haptic(); curType = t; [1,2,3,4].forEach(i => { let b = document.getElementById('bt'+i); if(b) b.style.border = (i===t)?"3px solid #fff":"none"; }); }
 
+    // УЛУЧШЕННЫЙ GPS С ТАЙМАУТОМ 15 СЕКУНД
     function getCoords() {
         return new Promise((resolve) => {
             if (!navigator.geolocation) return resolve("No GPS Support");
-            navigator.geolocation.getCurrentPosition( (pos) => resolve(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`), () => resolve("GPS Disabled"), { enableHighAccuracy: true, timeout: 5000 } );
+            const options = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude.toFixed(6);
+                    const lon = pos.coords.longitude.toFixed(6);
+                    resolve(`${lat}, ${lon}`);
+                },
+                (err) => {
+                    let msg = "GPS Ошибка";
+                    if(err.code === 1) msg = "Доступ запрещен";
+                    if(err.code === 2) msg = "Спутники не найдены";
+                    if(err.code === 3) msg = "Таймаут GPS";
+                    resolve(msg);
+                },
+                options
+            );
         });
     }
 
@@ -437,7 +437,8 @@
         const it = DATA.list.find(x => x.id === curId);
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         if(curType !== 2) { for(let c of cls) if(!curPhotos[c]) return alert(`Нет фото для: ${c}`); }
-        isSavingReport = true; haptic(); document.getElementById('confirmBtn').innerText = "GPS...";
+        isSavingReport = true; haptic();
+        document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
         const coords = await getCoords(); 
         if(!DATA.done[curId]) DATA.done[curId] = {};
         DATA.done[curId][curP] = curType;
@@ -445,10 +446,27 @@
         const tx = db.transaction("sync_queue", "readwrite");
         const store = tx.objectStore("sync_queue");
         for (let client of cls) {
-            const entry = { action: "save_report", worker: DATA.workerName, city: DATA.city, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, address: `${it.s} ${it.h} п.${curP}`, client: client, workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], coords: coords, ts: Date.now(), status: "Ожидание", full: curPhotos[client], licenseKey: DATA.license.key, folderId: DATA.folderId, sheetId: DATA.sheetId };
-            DATA.history.unshift(entry); store.add(entry);
+            const entry = { 
+                action: "save_report", 
+                worker: DATA.workerName, 
+                city: DATA.city, 
+                image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, 
+                address: `${it.s} ${it.h} п.${curP}`, 
+                client: client, 
+                workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], 
+                price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], 
+                coords: coords, 
+                ts: Date.now(), 
+                status: "Ожидание", 
+                full: curPhotos[client],
+                licenseKey: DATA.license.key,
+                folderId: DATA.folderId, 
+                sheetId: DATA.sheetId
+            };
+            DATA.history.unshift(entry);
+            store.add(entry);
         }
-        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ"); };
+        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ ОТПРАВКИ"); };
     }
 
     async function syncNow() {
@@ -460,17 +478,25 @@
             const items = await new Promise(r => txR.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
             const keys = await new Promise(r => txR.objectStore("sync_queue").getAllKeys().onsuccess = e => r(e.target.result));
             if (items.length === 0) { syncing = false; return; }
+            document.getElementById('syncIndicator').style.display = 'block';
             document.getElementById('syncIndicator').classList.add('active-sync');
             for(let i=0; i<items.length; i++) {
                 if(items[i].status === "Отправка...") continue;
+                document.getElementById('queueCount').innerText = `${i+1}/${items.length}`;
+                await new Promise(r => { let t = db.transaction("sync_queue","readwrite"); items[i].status = "Отправка..."; t.objectStore("sync_queue").put(items[i], keys[i]).onsuccess = r; });
                 try {
                     const { full, ...payload } = items[i];
                     const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
                     const resJ = await res.json();
                     if(resJ.status === "success") { 
-                        let t = db.transaction("sync_queue","readwrite"); await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r); haptic(); 
-                    } else break;
-                } catch(e) { break; }
+                        let t = db.transaction("sync_queue","readwrite"); 
+                        await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r); 
+                        haptic(); 
+                    } else throw 1;
+                } catch(e) { 
+                    let t = db.transaction("sync_queue","readwrite"); items[i].status = "Ошибка (ждем)"; t.objectStore("sync_queue").put(items[i], keys[i]); 
+                    break; 
+                }
             }
         } finally { syncing = false; document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
     }
@@ -511,6 +537,27 @@
         }; r.readAsText(f);
     }
 
+    function exportSryvyToExcel() {
+        let gr = {}; 
+        for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p] === 2) { if(!gr[id]) gr[id] = []; gr[id].push(p); } }
+        let reportData = []; for(let id in gr){
+            const it = DATA.list.find(x => x.id === id);
+            if(it) reportData.push({ "Город": DATA.city, "Адрес": `${it.s}, ${it.h}`, "Подъезды (Срывы)": gr[id].sort((a,b)=>a-b).join(", ") });
+        }
+        if(reportData.length === 0) return alert("Срывов нет!");
+        const ws = XLSX.utils.json_to_sheet(reportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Срывы"); XLSX.writeFile(wb, `Sryvy_${DATA.city}.xlsx`);
+    }
+
+    function showSryvy() {
+        haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ";
+        let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } }
+        let h = "<div style='padding:15px'>";
+        for(let id in gr){ const it=DATA.list.find(x=>x.id===id); h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].sort((a,b)=>a-b).join(", ")}</span></div>`; }
+        h += `<button class="btn-act btn-green" style="margin-top:20px" onclick="exportSryvyToExcel();haptic();">💾 СКАЧАТЬ EXCEL</button></div>`;
+        document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Срывов нет</p>";
+        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+    }
+
     function showArchive() {
         haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; 
         DATA.history.slice(0,50).forEach((it, idx) => { 
@@ -526,11 +573,11 @@
 
     function showArchivePhoto(idx) { const it = DATA.history[idx]; if(!it || !it.full) return; document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; }
 
-    function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; document.getElementById('queueCount').innerText = c; }; }
+    function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing) document.getElementById('queueCount').innerText = c; }; }
     function updateStats() {
-        let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0;
-        for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { const t = DATA.done[id][p]; dn++; if(t !== 2) mon += ([0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t] * it.clients.length); } }
-        document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
+        let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0, sryvCount = 0;
+        for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { const t = DATA.done[id][p]; dn++; if(t !== 2) mon += ([0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t] * it.clients.length); else sryvCount++; } }
+        document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; document.getElementById('statSryv').innerText = sryvCount; document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
     }
 
     function toggleMenu() { haptic(); Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
@@ -538,29 +585,13 @@
     function setLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
     
     function showWallet() { 
-        haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
+        Sfx.click(); haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
         let counts = {1:0, 3:0, 4:0}; for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { let t = DATA.done[id][p]; if(counts[t]!==undefined) counts[t] += it.clients.length; } }
         document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`;
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
 
-    function showSryvy() {
-        haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ";
-        let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } }
-        let h = "<div style='padding:15px'>";
-        for(let id in gr){ const it=DATA.list.find(x=>x.id===id); h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].sort((a,b)=>a-b).join(", ")}</span></div>`; }
-        document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Срывов нет</p>";
-        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
-    }
-
     window.onload = () => {
-        // РЕГИСТРАЦИЯ SERVICE WORKER (Чтобы приложение считалось PWA)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(() => {
-                console.log('LOGIST_X: Service Worker зарегистрирован');
-            });
-        }
-
         const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
         if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
         if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
