@@ -2,13 +2,13 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <meta name="yandex-verification" content="888cbf1c9d567f69" />
 
-    <title>LOGIST_X | Система контроля монтажников и автоматизации фотоотчетов</title>
-    <meta name="description" content="LOGIST_X — инновационное решение для контроля полевых сотрудников. Фотоотчеты с GPS-верификацией, авто-расчет зарплаты и идеальный порядок в Google Drive. Для рекламных агентств, клининга и сервиса.">
-    <meta name="keywords" content="контроль монтажников, фотоотчеты сотрудников, GPS контроль персонала, автоматизация рекламных агентств, учет полевых работ, мерчендайзинг контроль, клининг отчетность, LOGIST_X">
+    <title>LOGIST_X | Система контроля монтажников</title>
+    <meta name="description" content="LOGIST_X — фотоотчеты с GPS-верификацией, авто-расчет зарплаты и порядок в Google Drive.">
+    <meta name="keywords" content="контроль монтажников, фотоотчеты сотрудников, GPS контроль, LOGIST_X">
     <meta name="robots" content="index, follow">
 
     <link rel="manifest" href="app/manifest.json">
@@ -21,16 +21,14 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
         
-        :root { 
-            --accent: #f59e0b; 
-            --bg: #010409; 
-        }
+        :root { --accent: #f59e0b; --bg: #010409; }
         
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: var(--bg); 
             color: #e6edf3; 
             scroll-behavior: smooth; 
+            overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -44,147 +42,118 @@
             background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); 
             color: #000 !important; 
             font-weight: 900; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-
-        .btn-main:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 10px 40px rgba(245, 158, 11, 0.4); 
-            filter: brightness(1.1); 
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-outline { 
             background: rgba(255, 255, 255, 0.05); 
             border: 1px solid rgba(255, 255, 255, 0.1); 
             color: #fff; 
-            font-weight: 700; 
             transition: all 0.3s ease; 
-        }
-
-        .btn-outline:hover { 
-            background: rgba(255, 255, 255, 0.1); 
-            border-color: var(--accent); 
         }
 
         .glass-card { 
             background: rgba(13, 17, 23, 0.85); 
             backdrop-filter: blur(15px); 
             border: 1px solid rgba(255, 255, 255, 0.05); 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
-
-        .glass-card:hover {
-            border-color: rgba(245, 158, 11, 0.3);
-            transform: translateY(-10px);
         }
 
         .pricing-card { 
             background: linear-gradient(180deg, rgba(30, 41, 59, 0.3) 0%, rgba(1, 4, 9, 1) 100%); 
             border: 1px solid rgba(255, 255, 255, 0.05); 
-            transition: all 0.4s ease;
         }
 
         .dot-pattern { 
-            background-image: radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); 
-            background-size: 40px 40px; 
-        }
-
-        .nav-blur { 
-            background: rgba(1, 4, 9, 0.8); 
-            backdrop-filter: blur(20px); 
+            background-image: radial-gradient(rgba(245, 158, 11, 0.07) 1px, transparent 1px); 
+            background-size: 30px 30px; 
         }
 
         .folder-line { 
-            border-left: 2px dashed rgba(245, 158, 11, 0.2); 
-            margin-left: 20px; 
-            padding-left: 20px; 
+            border-left: 1px dashed rgba(245, 158, 11, 0.2); 
+            margin-left: 10px; 
+            padding-left: 15px; 
+        }
+
+        /* Мобильные фиксы */
+        @media (max-width: 640px) {
+            h1 { font-size: 3.5rem !important; line-height: 1 !important; }
+            .hero-padding { pt-40 pb-20 }
+            .mobile-stack { flex-direction: column; }
         }
     </style>
 </head>
-<body class="dot-pattern text-white">
+<body class="dot-pattern">
 
-    <nav class="fixed top-0 w-full z-[100] nav-blur border-b border-white/5">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-amber-500 p-2 rounded-xl shadow-lg shadow-amber-500/20">
-                    <i data-lucide="shield-check" class="text-black" size="22"></i>
+    <nav class="fixed top-0 w-full z-[100] bg-black/80 backdrop-blur-md border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-amber-500 p-1.5 rounded-lg">
+                    <i data-lucide="shield-check" class="text-black" size="18"></i>
                 </div>
-                <span class="text-2xl font-black tracking-tighter uppercase italic">LOGIST<span class="text-amber-500">_X</span></span>
+                <span class="text-xl font-black uppercase italic tracking-tighter">LOGIST<span class="text-amber-500">_X</span></span>
             </div>
-            <div class="flex items-center gap-6">
-                <a href="#pricing" class="hidden md:block text-[10px] font-bold uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity">Тарифы</a>
-                <a href="app/" class="btn-outline px-5 py-2.5 rounded-xl text-[9px] uppercase tracking-widest flex items-center gap-2">
-                    <i data-lucide="user" size="14"></i> Кабинет
+            <div class="flex items-center gap-3">
+                <a href="app/" class="btn-outline px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="user" size="14"></i> Вход
                 </a>
-                <a href="https://t.me/gena_krokodi" target="_blank" class="btn-main px-6 py-2.5 rounded-full text-[9px] uppercase tracking-widest text-black">Старт</a>
             </div>
         </div>
     </nav>
 
-    <header class="relative pt-60 pb-32 px-6 overflow-hidden">
-        <div class="max-w-6xl mx-auto text-center relative z-10">
-            <div class="inline-block px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[9px] font-black uppercase tracking-[3px] mb-8">
-                Next-Gen Control System
+    <header class="relative pt-40 pb-20 px-6 overflow-hidden">
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="inline-block px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] font-black uppercase tracking-widest mb-6">
+                Next-Gen Control
             </div>
-            <h1 class="text-6xl md:text-[110px] font-black mb-10 leading-[0.85] tracking-tighter uppercase">
-                Контроль, который <br><span class="gold-text italic underline decoration-amber-500/20">невозможно обмануть</span>
+            <h1 class="text-5xl md:text-[100px] font-black mb-8 uppercase tracking-tighter">
+                КОНТРОЛЬ <br><span class="gold-text italic">БЕЗ ОБМАНА</span>
             </h1>
-            <p class="max-w-2xl mx-auto text-lg opacity-40 mb-12 italic leading-relaxed">
-                Автоматизация фотоотчетов для тех, кто устал от хаоса в папках и вранья сотрудников. 
-                GPS-верификация, авто-расчет ЗП и моментальный порядок.
+            <p class="max-w-xl mx-auto text-base md:text-lg opacity-40 mb-10 italic">
+                Для тех, кто устал от вранья монтажников. GPS-верификация, авто-расчет ЗП и моментальный порядок в отчетах.
             </p>
-            <div class="flex flex-col sm:flex-row gap-6 justify-center">
-                <a href="#how-it-works" class="btn-outline px-14 py-7 rounded-[2.5rem] text-[12px] uppercase tracking-widest">Как это работает?</a>
-                <button id="installApp" class="btn-main px-14 py-7 rounded-[2.5rem] font-black uppercase text-[12px] tracking-widest flex items-center justify-center gap-4 text-black">
-                   <i data-lucide="plus-circle" size="20"></i> Установить терминал
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <a href="#pricing" class="btn-outline px-10 py-5 rounded-3xl text-[11px] font-bold uppercase tracking-widest">Тарифы</a>
+                <button id="installApp" class="btn-main px-10 py-5 rounded-3xl text-[11px] font-black uppercase tracking-widest gap-3">
+                   <i data-lucide="plus-circle" size="18"></i> Установить Terminal
                 </button>
             </div>
         </div>
     </header>
 
-    <section class="py-24 px-6 relative">
+    <section class="py-16 px-4">
         <div class="max-w-6xl mx-auto">
-            <div class="glass-card p-12 md:p-20 rounded-[4rem] border-amber-500/10 overflow-hidden relative">
-                <div class="grid md:grid-cols-2 gap-16 items-center relative z-10">
+            <div class="glass-card p-8 md:p-16 rounded-[3rem]">
+                <div class="grid md:grid-cols-2 gap-10 items-center">
                     <div class="text-left">
-                        <h2 class="text-4xl md:text-5xl font-black mb-8 uppercase italic tracking-tighter leading-tight">
-                            <span class="text-amber-500">Автоматическая</span> <br>структура архива
+                        <h2 class="text-3xl md:text-5xl font-black mb-6 uppercase italic tracking-tighter">
+                            <span class="text-amber-500">Порядок</span> на Диске
                         </h2>
-                        <p class="opacity-40 text-lg mb-10 italic">
-                            Вам больше не нужно переименовывать файлы. Система сама создает идеальную иерархию на вашем Google Диске.
+                        <p class="opacity-40 mb-8 italic text-sm md:text-base">
+                            Система сама раскладывает фото по папкам: Город > Дата > Объект. Вам не нужно ничего переименовывать.
                         </p>
-                        <div class="space-y-8">
-                            <div class="flex gap-6">
-                                <div class="p-4 rounded-2xl bg-amber-500/10 text-amber-500 h-fit"><i data-lucide="layers" size="24"></i></div>
-                                <div>
-                                    <h4 class="font-black uppercase text-sm mb-2">Мгновенная сортировка</h4>
-                                    <p class="opacity-40 text-sm">Сотрудник нажал "Отправить" — через секунду фото в папке "Город/Дата/Объект".</p>
-                                </div>
+                        <div class="space-y-6">
+                            <div class="flex gap-4">
+                                <i data-lucide="map-pin" class="text-amber-500 shrink-0"></i>
+                                <p class="text-xs md:text-sm opacity-60">GPS-метка вшивается в каждое фото — обмануть местоположение невозможно.</p>
                             </div>
-                            <div class="flex gap-6">
-                                <div class="p-4 rounded-2xl bg-blue-500/10 text-blue-500 h-fit"><i data-lucide="map" size="24"></i></div>
-                                <div>
-                                    <h4 class="font-black uppercase text-sm mb-2">GPS Верификация</h4>
-                                    <p class="opacity-40 text-sm">Подделать местоположение невозможно. Каждое фото имеет цифровую метку координат.</p>
-                                </div>
+                            <div class="flex gap-4">
+                                <i data-lucide="clock" class="text-blue-500 shrink-0"></i>
+                                <p class="text-xs md:text-sm opacity-60">Точное время старта и финиша работ для каждой задачи.</p>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-black/40 rounded-[3rem] p-8 md:p-12 border border-white/5 font-mono text-sm">
-                        <div class="flex items-center gap-3 text-amber-500 mb-6 border-b border-white/10 pb-4">
-                            <i data-lucide="hard-drive" size="18"></i>
-                            <span class="text-[10px] uppercase font-black tracking-widest">Cloud Storage / LOGIST_X</span>
-                        </div>
-                        <div class="space-y-3 opacity-80">
-                            <div class="flex items-center gap-3"><i data-lucide="folder" size="16"></i> Иванов_Монтаж</div>
+                    <div class="bg-black/50 p-6 rounded-3xl border border-white/5 font-mono text-[11px] md:text-xs overflow-x-hidden">
+                        <div class="text-amber-500 mb-4 opacity-50 uppercase tracking-widest font-black">Google_Drive / Archive</div>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2"><i data-lucide="folder" size="14"></i> Сочи_2025</div>
                             <div class="folder-line">
-                                <div class="flex items-center gap-3 text-amber-500/60"><i data-lucide="folder" size="16"></i> Сочи</div>
-                                <div class="folder-line">
-                                    <div class="flex items-center gap-3 opacity-50"><i data-lucide="folder" size="16"></i> 27.12.2025</div>
-                                    <div class="folder-line text-blue-400 font-bold italic">
-                                        <div class="flex items-center gap-3"><i data-lucide="image" size="16"></i> Перед_монтажом.jpg</div>
-                                        <div class="flex items-center gap-3"><i data-lucide="image" size="16"></i> Результат.jpg</div>
-                                    </div>
+                                <div class="flex items-center gap-2 opacity-60"><i data-lucide="folder" size="14"></i> 27.12.2025</div>
+                                <div class="folder-line text-blue-400 italic font-bold">
+                                    <div class="flex items-center gap-2"><i data-lucide="image" size="14"></i> До.jpg</div>
+                                    <div class="flex items-center gap-2"><i data-lucide="image" size="14"></i> После.jpg</div>
                                 </div>
                             </div>
                         </div>
@@ -194,86 +163,84 @@
         </div>
     </section>
 
-    <section class="py-24 px-6">
+    <section class="py-16 px-4">
         <div class="max-w-6xl mx-auto text-center">
-            <h2 class="text-4xl md:text-5xl font-black mb-20 uppercase italic tracking-tighter text-white">Авто-расчет <span class="text-amber-500">зарплаты</span></h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass-card p-10 rounded-[3rem] text-center">
-                    <i data-lucide="hammer" class="text-green-500 mx-auto mb-6" size="40"></i>
-                    <h4 class="font-black uppercase text-sm mb-4">Монтаж</h4>
-                    <p class="opacity-30 text-xs italic">Автоматический расчет по прайсу за каждую точку.</p>
+            <h2 class="text-3xl md:text-5xl font-black mb-12 uppercase italic tracking-tighter">ЧТО МЫ <span class="text-amber-500">СЧИТАЕМ</span></h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-card p-8 rounded-3xl border-green-500/10 hover:border-green-500/30 transition-all">
+                    <i data-lucide="hammer" class="text-green-500 mb-4 mx-auto" size="32"></i>
+                    <h4 class="font-black uppercase text-xs mb-2 tracking-widest">Монтаж</h4>
+                    <p class="opacity-30 text-[10px] italic">Установка любых конструкций. Авто-начисление в кошелек.</p>
                 </div>
-                <div class="glass-card p-10 rounded-[3rem] text-center">
-                    <i data-lucide="refresh-cw" class="text-blue-500 mx-auto mb-6" size="40"></i>
-                    <h4 class="font-black uppercase text-sm mb-4">Замена</h4>
-                    <p class="opacity-30 text-xs italic">Фиксация замены рекламных материалов и расходников.</p>
+                <div class="glass-card p-8 rounded-3xl border-blue-500/10 hover:border-blue-500/30 transition-all">
+                    <i data-lucide="refresh-cw" class="text-blue-500 mb-4 mx-auto" size="32"></i>
+                    <h4 class="font-black uppercase text-xs mb-2 tracking-widest">Замена</h4>
+                    <p class="opacity-30 text-[10px] italic">Замена рекламных поверхностей, баннеров и POS-материалов.</p>
                 </div>
-                <div class="glass-card p-10 rounded-[3rem] text-center">
-                    <i data-lucide="zap" class="text-amber-500 mx-auto mb-6" size="40"></i>
-                    <h4 class="font-black uppercase text-sm mb-4">Pseudomona</h4>
-                    <p class="opacity-30 text-xs italic">Контроль сервисных работ и специфических задач.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="pricing" class="py-32 px-6">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
-            <div class="pricing-card p-12 rounded-[4rem] text-left">
-                <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-30 mb-8">Настройка</h3>
-                <div class="text-6xl font-black mb-4 italic">7 500 ₽</div>
-                <div class="text-[9px] font-black uppercase mb-10 text-blue-400">Единоразово</div>
-                <ul class="space-y-4 text-[11px] opacity-40 italic">
-                    <li>• Развертывание облачного сервера</li>
-                    <li>• Настройка Google Drive API</li>
-                    <li>• Настройка видов работ</li>
-                </ul>
-                <a href="https://t.me/gena_krokodi" class="block w-full py-6 rounded-2xl bg-white/5 text-center text-[10px] font-black uppercase mt-12">Заказать</a>
-            </div>
-            <div class="pricing-card p-12 rounded-[4rem] border-amber-500/50 bg-amber-500/5 scale-105 shadow-2xl text-left relative">
-                <div class="absolute top-0 right-0 bg-amber-500 text-black px-6 py-2 text-[8px] font-black uppercase italic">BEST</div>
-                <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-50 mb-8">Абонентская</h3>
-                <div class="text-6xl font-black mb-4 italic">900 ₽</div>
-                <div class="text-[9px] font-black uppercase mb-10 text-amber-500">В месяц за чел.</div>
-                <ul class="space-y-4 text-[11px] opacity-80 italic">
-                    <li>• Доступ к терминалу 24/7</li>
-                    <li>• GPS верификация фото</li>
-                    <li>• Авто-кошелек выплат</li>
-                </ul>
-                <a href="https://t.me/gena_krokodi" class="btn-main block w-full py-6 rounded-2xl text-center text-[10px] font-black uppercase mt-12">Подключить</a>
-            </div>
-            <div class="pricing-card p-12 rounded-[4rem] text-left">
-                <h3 class="text-[10px] font-black uppercase tracking-[4px] opacity-30 mb-8">Команда 10+</h3>
-                <div class="text-6xl font-black mb-4 italic">7 200 ₽</div>
-                <div class="text-[9px] font-black uppercase mb-10 text-green-400">Скидка включена</div>
-                <ul class="space-y-4 text-[11px] opacity-40 italic">
-                    <li>• Приоритетная поддержка</li>
-                    <li>• Индивидуальные доработки</li>
-                    <li>• Персональный менеджер</li>
-                </ul>
-                <a href="https://t.me/gena_krokodi" class="block w-full py-6 rounded-2xl bg-white/5 text-center text-[10px] font-black uppercase mt-12">Обсудить</a>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-32 px-6 bg-white/2">
-        <div class="max-w-4xl mx-auto">
-            <h2 class="text-4xl font-black mb-20 uppercase italic tracking-tighter text-center">FAQ</h2>
-            <div class="space-y-6">
-                <div class="glass-card p-10 rounded-[2.5rem]">
-                    <h4 class="text-amber-500 font-black uppercase mb-4 text-xs italic">Как контролировать на удаленке?</h4>
-                    <p class="opacity-40 text-sm italic">Система LOGIST_X фиксирует GPS и время в момент снимка. Подделать или выбрать фото из галереи нельзя.</p>
-                </div>
-                <div class="glass-card p-10 rounded-[2.5rem]">
-                    <h4 class="text-amber-500 font-black uppercase mb-4 text-xs italic">Если нет интернета?</h4>
-                    <p class="opacity-40 text-sm italic">Фото сохраняется в памяти телефона и улетает на диск автоматически при появлении связи.</p>
+                <div class="glass-card p-8 rounded-3xl border-amber-500/10 hover:border-amber-500/30 transition-all">
+                    <i data-lucide="zap" class="text-amber-500 mb-4 mx-auto" size="32"></i>
+                    <h4 class="font-black uppercase text-xs mb-2 tracking-widest">Pseudomona</h4>
+                    <p class="opacity-30 text-[10px] italic">Специфические сервисные работы и тех-обслуживание.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="py-20 text-center opacity-10 text-[10px] font-black uppercase tracking-[10px]">
-        LOGIST_X SYSTEM © 2025 | Developed by Nikitin Evgeny
+    <section id="pricing" class="py-20 px-4">
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="pricing-card p-10 rounded-[2.5rem] opacity-60">
+                <p class="text-[9px] font-black uppercase tracking-widest mb-4 opacity-50">Настройка</p>
+                <div class="text-5xl font-black mb-2 italic">7 500 ₽</div>
+                <p class="text-[9px] font-bold uppercase text-blue-400 mb-8">Единоразово</p>
+                <ul class="text-[10px] space-y-3 italic opacity-60 mb-10">
+                    <li>• Подключение к облаку</li>
+                    <li>• Настройка Google API</li>
+                    <li>• Обучение админа</li>
+                </ul>
+                <a href="https://t.me/gena_krokodi" class="block w-full py-4 bg-white/5 rounded-2xl text-center text-[9px] font-black uppercase">Выбрать</a>
+            </div>
+            <div class="pricing-card p-10 rounded-[3rem] border-amber-500/40 relative transform md:scale-105 bg-amber-500/5 shadow-2xl">
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-black px-4 py-1 rounded-full text-[8px] font-black uppercase italic">ХИТ</div>
+                <p class="text-[9px] font-black uppercase tracking-widest mb-4 opacity-50">Абонентская</p>
+                <div class="text-6xl font-black mb-2 italic">900 ₽</div>
+                <p class="text-[9px] font-bold uppercase text-amber-500 mb-8">в месяц / чел</p>
+                <ul class="text-[10px] space-y-3 italic mb-10">
+                    <li>• Полный доступ к Terminal</li>
+                    <li>• GPS и фото-верификация</li>
+                    <li>• Авто-расчет зарплат</li>
+                </ul>
+                <a href="https://t.me/gena_krokodi" class="btn-main w-full py-4 rounded-2xl text-center text-[9px] font-black uppercase">Подключить</a>
+            </div>
+            <div class="pricing-card p-10 rounded-[2.5rem] opacity-60">
+                <p class="text-[9px] font-black uppercase tracking-widest mb-4 opacity-50">Корпоратив</p>
+                <div class="text-5xl font-black mb-2 italic">7 200 ₽</div>
+                <p class="text-[9px] font-bold uppercase text-green-400 mb-8">от 10 человек</p>
+                <ul class="text-[10px] space-y-3 italic opacity-60 mb-10">
+                    <li>• Личный менеджер</li>
+                    <li>• Индивидуальный софт</li>
+                    <li>• Скидка 20%</li>
+                </ul>
+                <a href="https://t.me/gena_krokodi" class="block w-full py-4 bg-white/5 rounded-2xl text-center text-[9px] font-black uppercase">Обсудить</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 px-4 bg-white/2">
+        <div class="max-w-3xl mx-auto space-y-4">
+            <h2 class="text-3xl font-black mb-10 uppercase text-center italic tracking-tighter">Вопросы</h2>
+            <div class="glass-card p-6 rounded-2xl">
+                <h4 class="text-amber-500 font-bold uppercase text-[10px] mb-2 italic">Как это защищает от левых фото?</h4>
+                <p class="opacity-40 text-xs italic">Сотрудник делает фото через терминал. Приложение блокирует доступ к галерее — можно отправить только живое фото с места события.</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl">
+                <h4 class="text-amber-500 font-bold uppercase text-[10px] mb-2 italic">Сотрудник увидит свою ЗП?</h4>
+                <p class="opacity-40 text-xs italic">Да, в его приложении есть вкладка "Кошелек", где он видит начисления за каждую выполненную задачу.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-16 text-center opacity-10 text-[9px] font-black uppercase tracking-[10px] px-4">
+        LOGIST_X SYSTEM 2025 | Developed by Nikitin Evgeny
     </footer>
 
     <script type="text/javascript">
@@ -284,18 +251,14 @@
        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106053460', 'ym');
 
        ym(106053460, 'init', {
-            ssr:true, 
-            webvisor:true, 
-            clickmap:true, 
-            ecommerce:"dataLayer", 
-            accurateTrackBounce:true, 
-            trackLinks:true
+            ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true
        });
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/106053460" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <script>
         lucide.createIcons();
         
+        // Анимация появления
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -303,13 +266,14 @@
                     entry.target.style.opacity = '1';
                 }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.05 });
 
         document.querySelectorAll('.glass-card, .pricing-card').forEach(el => {
             el.style.opacity = '0';
             observer.observe(el);
         });
 
+        // PWA Установка
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
