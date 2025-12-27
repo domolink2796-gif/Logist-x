@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Logist_X">
     <meta name="theme-color" content="#010409">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1162/1162456.png">
+    <link rel="apple-touch-icon" href="icon.png">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -97,6 +97,18 @@
 <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
 
 <script>
+    // ПРИНУДИТЕЛЬНЫЙ ЗАПРОС ПРАВ ПРИ ЗАПУСКЕ
+    window.addEventListener('load', () => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                () => console.log("GPS доступ подтвержден"),
+                (err) => {
+                    if(err.code === 1) alert("Для работы GPS необходимо разрешить доступ к геопозиции в настройках.");
+                }
+            );
+        }
+    });
+
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.onkeydown = function(e) {
         if (e.keyCode == 123) return false;
@@ -211,7 +223,6 @@
 </div>
 
 <script>
-    // ТВОЙ DEFAULT ШТАБ
     const DEFAULT_HQ = "https://script.google.com/macros/s/AKfycbz3ZscxDR4Ls4383w43ENWJnov5SEunvNhG_mUSzZTuawytVg2Pwn67VyOgwJ5f2FfA8A/exec";
     const MASTER_KEY = "DEV-MASTER-999";
     
@@ -266,12 +277,10 @@
         const key = DATA.license.key;
         const worker = DATA.workerName;
         if(!url || !key || !worker) return alert("Заполните ФИО и данные ключа!");
-
         const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
         const conts = [document.getElementById('lockLicProgress'), document.getElementById('menuLicProgress')];
         conts.forEach(c => c && (c.style.display = 'block'));
         bars.forEach(b => b && (b.style.width = '40%'));
-
         try {
             const res = await fetch(url, { 
                 method: 'POST', 
@@ -295,7 +304,6 @@
         const inputKey = document.getElementById('lockLicenseKey').value.trim().toUpperCase();
         const inputName = document.getElementById('lockWorkerName').value.trim();
         const inputUrl = document.getElementById('lockCloudUrl').value.trim();
-        
         if (inputKey === MASTER_KEY) {
             DATA.license.key = inputKey;
             DATA.workerName = inputName || "Разработчик";
@@ -309,7 +317,6 @@
             toast("ДОСТУП РАЗРЕШЕН");
             return;
         }
-
         DATA.workerName = inputName;
         DATA.cloudUrl = inputUrl || DEFAULT_HQ;
         DATA.license.key = inputKey;
@@ -402,13 +409,25 @@
 
     function setType(t) { haptic(); curType = t; [1,2,3,4].forEach(i => { let b = document.getElementById('bt'+i); if(b) b.style.border = (i===t)?"3px solid #fff":"none"; }); }
 
+    // УЛУЧШЕННЫЙ GPS С ТАЙМАУТОМ 15 СЕКУНД
     function getCoords() {
         return new Promise((resolve) => {
             if (!navigator.geolocation) return resolve("No GPS Support");
+            const options = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
             navigator.geolocation.getCurrentPosition(
-                (pos) => resolve(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`),
-                () => resolve("GPS Disabled"),
-                { enableHighAccuracy: true, timeout: 5000 }
+                (pos) => {
+                    const lat = pos.coords.latitude.toFixed(6);
+                    const lon = pos.coords.longitude.toFixed(6);
+                    resolve(`${lat}, ${lon}`);
+                },
+                (err) => {
+                    let msg = "GPS Ошибка";
+                    if(err.code === 1) msg = "Доступ запрещен";
+                    if(err.code === 2) msg = "Спутники не найдены";
+                    if(err.code === 3) msg = "Таймаут GPS";
+                    resolve(msg);
+                },
+                options
             );
         });
     }
@@ -418,19 +437,14 @@
         const it = DATA.list.find(x => x.id === curId);
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         if(curType !== 2) { for(let c of cls) if(!curPhotos[c]) return alert(`Нет фото для: ${c}`); }
-        
         isSavingReport = true; haptic();
         document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
-        
         const coords = await getCoords(); 
-
         if(!DATA.done[curId]) DATA.done[curId] = {};
         DATA.done[curId][curP] = curType;
         render(); closeModal();
-
         const tx = db.transaction("sync_queue", "readwrite");
         const store = tx.objectStore("sync_queue");
-
         for (let client of cls) {
             const entry = { 
                 action: "save_report", 
@@ -452,7 +466,6 @@
             DATA.history.unshift(entry);
             store.add(entry);
         }
-
         tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ ОТПРАВКИ"); };
     }
 
@@ -562,9 +575,9 @@
 
     function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing) document.getElementById('queueCount').innerText = c; }; }
     function updateStats() {
-        let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0;
-        for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { const t = DATA.done[id][p]; dn++; if(t !== 2) mon += ([0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t] * it.clients.length); } }
-        document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
+        let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0, sryvCount = 0;
+        for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { const t = DATA.done[id][p]; dn++; if(t !== 2) mon += ([0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t] * it.clients.length); else sryvCount++; } }
+        document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; document.getElementById('statSryv').innerText = sryvCount; document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
     }
 
     function toggleMenu() { haptic(); Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
