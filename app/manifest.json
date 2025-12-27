@@ -1,9 +1,12 @@
 {
+  "id": "/Logist_X/",
   "name": "Logist_X Elite Pro",
   "short_name": "Logist_X",
-  "description": "Система контроля мобильных сотрудников: Монтаж, Реклама, Расклейка, Контроль",
-  "start_url": "index.html",
+  "description": "Система контроля мобильных сотрудников: Монтаж, Реклама, Контроль",
+  "start_url": "/index.html",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#010409",
   "theme_color": "#f59e0b",
   "categories": ["business", "productivity"],
@@ -12,13 +15,13 @@
       "src": "icon-1024.png",
       "sizes": "1024x1024",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icon-1024.png",
       "sizes": "1024x1024",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
@@ -26,15 +29,8 @@
       "src": "icon-1024.png",
       "sizes": "1024x1024",
       "type": "image/png",
-      "form_factor": "wide",
-      "label": "Рабочий стол"
-    },
-    {
-      "src": "icon-1024.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
       "form_factor": "narrow",
-      "label": "Мобильный интерфейс"
+      "label": "Рабочий терминал Logist_X"
     }
   ]
 }
