@@ -3,74 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
-    
     <meta name="yandex-verification" content="888cbf1c9d567f69" />
 
     <title>LOGIST_X | Elite Pro Robot Edition</title>
-    <meta name="description" content="LOGIST_X — инновационная система управления персоналом. Фотоотчеты по списку адресов, оффлайн режим, авто-иерархия папок Сотрудник > Город > Дата и бэкапы данных.">
     
     <link rel="manifest" href="app/manifest.json">
     <meta name="theme-color" content="#f59e0b">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Logist_X">
-    
     <link rel="apple-touch-icon" href="app/icon-1024.png">
-    <link rel="icon" type="image/png" href="app/icon-1024.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     
     <style>
-        /* LOGIST_X DEEP DESIGN SYSTEM 
-           Развернутый код стилей для предотвращения сбоев
-        */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
         :root { 
             --accent: #f59e0b; 
             --bg-deep: #010409; 
             --glass: rgba(13, 17, 23, 0.98);
             --border-alpha: rgba(255, 255, 255, 0.08);
-            --green-glow: #22c55e;
-            --blue-glow: #3b82f6;
             --titan-gradient: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
         }
         
-        /* ГЛОБАЛЬНЫЕ НАСТРОЙКИ (MOBILE ARMOR) */
         html, body {
             overflow-x: hidden !important; 
             width: 100% !important;
             max-width: 100vw !important;
-            margin-top: 0px !important;
-            margin-bottom: 0px !important;
-            margin-left: 0px !important;
-            margin-right: 0px !important;
-            padding-top: 0px !important;
-            padding-bottom: 0px !important;
-            padding-left: 0px !important;
-            padding-right: 0px !important;
+            margin: 0 !important;
+            padding: 0 !important;
             background-color: var(--bg-deep);
             color: #e6edf3;
             font-family: 'Inter', sans-serif;
             scroll-behavior: smooth;
             -webkit-font-smoothing: antialiased;
-            box-sizing: border-box;
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
         }
 
-        *, *:before, *:after { 
-            box-sizing: inherit; 
-            max-width: 100%;
-        }
-
-        /* Fluid Typography System */
         .title-titan {
-            font-size: clamp(2.5rem, 10vw, 8rem);
-            line-height: 0.85;
+            font-size: clamp(2.2rem, 9.5vw, 7.8rem);
+            line-height: 0.88;
             font-weight: 900;
             letter-spacing: -0.05em;
             text-transform: uppercase;
@@ -83,184 +57,82 @@
             -webkit-text-fill-color: transparent; 
         }
 
-        /* АНИМАЦИЯ ПУЛЬСАЦИИ ДЛЯ КНОПКИ УСТАНОВКИ */
-        @keyframes install-pulse-effect {
-            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); transform: scale(1); }
+        /* ПУЛЬСАЦИЯ КНОПКИ УСТАНОВКИ */
+        @keyframes install-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); transform: scale(1); }
             50% { box-shadow: 0 0 0 25px rgba(245, 158, 11, 0); transform: scale(1.02); }
             100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); transform: scale(1); }
         }
-        .pulse-active { 
-            animation: install-pulse-effect 2s infinite cubic-bezier(0.66, 0, 0, 1); 
-        }
+        .pulse-active { animation: install-pulse 2s infinite cubic-bezier(0.66, 0, 0, 1); }
 
-        /* Кнопки LOGIST_X Titan */
         .btn-logist-titan { 
             background: var(--titan-gradient); 
-            color: #000 !important; 
-            font-weight: 900; 
-            transition-property: all;
-            transition-duration: 0.5s;
-            transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #000 !important; font-weight: 900; 
+            min-height: 70px; border-radius: 1.8rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            text-transform: uppercase; padding: 0 45px; cursor: pointer; border: none;
             box-shadow: 0 15px 45px rgba(245, 158, 11, 0.3);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 70px;
-            width: 100%;
-            border-radius: 1.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            padding-left: 40px;
-            padding-right: 40px;
-            cursor: pointer;
-            border: none;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .btn-logist-titan:active { transform: scale(0.92); }
+        .btn-logist-titan:active { transform: scale(0.95); }
 
-        .btn-logist-outline {
-            background: rgba(255, 255, 255, 0.02);
-            border-width: 1px;
-            border-style: solid;
-            border-color: var(--border-alpha);
-            min-height: 70px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 1.8rem;
-            text-transform: uppercase;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            transition: all 0.4s ease;
-            padding-left: 40px;
-            padding-right: 40px;
-        }
-
-        /* Карточки Adaptive Glass */
         .card-titan { 
-            background: var(--glass); 
-            backdrop-filter: blur(30px); 
-            border-width: 1px;
-            border-style: solid;
-            border-color: var(--border-alpha); 
-            border-radius: 4rem;
-            width: 100% !important;
-            padding-top: 4rem;
-            padding-bottom: 4rem;
-            padding-left: 2rem;
-            padding-right: 2rem;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            background: var(--glass); backdrop-filter: blur(35px); 
+            border: 1px solid var(--border-alpha); border-radius: 3.5rem;
+            padding: 3.5rem 2rem; transition: 0.5s; position: relative; overflow: hidden;
         }
-        .card-titan:hover { 
-            border-color: rgba(245, 158, 11, 0.4); 
-            transform: translateY(-15px);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
-        }
+        .card-titan:hover { border-color: rgba(245, 158, 11, 0.4); transform: translateY(-10px); }
 
-        /* Иерархия (Графические узлы) */
         .tree-logic-node {
-            border-left-width: 2px;
-            border-left-style: dashed;
-            border-left-color: rgba(245, 158, 11, 0.25);
-            margin-left: 18px;
-            padding-left: 30px;
-            position: relative;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            border-left: 2px dashed rgba(245, 158, 11, 0.25);
+            margin-left: 20px; padding-left: 30px; position: relative; margin-top: 20px;
         }
         .tree-logic-node::before {
-            content: "";
-            position: absolute;
-            left: 0; 
-            top: 25px;
-            width: 25px;
-            border-top-width: 2px;
-            border-top-style: dashed;
-            border-top-color: rgba(245, 158, 11, 0.25);
+            content: ""; position: absolute; left: 0; top: 25px; width: 25px;
+            border-top: 2px dashed rgba(245, 158, 11, 0.25);
         }
 
-        /* Секции */
-        section {
-            width: 100% !important;
-            padding-top: 120px;
-            padding-bottom: 120px;
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-
-        .dot-matrix-bg { 
-            background-image: radial-gradient(rgba(245, 158, 11, 0.12) 1.5px, transparent 1.5px); 
-            background-size: 50px 50px; 
-        }
-
-        .wallet-amount-titan {
-            font-size: clamp(3rem, 12vw, 9.5rem);
-            line-height: 1;
-            font-weight: 900;
-            letter-spacing: -0.07em;
-            color: #22c55e;
-        }
-
-        .nav-titan-fixed {
-            background-color: rgba(1, 4, 9, 0.96);
-            backdrop-filter: blur(20px);
-            z-index: 99999;
-            border-bottom-width: 1px;
-            border-bottom-style: solid;
-            border-bottom-color: var(--border-alpha);
-        }
+        .wallet-amount-titan { font-size: clamp(3rem, 13vw, 10rem); font-weight: 900; color: #22c55e; letter-spacing: -0.06em; }
+        
+        section { width: 100% !important; padding: 120px 1.8rem; overflow: hidden; box-sizing: border-box; }
+        .dot-matrix-bg { background-image: radial-gradient(rgba(245, 158, 11, 0.12) 1.5px, transparent 1.5px); background-size: 50px 50px; }
 
         @media (max-width: 640px) {
-            section { padding-top: 80px; padding-bottom: 80px; }
-            .card-titan { border-radius: 2.5rem; padding-top: 2.5rem; padding-bottom: 2.5rem; padding-left: 1.5rem; padding-right: 1.5rem; }
-            .btn-logist-titan, .btn-logist-outline { min-height: 60px; font-size: 12px; }
+            section { padding: 80px 1.5rem; }
+            .card-titan { border-radius: 2.5rem; padding: 2.5rem 1.5rem; }
+            .btn-logist-titan { min-height: 60px; font-size: 13px; }
         }
-
-        /* КАСТОМНЫЙ СКРОЛЛБАР */
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: var(--bg-deep); }
-        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; border: 3px solid var(--bg-deep); }
     </style>
 </head>
 <body class="dot-matrix-bg">
 
-    <nav class="fixed top-0 left-0 w-full nav-titan-fixed px-6 md:px-12 py-6">
+    <nav class="fixed top-0 w-full bg-black/90 backdrop-blur-xl z-[10000] border-b border-white/5 px-6 py-6">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <div class="bg-amber-500 p-3 rounded-2xl shadow-2xl animate__animated animate__pulse animate__infinite">
-                    <i data-lucide="shield-check" class="text-black" size="26"></i>
+                <div class="bg-amber-500 p-2.5 rounded-2xl animate__animated animate__pulse animate__infinite">
+                    <i data-lucide="shield-check" class="text-black" size="24"></i>
                 </div>
-                <div class="flex flex-col text-left">
-                    <span class="text-3xl font-black uppercase italic tracking-tighter leading-none">LOGIST<span class="text-amber-500">_X</span></span>
-                    <span class="text-[9px] font-black uppercase tracking-[5px] opacity-20 italic">Master Engine</span>
-                </div>
+                <span class="text-2xl font-black uppercase italic tracking-tighter">LOGIST<span class="text-amber-500">_X</span></span>
             </div>
-            <div class="flex items-center gap-8">
-                <a href="https://t.me/gena_krokodi" class="hidden lg:block text-[11px] font-black uppercase tracking-[4px] opacity-40 hover:opacity-100 transition-all hover:text-amber-500">Поддержка</a>
-                <button onclick="handleAccess()" class="btn-logist-outline !min-height-[45px] px-8 rounded-2xl text-[11px] font-black">ВХОД</button>
-            </div>
+            <button onclick="handleAccess()" class="bg-white/5 border border-white/10 px-6 py-2 rounded-xl text-[11px] font-black uppercase">Вход</button>
         </div>
     </nav>
 
-    <header class="relative pt-72 pb-40 text-center px-6 overflow-hidden">
+    <header class="relative pt-72 pb-32 text-center px-6">
         <div class="max-w-6xl mx-auto relative z-10">
-            <div class="inline-block px-8 py-3 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-500 text-[11px] font-black uppercase tracking-[8px] mb-16 animate__animated animate__fadeInDown">
+            <div class="inline-block px-8 py-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[11px] font-black uppercase tracking-[8px] mb-16 animate__animated animate__fadeInDown">
                 Advanced Terminal System 2025
             </div>
             <h1 class="title-titan mb-16 animate__animated animate__fadeIn">
-                УМНАЯ СИСТЕМА <br><span class="gold-gradient italic underline decoration-amber-500/10 uppercase">УПРАВЛЕНИЯ ПОЛЯМИ</span>
+                УМНАЯ СИСТЕМА <br><span class="gold-gradient italic underline decoration-amber-500/10 uppercase">УПРАВЛЕНИЯ ПЕРСОНАЛОМ</span>
             </h1>
-            <p class="text-xl md:text-3xl opacity-40 mb-20 italic leading-relaxed max-w-5xl mx-auto px-4 text-center">
-                Загружайте список адресов — сотрудники делают фото. <br class="hidden md:block"> 
-                LOGIST_X сам построит иерархию папок в облаке: <br class="hidden md:block"> 
-                <span class="text-white font-black not-italic border-b border-amber-500/30 pb-1">Сотрудник > Город > Дата</span>.
+            <p class="text-xl md:text-3xl opacity-40 mb-20 italic max-w-5xl mx-auto px-4 leading-relaxed">
+                Сотрудник делает фото — LOGIST_X строит дерево папок: <br>
+                <span class="text-white font-black not-italic border-b-2 border-amber-500/20">Сотрудник > Город > Дата</span>
             </p>
             <div class="flex flex-col sm:flex-row gap-8 justify-center items-center px-4 animate__animated animate__fadeInUp">
-                <a href="#logic" class="btn-logist-outline px-16 py-8 text-[14px] rounded-[2.5rem]">КАК ЭТО РАБОТАЕТ?</a>
-                <button id="mainBtn" onclick="handleAccess()" class="btn-logist-titan px-16 py-8 text-[14px] gap-6 rounded-[2.5rem]">
+                <a href="#logic" class="bg-white/5 border border-white/10 px-16 py-8 rounded-[2.5rem] text-[14px] font-bold uppercase tracking-widest">Как это работает?</a>
+                <button id="mainActionBtn" onclick="handleAccess()" class="btn-logist-titan px-16 py-8 rounded-[2.5rem] text-[14px] gap-6 text-black">
                    <i data-lucide="zap" size="28" class="animate__animated animate__flash animate__infinite"></i> СТАРТ ТЕРМИНАЛА
                 </button>
             </div>
@@ -271,114 +143,66 @@
     <section id="logic" class="bg-black/40">
         <div class="max-w-7xl mx-auto text-center mb-32 px-4">
             <h2 class="text-5xl md:text-8xl font-black uppercase italic tracking-tighter text-white mb-6">ТРИ ШАГА <span class="text-amber-500">К ПОРЯДКУ</span></h2>
-            <div class="w-32 h-2 bg-amber-500 mx-auto rounded-full"></div>
         </div>
-        
         <div class="grid grid-cols-1 md:grid-cols-3 gap-16 px-6">
-            <div class="card-titan group text-left">
-                <div class="bg-blue-500/10 p-8 rounded-[2.5rem] w-fit mb-12 text-blue-400 group-hover:scale-110 transition-transform">
-                    <i data-lucide="file-spreadsheet" size="64"></i>
-                </div>
-                <h4 class="font-black uppercase text-3xl mb-8 tracking-widest text-blue-400 italic leading-none">01. ДАННЫЕ</h4>
-                <p class="opacity-40 text-xl leading-relaxed italic">Загружайте Excel со списком задач. Система мгновенно распределит адреса по маршрутам сотрудников в их Terminal.</p>
+            <div class="card-titan group">
+                <div class="bg-blue-500/10 p-8 rounded-[2.5rem] w-fit mb-12 text-blue-400 group-hover:scale-110 transition-transform"><i data-lucide="file-spreadsheet" size="64"></i></div>
+                <h4 class="font-black uppercase text-3xl mb-8 tracking-widest text-blue-400 italic">01. ДАННЫЕ</h4>
+                <p class="opacity-40 text-xl leading-relaxed italic">Загружайте Excel со списком адресов. Система мгновенно распределит задачи.</p>
             </div>
-            <div class="card-titan group text-left">
-                <div class="bg-amber-500/10 p-8 rounded-[2.5rem] w-fit mb-12 text-amber-500 group-hover:scale-110 transition-transform">
-                    <i data-lucide="navigation-2" size="64"></i>
-                </div>
-                <h4 class="font-black uppercase text-3xl mb-8 tracking-widest text-amber-500 italic leading-none">02. КОНТРОЛЬ</h4>
-                <p class="opacity-40 text-xl leading-relaxed italic">Сотрудник открывает Terminal, видит маршрут и просто делает фото на каждой точке. Ему не нужно писать отчеты.</p>
+            <div class="card-titan group">
+                <div class="bg-amber-500/10 p-8 rounded-[2.5rem] w-fit mb-12 text-amber-500 group-hover:scale-110 transition-transform"><i data-lucide="navigation-2" size="64"></i></div>
+                <h4 class="font-black uppercase text-3xl mb-8 tracking-widest text-amber-500 italic">02. КОНТРОЛЬ</h4>
+                <p class="opacity-40 text-xl leading-relaxed italic">Сотрудник видит маршрут и делает фото. Отчет формируется сам собой.</p>
             </div>
-            <div class="card-titan group text-left">
-                <div class="bg-green-500/10 p-8 rounded-[2.5rem] w-fit mb-12 text-green-500 group-hover:scale-110 transition-transform">
-                    <i data-lucide="party-popper" size="64"></i>
-                </div>
-                <h4 class="font-black uppercase text-3xl mb-8 tracking-widest text-green-500 italic leading-none">03. ОБЛАКО</h4>
-                <p class="opacity-40 text-xl leading-relaxed italic">Все фотографии автоматически улетают в нужные папки вашего Google Диска. Отчет готов в ту же секунду.</p>
+            <div class="card-titan group">
+                <div class="bg-green-500/10 p-8 rounded-[2.5rem] w-fit mb-12 text-green-500 group-hover:scale-110 transition-transform"><i data-lucide="cloud-lightning" size="64"></i></div>
+                <h4 class="font-black uppercase text-3xl mb-8 tracking-widest text-green-500 italic">03. ОТЧЕТ</h4>
+                <p class="opacity-40 text-xl leading-relaxed italic">Все фото автоматически улетают в нужные папки вашего Google Диска.</p>
             </div>
         </div>
     </section>
 
-    <section class="py-40 relative">
-        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-32 items-center px-6">
-            <div class="bg-[#05070a] p-12 md:p-20 rounded-[5rem] border border-white/5 font-mono shadow-3xl relative text-left">
-                <div class="text-amber-500/40 mb-14 font-black tracking-[12px] uppercase border-b border-white/5 pb-10 flex items-center gap-6">
-                    <i data-lucide="folder-tree" size="32"></i> AUTO_HIERARCHY_V3
-                </div>
-                
-                <div class="space-y-6">
-                    <div class="flex items-center gap-6 mb-10 text-2xl font-bold"><i data-lucide="folder" size="28" class="text-amber-500"></i> LOGIST_X_CLOUD</div>
+    <section class="py-40 relative px-6">
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-32 items-center">
+            <div class="bg-[#05070a] p-12 md:p-20 rounded-[5rem] border border-white/5 font-mono shadow-3xl text-left overflow-hidden">
+                <div class="text-amber-500/40 mb-14 font-black tracking-[12px] uppercase border-b border-white/5 pb-10 flex items-center gap-6"><i data-lucide="folder-tree" size="32"></i> CLOUD_LOGIC_V3</div>
+                <div class="tree-logic-node">
+                    <div class="flex items-center gap-6 mb-10 text-blue-400 font-black text-2xl uppercase italic leading-none"><i data-lucide="user" size="28"></i> ИВАНОВ_С.А.</div>
                     <div class="tree-logic-node">
-                        <div class="flex items-center gap-6 mb-10 text-blue-400 font-black text-2xl uppercase italic tracking-widest leading-none">
-                            <i data-lucide="user" size="28"></i> ИВАНОВ_С.А.
-                        </div>
+                        <div class="flex items-center gap-6 mb-10 text-green-500 font-black text-2xl uppercase italic leading-none"><i data-lucide="map-pin" size="28"></i> СОЧИ_ЦЕНТР</div>
                         <div class="tree-logic-node">
-                            <div class="flex items-center gap-6 mb-10 text-green-500 font-black text-2xl uppercase italic tracking-widest leading-none">
-                                <i data-lucide="map-pin" size="28"></i> СОЧИ_ЮГ
-                            </div>
-                            <div class="tree-logic-node">
-                                <div class="flex items-center gap-6 mb-10 opacity-30 font-black text-lg tracking-[8px]">
-                                    <i data-lucide="calendar" size="26"></i> 27.12.2025
-                                </div>
-                                <div class="tree-logic-node italic text-amber-500/60 text-lg space-y-8">
-                                    <div class="flex items-center gap-6 transition-all hover:translate-x-4 cursor-pointer group">
-                                        <i data-lucide="file-image" size="24" class="group-hover:text-amber-500 transition-colors"></i> 
-                                        <span>Объект_ул.Ленина_12.jpg</span>
-                                    </div>
-                                    <div class="flex items-center gap-6 transition-all hover:translate-x-4 cursor-pointer group">
-                                        <i data-lucide="file-image" size="24" class="group-hover:text-amber-500 transition-colors"></i> 
-                                        <span>Результат_Монтажа_ОК.jpg</span>
-                                    </div>
-                                </div>
+                            <div class="opacity-30 font-black text-lg tracking-[8px] mb-8">27.12.2025</div>
+                            <div class="italic text-amber-500/60 text-lg space-y-8">
+                                <div class="flex items-center gap-6 group cursor-pointer transition-all hover:translate-x-4"><i data-lucide="file-image" size="24" class="group-hover:text-amber-500"></i> Объект_ул.Ленина_12.jpg</div>
+                                <div class="flex items-center gap-6 group cursor-pointer transition-all hover:translate-x-4"><i data-lucide="file-image" size="24" class="group-hover:text-amber-500"></i> Монтаж_Замена_Рекламы.jpg</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
             <div class="text-center lg:text-left">
-                <div class="w-32 h-1.5 bg-amber-500 mb-16 mx-auto lg:mx-0"></div>
-                <h2 class="text-5xl md:text-9xl font-black mb-16 uppercase italic leading-none tracking-tighter text-white">АРХИВ <br><span class="text-amber-500 italic underline decoration-amber-500/10 uppercase">СТРОИТ СЕБЯ САМ</span></h2>
-                <p class="opacity-40 text-2xl md:text-3xl mb-20 italic leading-relaxed">
-                    Забудьте про WhatsApp и бесконечные архивы в облаке. Система сама раскладывает каждый файл по полкам. У вас всегда идеальная структура без ручного труда.
-                </p>
-                <div class="space-y-10">
-                    <div class="flex items-center gap-8 text-xl font-black uppercase tracking-[5px] opacity-60 hover:text-amber-500 transition-colors justify-center lg:justify-start">
-                        <i data-lucide="shield-check" class="text-amber-500" size="32"></i> 100% Автоматизация папок
-                    </div>
-                    <div class="flex items-center gap-8 text-xl font-black uppercase tracking-[5px] opacity-60 hover:text-amber-500 transition-colors justify-center lg:justify-start">
-                        <i data-lucide="clock" class="text-amber-500" size="32"></i> Поиск фото за 3 секунды
-                    </div>
+                <h2 class="text-5xl md:text-9xl font-black mb-16 uppercase italic leading-none tracking-tighter">АРХИВ <br><span class="text-amber-500 italic underline decoration-amber-500/10">БЕЗ УСИЛИЙ</span></h2>
+                <p class="opacity-40 text-2xl md:text-3xl mb-20 italic leading-relaxed">Система сама раскладывает каждый файл по полкам. У вас всегда идеальная структура без ручного труда.</p>
+                <div class="flex flex-col gap-10">
+                    <div class="flex items-center gap-8 text-xl font-black uppercase tracking-[5px] opacity-60 hover:text-amber-500 transition-colors justify-center lg:justify-start"><i data-lucide="shield-check" class="text-amber-500" size="32"></i> 100% Автоматизация папок</div>
+                    <div class="flex items-center gap-8 text-xl font-black uppercase tracking-[5px] opacity-60 hover:text-amber-500 transition-colors justify-center lg:justify-start"><i data-lucide="clock" class="text-amber-500" size="32"></i> Поиск фото за 3 секунды</div>
                 </div>
             </div>
         </div>
     </section>
 
     <section class="py-40 px-6 bg-black/30">
-        <div class="max-w-7xl mx-auto card-titan p-16 md:p-32 border-green-500/20 group relative overflow-hidden">
+        <div class="max-w-7xl mx-auto card-titan p-16 md:p-32 border-green-500/20 relative overflow-hidden group">
             <div class="absolute -right-20 -bottom-20 opacity-5 group-hover:opacity-10 transition-opacity"><i data-lucide="wallet" size="500"></i></div>
             <div class="grid lg:grid-cols-2 gap-32 items-center relative z-10">
                 <div class="text-center lg:text-left">
                     <h2 class="text-5xl md:text-8xl font-black mb-12 uppercase italic tracking-tighter text-white leading-none">ГИБКИЙ <br><span class="text-green-500 italic">КОШЕЛЕК</span></h2>
-                    <p class="opacity-40 text-2xl md:text-3xl mb-20 italic leading-relaxed">
-                        Настраивайте любые тарифы: монтаж, реклама, сервис Pseudomona или фото-контроль. Система сама суммирует доход сотрудника в режиме реального времени.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-10">
-                        <div class="p-10 bg-white/5 rounded-[3rem] border border-white/5 text-center flex-1">
-                            <i data-lucide="zap" class="text-green-500 mb-6 mx-auto" size="48"></i>
-                            <div class="text-[12px] font-black uppercase tracking-widest opacity-40 italic leading-none">Мгновенный расчет</div>
-                        </div>
-                        <div class="p-10 bg-white/5 rounded-[3rem] border border-white/5 text-center flex-1">
-                            <i data-lucide="layers" class="text-green-500 mb-6 mx-auto" size="48"></i>
-                            <div class="text-[12px] font-black uppercase tracking-widest opacity-40 italic leading-none">Любые тарифы</div>
-                        </div>
-                    </div>
+                    <p class="opacity-40 text-2xl md:text-3xl mb-20 italic leading-relaxed">Настраивайте любые тарифы: монтаж, замена рекламы или сервис <b>Pseudomona</b>. Система сама суммирует доход в реальном времени.</p>
                 </div>
-                
                 <div class="bg-black/90 p-16 rounded-[5rem] border border-green-500/10 shadow-3xl text-center">
-                    <div class="text-[12px] font-black uppercase tracking-[10px] opacity-20 mb-12 italic leading-none">TERMINAL_WALLET_V5</div>
                     <div class="wallet-amount-titan mb-10 italic">14 200 ₽</div>
-                    <div class="text-sm font-bold opacity-30 uppercase tracking-[6px] mb-16 italic leading-none">Баланс к выплате на сегодня</div>
+                    <div class="text-sm font-bold opacity-30 uppercase tracking-[6px] mb-16 italic leading-none">Баланс сотрудника на сегодня</div>
                     <div class="space-y-6 text-left font-mono text-lg opacity-40 italic">
                         <div class="flex justify-between border-b border-white/5 pb-5"><span>Монтаж Рекламы</span> <span class="text-green-400 font-bold">+4 500 ₽</span></div>
                         <div class="flex justify-between border-b border-white/5 pb-5"><span>Pseudomona Service</span> <span class="text-green-400 font-bold">+2 200 ₽</span></div>
@@ -389,17 +213,36 @@
         </div>
     </section>
 
+    <section id="pricing" class="py-40 px-6">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-14 items-stretch px-4">
+            <div class="card-titan opacity-50 hover:opacity-100 transition-all flex flex-col justify-between group">
+                <div><div class="text-6xl font-black mt-14 mb-8 italic tracking-tighter">7 500 ₽</div><p class="text-[12px] font-bold text-blue-400 mb-14 uppercase tracking-widest italic">Интеграция облака</p></div>
+                <a href="https://t.me/gena_krokodi" class="btn-logist-titan !bg-white/5 !text-white border border-white/10 !min-height-[60px] !text-[12px]">Заказать Setup</a>
+            </div>
+            <div class="card-titan border-amber-500/40 bg-amber-500/5 relative shadow-3xl scale-105 z-10">
+                <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-amber-500 text-black px-14 py-4 rounded-full text-[11px] font-black uppercase italic tracking-[6px] shadow-3xl">ACTIVE TERMINAL</div>
+                <div class="text-center">
+                    <div class="text-8xl md:text-9xl font-black mt-16 mb-8 italic tracking-tighter text-amber-500">900 ₽</div>
+                    <p class="text-[13px] font-bold text-white mb-16 uppercase tracking-widest italic opacity-40">В месяц за сотрудника</p>
+                </div>
+                <button onclick="handleAccess()" class="btn-logist-titan block w-full py-10 !rounded-[3rem] text-center text-[14px] font-black">Подключиться</button>
+            </div>
+            <div class="card-titan opacity-50 hover:opacity-100 transition-all flex flex-col justify-between group">
+                <div><div class="text-6xl font-black mt-14 mb-8 italic tracking-tighter">7 200 ₽</div><p class="text-[12px] font-bold text-green-400 mb-14 uppercase tracking-widest italic">Команда от 10 чел</p></div>
+                <a href="https://t.me/gena_krokodi" class="btn-logist-titan !bg-white/5 !text-white border border-white/10 !min-height-[60px] !text-[12px]">Обсудить тариф</a>
+            </div>
+        </div>
+    </section>
+
     <footer class="py-64 text-center border-t border-white/5 bg-black/90 relative overflow-hidden px-6">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center opacity-30 gap-24 mb-48">
-            <div class="flex items-center gap-8"><i data-lucide="cloud" size="48"></i> <span class="text-xl font-black uppercase tracking-[12px]">GOOGLE_DRIVE_API</span></div>
-            <div class="flex items-center gap-8"><i data-lucide="wifi-off" size="48"></i> <span class="text-xl font-black uppercase tracking-[12px]">OFFLINE_ENGINE</span></div>
-            <div class="flex items-center gap-8"><i data-lucide="shield-check" size="48"></i> <span class="text-xl font-black uppercase tracking-[12px]">BACKUP_CORE_V2</span></div>
+            <div class="flex items-center gap-8"><i data-lucide="cloud" size="48"></i> <span class="text-xl font-black uppercase tracking-[12px]">GOOGLE_API</span></div>
+            <div class="flex items-center gap-8"><i data-lucide="wifi-off" size="48"></i> <span class="text-xl font-black uppercase tracking-[12px]">OFFLINE_V5</span></div>
+            <div class="flex items-center gap-8"><i data-lucide="shield-check" size="48"></i> <span class="text-xl font-black uppercase tracking-[12px]">BACKUP_CORE</span></div>
         </div>
         <div class="text-[30px] md:text-[50px] font-black uppercase tracking-[60px] opacity-5 mb-24 italic leading-none">LOGIST_X 2025</div>
-        <p class="text-[12px] opacity-20 uppercase tracking-[15px] font-bold italic mb-16 leading-none">Designed & Engineered by Nikitin Evgeny</p>
-        <a href="https://t.me/gena_krokodi" class="inline-flex items-center gap-6 text-amber-500/60 uppercase font-black text-sm tracking-[8px] hover:text-amber-500 transition-all">
-            <i data-lucide="send" size="24"></i> СВЯЗАТЬСЯ В TELEGRAM
-        </a>
+        <p class="text-[12px] opacity-20 uppercase tracking-[15px] font-bold italic mb-16">Designed & Engineered by Nikitin Evgeny</p>
+        <a href="https://t.me/gena_krokodi" class="inline-flex items-center gap-6 text-amber-500/60 uppercase font-black text-sm tracking-[8px] hover:text-amber-500 transition-all"><i data-lucide="send" size="24"></i> СВЯЗАТЬСЯ В TELEGRAM</a>
         <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1600px] h-[1000px] bg-amber-500/5 blur-[350px] rounded-full -z-10"></div>
     </footer>
 
@@ -415,70 +258,55 @@
 
     <script>
         lucide.createIcons();
-
-        // 1. РЕГИСТРАЦИЯ SERVICE WORKER (Критично для PWA)
+        
+        // Регистрация с расширенным Scope
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('app/sw.js', { scope: '/' })
-                .then(reg => {
-                    console.log('LOGIST_X: SG Active');
-                }).catch(err => {
-                    console.log('LOGIST_X: SG Error', err);
-                });
+                .then(reg => console.log('LOGIST_X SW: Active'))
+                .catch(err => console.log('SW Error:', err));
             });
         }
 
-        // 2. PWA INSTALL LOGIC
         let deferredPrompt;
-        const mainBtn = document.getElementById('mainBtn');
+        const mainBtn = document.getElementById('mainActionBtn');
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // Активируем пульсацию на главной кнопке
+            // Активируем кнопку установки
             if (mainBtn) {
                 mainBtn.classList.add('pulse-active');
-                mainBtn.innerHTML = '<i data-lucide="download" size="28" class="animate__animated animate__bounce animate__infinite"></i> УСТАНОВИТЬ ПРИЛОЖЕНИЕ';
+                mainBtn.innerHTML = '<i data-lucide="download" size="28" class="animate__animated animate__bounce animate__infinite"></i> УСТАНОВИТЬ LOGIST_X';
                 lucide.createIcons();
             }
-            console.log("LOGIST_X: Система готова к установке.");
         });
 
         async function handleAccess() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    if (mainBtn) {
-                        mainBtn.classList.remove('pulse-active');
-                        mainBtn.innerHTML = '<i data-lucide="zap" size="28"></i> СТАРТ ТЕРМИНАЛА';
-                    }
-                }
+                if (outcome === 'accepted') mainBtn.classList.remove('pulse-active');
                 deferredPrompt = null;
             } else {
                 window.location.href = 'app/index.html';
             }
         }
 
-        // 3. АНИМАЦИЯ ПРИ СКРОЛЛЕ
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: "0px 0px -50px 0px"
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
-                    entry.target.style.opacity = '1';
-                    observer.unobserve(entry.target);
+        // Intersection Observer для анимаций
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    e.target.style.opacity = '1';
+                    obs.unobserve(e.target);
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.1 });
 
-        document.querySelectorAll('.card-titan, .tree-logic-node, header h1, section h2').forEach(el => {
+        document.querySelectorAll('.card-titan, header h1, section h2').forEach(el => {
             el.style.opacity = '0';
-            observer.observe(el);
+            obs.observe(el);
         });
     </script>
 </body>
