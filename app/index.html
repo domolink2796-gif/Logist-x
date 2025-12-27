@@ -28,7 +28,7 @@
         #syncIndicator.active-sync { background: var(--accent); box-shadow: 0 0 15px var(--accent); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
-        /* FIX: ПУЛЬСАЦИЯ КНОПКИ */
+        /* АНИМАЦИЯ ПУЛЬСАЦИИ КНОПКИ МЕНЮ/УСТАНОВКИ */
         @keyframes menu-pulse {
             0% { background: #0d1117; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
             70% { background: rgba(245, 158, 11, 0.1); box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
@@ -539,11 +539,18 @@
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
 
-    // FIX: ФУНКЦИЯ ПРОВЕРКИ PWA И УПРАВЛЕНИЯ ПУЛЬСАЦИЕЙ
+    // FIX: ЛОГИКА УСТАНОВКИ И ПРОВЕРКИ PWA
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        checkPWA();
+    });
+
     function checkPWA() {
         const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         const btn = document.getElementById('menuBtn');
-        if (!isPWA) {
+        if (!isPWA && deferredPrompt) {
             btn.classList.add('pulse-active');
             btn.innerText = "⚙️ УСТАНОВИТЬ LOGIST_X";
         } else {
@@ -552,7 +559,27 @@
         }
     }
 
+    document.getElementById('menuBtn').addEventListener('click', async () => {
+        if (deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                deferredPrompt = null;
+                checkPWA();
+            }
+        }
+    });
+
     window.onload = () => {
+        // FIX: РЕГИСТРАЦИЯ SERVICE WORKER (Чтобы приложение работало как PWA)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(() => {
+                console.log('LOGIST_X: Service Worker зарегистрирован');
+            }).catch((err) => {
+                console.log('LOGIST_X: Ошибка Service Worker:', err);
+            });
+        }
+
         const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
         if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
         if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
