@@ -16,12 +16,32 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script>
+      // 1. РЕГИСТРАЦИЯ СИСТЕМЫ
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('Система Logist_X готова к установке'))
-            .catch(err => console.log('Ошибка установки:', err));
+          navigator.serviceWorker.register('sw.js', { scope: './' })
+            .then(reg => console.log('Logist_X: Двигатель запущен'))
+            .catch(err => console.log('Ошибка системы:', err));
         });
+      }
+
+      // 2. АКТИВАЦИЯ КНОПКИ УСТАНОВКИ
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        console.log('Браузер готов к установке приложения');
+      });
+
+      // Функция вызова установки (можно вызвать из меню)
+      async function installApp() {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          deferredPrompt = null;
+        } else {
+          alert("Приложение уже установлено или браузер еще не проверил файлы. Подождите 10 секунд.");
+        }
       }
     </script>
 
@@ -170,6 +190,7 @@
         <input type="text" id="licenseKey" class="std-input" placeholder="Ключ" oninput="saveCfg()">
         <div id="menuLicProgress" class="lic-progress"><div id="menuLicBar" class="lic-bar"></div></div>
         <button class="btn-act btn-blue" onclick="checkLicense()">ОБНОВИТЬ СТАТУС</button>
+        <button class="btn-act btn-green" onclick="installApp()">УСТАНОВИТЬ КАК ПРИЛОЖЕНИЕ</button>
     </div>
 
     <div class="block-box">
