@@ -79,12 +79,6 @@
         .bot-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(13, 17, 23, 0.92); backdrop-filter: blur(25px); padding: 12px 16px 42px 16px; border-top: 1px solid var(--border); display: flex; gap: 14px; z-index: 2000; box-sizing: border-box; }
         .bb-btn { flex: 1; padding: 24px 10px; border: none; border-radius: 22px; color: white; font-weight: 900; font-size: 1rem; text-transform: uppercase; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
 
-        #loader { position: fixed; inset: 0; background: #010409; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        #licenseLock { position: fixed; inset: 0; background: #010409; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        
-        .lic-progress { width: 100%; height: 4px; background: #161b22; border-radius: 2px; margin: 10px 0; overflow: hidden; display: none; }
-        .lic-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; box-shadow: 0 0 10px var(--accent); }
-
         #toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 900; font-size: 0.8rem; z-index: 9999; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
         .btn-price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
@@ -95,24 +89,6 @@
 <body onclick="resumeAudio()">
 
 <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
-
-<div id="licenseLock">
-    <div style="background: #0d1117; padding: 45px; border-radius: 45px; border: 1px solid var(--border); width: 100%; max-width: 420px; text-align: center;">
-        <div style="font-size: 5rem; margin-bottom: 25px;">🔒</div>
-        <h1 style="font-weight: 900; color: #fff; font-size: 1.6rem;">LOGIST_X SECURE</h1>
-        <div style="margin-top: 30px; text-align: left;">
-            <label class="stat-label" style="margin-left:10px">Введите ФИО:</label>
-            <input type="text" id="lockWorkerName" class="std-input" placeholder="Иванов Иван">
-            <label class="stat-label" style="margin-left:10px">Лицензионный Ключ:</label>
-            <input type="text" id="lockLicenseKey" class="std-input" style="color:var(--accent); font-weight:900;" placeholder="LX-XXXX-XXXX">
-            <div id="lockLicProgress" class="lic-progress"><div id="lockLicBar" class="lic-bar"></div></div>
-            <button id="lockBtn" class="btn-act btn-blue" style="margin-top:20px;" onclick="saveAndCheckLock()">АКТИВИРОВАТЬ</button>
-        </div>
-        <p style="font-size: 0.6rem; color: var(--subtext); margin-top: 20px;">Powered by Robot Server</p>
-    </div>
-</div>
-
-<div id="loader"><div style="font-weight: 900; color: var(--accent); letter-spacing: 10px; font-size: 1.8rem;">LOGIST_X</div><div class="lic-progress" style="display:block; width:150px; margin-top:15px;"><div class="lic-bar" style="width:100%"></div></div></div>
 
 <header>
     <div class="top-row"><span class="app-name">LOGIST_X</span><button id="syncIndicator" onclick="showMonitor()">📦 <span id="queueCount">0</span></button><span id="cityBadge" style="background:rgba(245,158,11,0.1); color: var(--accent); padding: 8px 18px; border-radius: 12px; font-size: 0.7rem; font-weight: 900;">...</span></div>
@@ -129,16 +105,15 @@
 <div class="menu-toggle" onclick="toggleMenu()">⚙️ МЕНЮ И НАСТРОЙКИ</div>
 <div id="menu" class="controls">
     <div class="block-box">
-        <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
+        <div class="block-title">👤 ПРОФИЛЬ:</div>
         <input type="text" id="workerName" class="std-input" placeholder="Твое ФИО" oninput="saveCfg()">
-        <input type="text" id="cityName" class="std-input" placeholder="Город (напр. Сочи)" oninput="saveCfg()">
-        <input type="text" id="licenseKey" class="std-input" placeholder="Ключ" oninput="saveCfg()">
-        <div id="menuLicProgress" class="lic-progress"><div id="menuLicBar" class="lic-bar"></div></div>
+        <input type="text" id="cityName" class="std-input" placeholder="Город" oninput="saveCfg()">
+        <input type="text" id="licenseKey" class="std-input" placeholder="Ключ лицензии" oninput="saveCfg()">
         <button class="btn-act btn-blue" onclick="checkLicense()">ОБНОВИТЬ СТАТУС</button>
     </div>
 
     <div class="block-box">
-        <div class="block-title">🛠 ТАРИФЫ И ВИДЫ РАБОТ:</div>
+        <div class="block-title">🛠 ТАРИФЫ:</div>
         <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
             <input type="text" id="t1_name" class="std-input" oninput="saveCfg()"><input type="number" id="p1" class="std-input" oninput="saveCfg()">
         </div>
@@ -151,14 +126,12 @@
     </div>
 
     <div class="block-box">
-        <div class="block-title">📦 УПРАВЛЕНИЕ ДАННЫМИ:</div>
+        <div class="block-title">📦 ДАННЫЕ:</div>
         <button class="btn-act btn-purple" onclick="showArchive()">📁 АРХИВ РАБОТ</button>
-        <button class="btn-act btn-blue" onclick="createFullBackup()">💾 БЭКАП + ФОТО</button>
-        <label class="btn-act btn-dark">🔄 ВОССТАНОВИТЬ<input type="file" style="display:none;" onchange="restoreFullBackup(this)"></label>
-        <label class="btn-act btn-green" style="margin-top:10px">📊 ЗАГРУЗИТЬ EXCEL<input type="file" style="display:none;" onchange="handleExcel(this)"></label>
+        <button class="btn-act btn-blue" onclick="createFullBackup()">💾 СОЗДАТЬ БЭКАП</button>
+        <label class="btn-act btn-green">📊 ЗАГРУЗИТЬ EXCEL<input type="file" style="display:none;" onchange="handleExcel(this)"></label>
     </div>
-
-    <button class="btn-act btn-red" onclick="if(confirm('Сбросить базу?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС СИСТЕМЫ</button>
+    <button class="btn-act btn-red" onclick="if(confirm('Сбросить всё?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС</button>
 </div>
 
 <div id="content" style="padding-top:20px;"></div>
@@ -172,7 +145,7 @@
                 <div class="price-btn-cell"><div id="lbl1" class="price-label">...</div><button id="bt1" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(1)">0</button></div>
                 <div class="price-btn-cell"><div id="lbl3" class="price-label">...</div><button id="bt3" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(3)">0</button></div>
                 <div class="price-btn-cell"><div id="lbl4" class="price-label">...</div><button id="bt4" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(4)">0</button></div>
-                <div class="price-btn-cell"><div class="price-label">СРЫВ</div><button id="bt2" class="p-btn" style="font-size:0.7rem; width:100%; background:var(--red); color:#fff; border:none;" onclick="setType(2)">0 ₽</button></div>
+                <div class="price-btn-cell"><div class="price-label">СРЫВ</div><button id="bt2" class="p-btn" style="font-size:0.7rem; width:100%; background:var(--red); border:none; color:#fff;" onclick="setType(2)">0</button></div>
             </div>
             <button class="btn-act btn-green" id="confirmBtn" onclick="confirmReport()">ОТПРАВИТЬ ОТЧЕТ</button>
         </div>
@@ -181,17 +154,14 @@
 </div>
 
 <div class="bot-bar">
-    <button class="bb-btn" style="background: linear-gradient(135deg, #f59e0b, #b45309); color: #000;" onclick="showWallet()">💰 КОШЕЛЕК</button>
-    <button class="bb-btn" style="background: linear-gradient(135deg, #ef4444, #991b1b); color: #fff;" onclick="showSryvy()">⚠️ СРЫВЫ</button>
+    <button class="bb-btn" style="background: var(--accent); color: #000;" onclick="showWallet()">💰 КОШЕЛЕК</button>
+    <button class="bb-btn" style="background: var(--red); color: #fff;" onclick="showSryvy()">⚠️ СРЫВЫ</button>
 </div>
 
 <script>
     const BOT_SERVER_URL = 'https://logist-x-server.onrender.com';
-    const MASTER_KEY = "DEV-MASTER-999";
-    
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
-    let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
-    const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
+    let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null;
 
     function getDeviceId() {
         let id = localStorage.getItem('logist_device_id');
@@ -202,119 +172,83 @@
     function haptic() { if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(35); }
     function toast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
     function resumeAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    function playSfx(f, t, d) { try { if(!audioCtx) return; let o = audioCtx.createOscillator(), v = audioCtx.createGain(); o.type = t; o.frequency.value = f; v.gain.value = 0.05; o.connect(v); v.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); } catch(e){} }
-    const Sfx = { click: () => playSfx(600, 'sine', 0.08), ok: () => playSfx(800, 'sine', 0.1) };
 
     function openDB() {
-        const req = indexedDB.open("LogistX_Secure_v450", 1);
+        const req = indexedDB.open("LogistX_Secure_v550", 1);
         req.onupgradeneeded = (e) => e.target.result.createObjectStore("sync_queue", { autoIncrement: true });
         req.onsuccess = (e) => { db = e.target.result; updateSyncCount(); syncNow(); };
     }
 
     function saveCfg() {
-        DATA.license.key = document.getElementById('licenseKey')?.value.trim().toUpperCase() || DATA.license.key;
-        DATA.workerName = document.getElementById('workerName')?.value.trim() || DATA.workerName;
-        DATA.city = document.getElementById('cityName')?.value.trim() || DATA.city || "Орёл";
-        DATA.prices.p1 = parseInt(document.getElementById('p1')?.value) || 500;
-        DATA.prices.p3 = parseInt(document.getElementById('p3')?.value) || 300;
-        DATA.prices.p4 = parseInt(document.getElementById('p4')?.value) || 100;
-        DATA.names.t1 = document.getElementById('t1_name')?.value || "Монтаж";
-        DATA.names.t3 = document.getElementById('t3_name')?.value || "Замена рекламы";
-        DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudomona";
-        document.getElementById('cityBadge').innerText = DATA.city.toUpperCase();
-        localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
+        DATA.license.key = document.getElementById('licenseKey').value.trim().toUpperCase();
+        DATA.workerName = document.getElementById('workerName').value.trim();
+        DATA.city = document.getElementById('cityName').value.trim();
+        DATA.prices.p1 = parseInt(document.getElementById('p1').value) || 500;
+        DATA.prices.p3 = parseInt(document.getElementById('p3').value) || 300;
+        DATA.prices.p4 = parseInt(document.getElementById('p4').value) || 100;
+        DATA.names.t1 = document.getElementById('t1_name').value;
+        DATA.names.t3 = document.getElementById('t3_name').value;
+        DATA.names.t4 = document.getElementById('t4_name').value;
+        document.getElementById('cityBadge').innerText = (DATA.city || "ГОРОД").toUpperCase();
+        localStorage.setItem('logist_v550_data', JSON.stringify(DATA));
         checkLicenseUI();
     }
 
     function checkLicenseUI() {
-        if (DATA.license.key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; }
         const now = Date.now();
         const active = DATA.license.key && Number(DATA.license.expiry) > now;
         DATA.license.status = active;
-        document.getElementById('licenseLock').style.display = active ? 'none' : 'flex';
         const h = document.getElementById('statLicense');
         if(active) {
             const d = Math.ceil((DATA.license.expiry - now) / 86400000);
-            h.innerText = (DATA.license.key === MASTER_KEY ? "∞" : d) + " дн."; h.style.color = "var(--accent)";
+            h.innerText = d + " дн."; h.style.color = "var(--accent)";
         } else { h.innerText = "EXP"; h.style.color = "var(--red)"; }
     }
 
     async function checkLicense() {
-        const key = DATA.license.key; const worker = DATA.workerName; const devId = getDeviceId();
-        if (key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("MASTER OK"); return; }
-        if(!key || !worker) return alert("Введите ФИО и Ключ!");
-        const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
-        bars.forEach(b => b && (b.style.width = '50%'));
+        if(!DATA.license.key || !DATA.workerName) return alert("Введите ФИО и Ключ!");
         try {
             const res = await fetch(`${BOT_SERVER_URL}/check-license`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ licenseKey: key, workerName: worker, deviceId: devId })
+                body: JSON.stringify({ licenseKey: DATA.license.key, workerName: DATA.workerName, deviceId: getDeviceId() })
             });
             const result = await res.json();
-            if(result.status === "active") { DATA.license.expiry = Number(result.expiry); saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); } else { alert("ОТКАЗ: " + result.message); }
-        } catch(e) { alert("Ошибка связи!"); }
-        finally { bars.forEach(b => b && (b.style.width = '0%')); }
+            if(result.status === "active") { DATA.license.expiry = Number(result.expiry); saveCfg(); toast("ДОСТУП ОБНОВЛЕН"); }
+        } catch(e) { alert("Ошибка связи с сервером"); }
     }
-
-    async function saveAndCheckLock() { DATA.workerName = document.getElementById('lockWorkerName').value.trim(); DATA.license.key = document.getElementById('lockLicenseKey').value.trim().toUpperCase(); saveCfg(); await checkLicense(); }
 
     function handleExcel(inp) {
         let f = inp.files[0]; if(!f) return;
-        setLoader(true);
-        setTimeout(() => {
-            let r = new FileReader(); r.onload = (e) => {
-                try {
-                    let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
-                    let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
-                    let head = rows[0].map(v => String(v || "").toLowerCase());
-                    let cS = head.findIndex(v => v.includes('улица') || v.includes('адрес'));
-                    let cH = head.findIndex(v => v.includes('дом'));
-                    let cP = head.findIndex(v => v.includes('подъезд'));
-                    if(cS === -1) return alert("Ошибка адреса");
-                    let list = [];
-                    rows.forEach((row, k) => {
-                        if(k === 0 || !row[cS]) return;
-                        let cls = []; row.forEach(cell => { if(cell){ let v=String(cell).toUpperCase(); for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]); } });
-                        list.push({s: row[cS], h: row[cH] || "?", p: parseInt(row[cP])||1, clients: [...new Set(cls)], id: 'ID-'+k+'-'+(row[cS]+row[cH]).replace(/\W/g,'')});
-                    });
-                    DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); Sfx.ok(); toast("БАЗА ОБНОВЛЕНА");
-                } finally { setTimeout(() => setLoader(false), 500); }
-            }; r.readAsArrayBuffer(f);
-        }, 100);
+        let r = new FileReader(); r.onload = (e) => {
+            let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+            let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
+            DATA.list = rows.slice(1).filter(r => r[0]).map((row, k) => ({
+                s: row[0], h: row[1], p: parseInt(row[2])||1, clients: row[3] ? row[3].split(',') : ["ОБЩИЙ"], id: 'ID-'+k
+            }));
+            render(); saveCfg(); toggleMenu(); toast("БАЗА ЗАГРУЖЕНА");
+        }; r.readAsArrayBuffer(f);
     }
 
     function render() {
-        const box = document.getElementById('content'), search = (document.getElementById('search')?.value || "").toLowerCase();
-        let html = "";
-        DATA.list.forEach(i => {
-            if(search && !i.s.toLowerCase().includes(search) && !i.h.toString().includes(search)) return;
-            let finished = 0; if(DATA.done[i.id]) { for(let p=1; p<=i.p; p++) if(DATA.done[i.id][p]) finished++; }
-            const isDone = (finished === i.p && i.p > 0);
+        const box = document.getElementById('content'), search = (document.getElementById('search').value || "").toLowerCase();
+        box.innerHTML = DATA.list.filter(i => i.s.toLowerCase().includes(search)).map(i => {
             let pds = ""; for(let p=1; p<=i.p; p++){
                 let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
                 pds += `<div class="p-btn ${st?'done-'+st:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
             }
-            html += `<div class="card ${isDone?'is-finished':''}">
-                <div class="card-head"><div style="flex:1; margin-right:10px;">${i.s}, ${i.h}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
-                <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
-                <div class="pods">${pds}</div>
-            </div>`;
-        });
-        box.innerHTML = html || "<p style='text-align:center; opacity:0.1; padding:50px;'>ПУСТ </p>"; updateStats();
+            return `<div class="card"><div class="card-head"><div>${i.s}, ${i.h}</div><button class="nav-btn" onclick="window.open('https://yandex.ru/maps/?text=${encodeURIComponent(DATA.city+' '+i.s+' '+i.h)}')">КАРТА</button></div><div class="pods">${pds}</div></div>`;
+        }).join('');
+        updateStats();
     }
 
-    function openNav(addr) { haptic(); window.open(`https://yandex.ru/maps/?text=${encodeURIComponent(DATA.city + " " + addr)}`); }
-
     function openReport(id, p) {
-        if(!DATA.license.status) return checkLicenseUI();
-        haptic(); curId = id; curP = p; curPhotos = {}; const it = DATA.list.find(x => x.id === id);
+        curId = id; curP = p; curPhotos = {}; const it = DATA.list.find(x => x.id === id);
         document.getElementById('modalTitle').innerText = `${it.s}, ${it.h} (П. ${p})`;
-        const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
-        document.getElementById('modalBody').innerHTML = cls.map((c, idx) => `
-            <div class="photo-frame" onclick="document.getElementById('cam_${idx}').click()">
-                <div style="text-align:center; opacity:0.4;"><div style="font-weight:900; color:var(--accent); margin-bottom:5px;">${c}</div><div style="font-size:3rem">📸</div></div>
-                <img id="prev_${idx}" class="photo-preview" style="display:none">
-                <input type="file" accept="image/*" capture="environment" id="cam_${idx}" style="display:none" onchange="handleCam(${idx},'${c}')">
+        document.getElementById('modalBody').innerHTML = it.clients.map(c => `
+            <div class="photo-frame" onclick="document.getElementById('cam_${c}').click()">
+                <div style="text-align:center; opacity:0.4;"><b>${c}</b><br>📸 СДЕЛАТЬ ФОТО</div>
+                <img id="prev_${c}" class="photo-preview" style="display:none">
+                <input type="file" accept="image/*" capture="environment" id="cam_${c}" style="display:none" onchange="handleCam('${c}')">
             </div>`).join("");
         document.getElementById('lbl1').innerText = DATA.names.t1; document.getElementById('bt1').innerText = DATA.prices.p1;
         document.getElementById('lbl3').innerText = DATA.names.t3; document.getElementById('bt3').innerText = DATA.prices.p3;
@@ -322,154 +256,150 @@
         document.getElementById('reportFooter').style.display = 'block'; setType(1); document.getElementById('reportModal').style.display = 'flex';
     }
 
-    function handleCam(idx, client) {
-        const f = document.getElementById(`cam_${idx}`).files[0]; if(!f) return;
+    function handleCam(c) {
+        const f = document.getElementById('cam_'+c).files[0];
         const r = new FileReader(); r.onload = (e) => {
             const img = new Image(); img.src = e.target.result;
             img.onload = () => {
                 const canvas = document.createElement('canvas'); let w = img.width, h = img.height, max = 1000;
                 if(w > h) { if(w > max) { h *= max/w; w = max; } } else { if(h > max) { w *= max/h; h = max; } }
                 canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                curPhotos[client] = canvas.toDataURL('image/jpeg', 0.6);
-                document.getElementById(`prev_${idx}`).src = curPhotos[client]; document.getElementById(`prev_${idx}`).style.display = 'block';
-                haptic();
+                curPhotos[c] = canvas.toDataURL('image/jpeg', 0.6);
+                document.getElementById('prev_'+c).src = curPhotos[c]; document.getElementById(`prev_${c}`).style.display = 'block';
             };
         }; r.readAsDataURL(f);
     }
 
     function setType(t) { haptic(); curType = t; [1,2,3,4].forEach(i => { let b = document.getElementById('bt'+i); if(b) b.style.border = (i===t)?"3px solid #fff":"none"; }); }
 
-    function getCoords() {
-        return new Promise((resolve) => {
-            if (!navigator.geolocation) return resolve("No GPS");
-            navigator.geolocation.getCurrentPosition(
-                (pos) => resolve(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`),
-                () => resolve("GPS Disabled"), { enableHighAccuracy: true, timeout: 5000 }
-            );
-        });
-    }
-
     async function confirmReport() {
-        if(isSavingReport) return;
         const it = DATA.list.find(x => x.id === curId);
-        const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
-        if(curType !== 2) { for(let c of cls) if(!curPhotos[c]) return alert(`Нет фото для: ${c}`); }
-        isSavingReport = true; haptic(); document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
-        const coords = await getCoords(); 
-        if(!DATA.done[curId]) DATA.done[curId] = {}; DATA.done[curId][curP] = curType;
-        render(); closeModal();
-        const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
-        for (let client of cls) {
-            const entry = { 
-                action: "save_report", 
-                worker: DATA.workerName, 
-                city: DATA.city, 
-                image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, 
-                address: it.s + " " + it.h,
-                pod: curP,
-                client: client, 
-                workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], 
-                price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], 
-                coords: coords, 
-                ts: Date.now(), 
-                status: "В очереди", 
-                full: curPhotos[client], 
-                licenseKey: DATA.license.key, 
-                deviceId: getDeviceId(),
-                fileName: `${it.s}_${it.h}_п.${curP}` // Ювелирная добавка: чистое имя файла
-            };
-            DATA.history.unshift(entry); store.add(entry);
-        }
-        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("СОХРАНЕНО"); };
+        if(curType !== 2) { for(let c of it.clients) if(!curPhotos[c]) return alert("Сделайте фото для всех клиентов!"); }
+        document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const coords = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+            const tx = db.transaction("sync_queue", "readwrite");
+            for(let client of it.clients) {
+                const entry = {
+                    worker: DATA.workerName, city: DATA.city, address: it.s + " " + it.h, pod: curP, client: client,
+                    workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType],
+                    price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType],
+                    coords: coords, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null,
+                    ts: Date.now(), licenseKey: DATA.license.key, fileName: `${it.s}_${it.h}_п.${curP}`,
+                    full: curPhotos[client] // Для архива
+                };
+                DATA.history.unshift(entry);
+                tx.objectStore("sync_queue").add(entry);
+            }
+            if(!DATA.done[curId]) DATA.done[curId] = {}; DATA.done[curId][curP] = curType;
+            saveCfg(); render(); closeModal(); syncNow(); toast("СОХРАНЕНО В ОЧЕРЕДЬ");
+        }, () => alert("Ошибка GPS! Включите геопозицию."));
     }
 
     async function syncNow() {
-        if(syncing || !navigator.onLine || !db || !DATA.license.status || !BOT_SERVER_URL) return;
-        syncing = true;
-        try {
-            const txR = db.transaction("sync_queue", "readonly");
-            const items = await new Promise(r => txR.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
-            const keys = await new Promise(r => txR.objectStore("sync_queue").getAllKeys().onsuccess = e => r(e.target.result));
-            if (items.length === 0) { syncing = false; return; }
-            document.getElementById('syncIndicator').style.display = 'block'; document.getElementById('syncIndicator').classList.add('active-sync');
-            for(let i=0; i<items.length; i++) {
-                document.getElementById('queueCount').innerText = `${i+1}/${items.length}`;
-                try {
-                    const res = await fetch(`${BOT_SERVER_URL}/upload`, {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(items[i])
-                    });
-                    const resJ = await res.json();
-                    if(resJ.success) { 
-                        let t = db.transaction("sync_queue","readwrite"); await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r);
-                    } else break;
-                } catch(e) { break; }
-            }
-        } finally { syncing = false; document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
-    }
-
-    async function showMonitor() {
-        monitorOpen = true; haptic();
-        const upd = async () => {
-            if(!monitorOpen) return;
-            const tx = db.transaction("sync_queue", "readonly");
-            const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
-            document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ";
-            document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Доставлено!</p>" : 
-            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.pod})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`;
-            document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
-        }; upd();
-    }
-
-    function createFullBackup() { const blob = new Blob([JSON.stringify({ appData: DATA })], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click(); }
-    function restoreFullBackup(inp) { let f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { DATA = JSON.parse(e.target.result).appData; saveCfg(); location.reload(); } catch(err) { alert("Ошибка!"); } }; r.readAsText(f); }
-
-    function showSryvy() {
-        haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ";
-        let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } }
-        let h = "<div style='padding:15px'>";
-        for(let id in gr){ const it=DATA.list.find(x=>x.id===id); h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; }
-        document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>";
-        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+        if(syncing || !navigator.onLine || !db || !DATA.license.status) return;
+        const tx = db.transaction("sync_queue", "readonly");
+        const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
+        const keys = await new Promise(r => tx.objectStore("sync_queue").getAllKeys().onsuccess = e => r(e.target.result));
+        if (items.length === 0) return; syncing = true;
+        document.getElementById('syncIndicator').style.display = 'block';
+        for(let i=0; i<items.length; i++) {
+            try {
+                const res = await fetch(`${BOT_SERVER_URL}/upload`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(items[i])
+                });
+                if(res.ok) {
+                    const dtx = db.transaction("sync_queue", "readwrite");
+                    dtx.objectStore("sync_queue").delete(keys[i]);
+                } else break;
+            } catch(e) { break; }
+        }
+        syncing = false; updateSyncCount();
     }
 
     function showArchive() {
-        haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; 
-        DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.pod})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; });
-        document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; 
+        document.getElementById('modalTitle').innerText = "АРХИВ (ПОСЛЕДНИЕ 50)";
+        let h = "<div style='padding:15px; height:100%; overflow-y:auto;'>";
+        DATA.history.slice(0,50).forEach((it, idx) => {
+            h += `<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="alert('Адрес: ${it.address}')">
+                <div style="font-size:0.6rem; opacity:0.5;">${new Date(it.ts).toLocaleString()}</div>
+                <div style="font-weight:800; font-size:0.8rem; color:var(--blue)">${it.address} (п.${it.pod})</div>
+                <div style="font-size:0.7rem;">${it.client} - ${it.workType}</div>
+            </div>`;
+        });
+        document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:40px;'>Пусто</p>";
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
 
-    function showArchivePhoto(idx) { const it = DATA.history[idx]; if(!it || !it.full) return; document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; }
+    function showWallet() {
+        let counts = {1:0, 3:0, 4:0}; 
+        for(let id in DATA.done) { 
+            const it = DATA.list.find(x => x.id === id); if(!it) continue;
+            for(let p in DATA.done[id]) { let t = DATA.done[id][p]; if(counts[t]!==undefined) counts[t] += it.clients.length; }
+        }
+        document.getElementById('modalTitle').innerText = "КОШЕЛЕК";
+        document.getElementById('modalBody').innerHTML = `<div style="padding:40px; text-align:center">
+            <p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p>
+            <h1 style="color:var(--green); font-size:2.8rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1>
+        </div>`;
+        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+    }
 
-    function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing) document.getElementById('queueCount').innerText = c; }; }
+    function showSryvy() {
+        document.getElementById('modalTitle').innerText = "ОТЧЕТ ПО СРЫВАМ";
+        let h = "<div style='padding:15px;'>";
+        for(let id in DATA.done) {
+            const it = DATA.list.find(x => x.id === id); if(!it) continue;
+            for(let p in DATA.done[id]) if(DATA.done[id][p] === 2) h += `<div style="background:rgba(218,54,51,0.1); border:1px solid var(--red); padding:10px; margin-bottom:8px; border-radius:10px;">${it.s}, ${it.h} - П. ${p}</div>`;
+        }
+        document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:40px;'>Срывов нет</p>";
+        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function updateSyncCount() {
+        if(!db) return;
+        db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => {
+            document.getElementById('queueCount').innerText = e.target.result;
+            document.getElementById('syncIndicator').style.display = e.target.result > 0 ? 'block' : 'none';
+        };
+    }
+
     function updateStats() {
-        let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0;
-        for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { const t = DATA.done[id][p]; dn++; if(t !== 2) mon += ([0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t] * it.clients.length); } }
-        document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
+        let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0, sryv = 0;
+        for(let id in DATA.done) { 
+            const it = DATA.list.find(x => x.id === id); if(!it) continue;
+            for(let p in DATA.done[id]) { 
+                const t = DATA.done[id][p]; dn++; 
+                if(t === 2) sryv++;
+                else mon += ([0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t] * it.clients.length); 
+            }
+        }
+        document.getElementById('statMoney').innerText = mon + " ₽"; 
+        document.getElementById('statProgress').innerText = `${dn}/${tot}`; 
+        document.getElementById('statSryv').innerText = sryv;
+        document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
     }
 
-    function toggleMenu() { haptic(); Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
-    function closeModal() { haptic(); document.getElementById('reportModal').style.display = 'none'; monitorOpen = false; }
-    function setLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
-    
-    function showWallet() { 
-        Sfx.click(); haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
-        let counts = {1:0, 3:0, 4:0}; for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { let t = DATA.done[id][p]; if(counts[t]!==undefined) counts[t] += it.clients.length; } }
-        document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`;
-        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
+    function createFullBackup() {
+        const blob = new Blob([JSON.stringify(DATA)], {type:'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup_${new Date().toLocaleDateString()}.json`; a.click();
     }
+
+    function toggleMenu() { haptic(); document.getElementById('menu').classList.toggle('active'); }
+    function closeModal() { haptic(); document.getElementById('reportModal').style.display = 'none'; }
+    function resumeAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
     window.onload = () => {
-        const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
-        if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
-        if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
-        if(document.getElementById('licenseKey')) document.getElementById('licenseKey').value = DATA.license.key || "";
+        const s = localStorage.getItem('logist_v550_data'); if(s) DATA = JSON.parse(s);
+        document.getElementById('workerName').value = DATA.workerName || "";
+        document.getElementById('cityName').value = DATA.city || "";
+        document.getElementById('licenseKey').value = DATA.license.key || "";
         document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
         document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
-        checkLicenseUI(); openDB(); render();
+        openDB(); render();
     };
-    setInterval(syncNow, 10000);
+    setInterval(syncNow, 12000);
 </script>
 </body>
 </html>
