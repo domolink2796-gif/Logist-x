@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <title>LOGIST_X | Elite Control System</title>
     
     <link rel="manifest" href="app/manifest.json">
@@ -16,22 +15,10 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        :root { --accent: #f59e0b; --bg: #010409; --card: rgba(13, 17, 23, 0.7); }
         
-        :root { 
-            --accent: #f59e0b; 
-            --bg: #010409; 
-            --card: rgba(13, 17, 23, 0.7);
-        }
-        
-        body {
-            background-color: var(--bg);
-            color: #e6edf3;
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
+        body { background-color: var(--bg); color: #e6edf3; font-family: 'Inter', sans-serif; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
-        /* ПУЛЬСАЦИЯ ГЛАВНОЙ КНОПКИ */
         @keyframes pulse-gold {
             0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); transform: scale(1); }
             70% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); transform: scale(1.03); }
@@ -47,59 +34,19 @@
             animation: pulse-gold 2s infinite;
             transition: all 0.3s ease;
             display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            align-items: center; justify-content: center;
             border-radius: 1.5rem;
         }
 
-        .btn-install-gold:active { transform: scale(0.95); animation: none; }
-
-        .gold-gradient-text { 
-            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-        }
-
-        /* КАРТОЧКИ ТАРИФОВ */
         .price-card {
-            background: var(--card);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 2.5rem;
-            padding: 2.5rem 1.5rem;
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
+            background: var(--card); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2.5rem; padding: 2.5rem 1.5rem; transition: 0.4s ease; display: flex; flex-direction: column; justify-content: space-between;
         }
+        .price-card:hover { border-color: var(--accent); transform: translateY(-10px); }
 
-        .price-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-10px);
-        }
-
-        /* ИЕРАРХИЯ ПАПОК (КРАСИВАЯ) */
-        .folder-node {
-            border-left: 2px solid rgba(245, 158, 11, 0.2);
-            margin-left: 1rem;
-            padding-left: 1.5rem;
-            position: relative;
-            margin-bottom: 0.75rem;
-        }
-
-        .folder-node::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0.75rem;
-            width: 1rem;
-            border-top: 2px solid rgba(245, 158, 11, 0.2);
-        }
-
-        .dot-matrix { 
-            background-image: radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); 
-            background-size: 30px 30px; 
-        }
+        .folder-node { border-left: 2px solid rgba(245, 158, 11, 0.2); margin-left: 1rem; padding-left: 1.5rem; position: relative; margin-bottom: 0.75rem; }
+        .folder-node::before { content: ''; position: absolute; left: 0; top: 0.75rem; width: 1rem; border-top: 2px solid rgba(245, 158, 11, 0.2); }
+        .dot-matrix { background-image: radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); background-size: 30px 30px; }
 
         @media (max-width: 640px) {
             .title-hero { font-size: 2.8rem !important; line-height: 1.1; }
@@ -115,43 +62,34 @@
                 <div class="bg-amber-500 p-1.5 rounded-xl"><i data-lucide="shield-check" class="text-black" size="20"></i></div>
                 <span class="text-2xl font-black italic tracking-tighter">LOGIST<span class="text-amber-500">_X</span></span>
             </div>
-            <button onclick="handleInstallClick()" class="hidden sm:flex btn-install-gold px-6 py-2.5 text-[10px]">Установить</button>
+            <button onclick="handleInstallClick()" class="btn-install-gold px-6 py-2.5 text-[10px] hidden xs:flex">Установить</button>
         </div>
     </nav>
 
     <header class="relative pt-48 pb-24 text-center px-4">
-        <div class="max-w-4xl mx-auto relative z-10">
-            <div class="inline-block px-5 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] font-black uppercase tracking-[4px] mb-10 animate__animated animate__fadeInDown">
-                PWA Terminal Edition 2025
-            </div>
+        <div class="max-w-4xl mx-auto">
             <h1 class="title-hero text-5xl md:text-8xl font-black mb-10 uppercase tracking-tighter animate__animated animate__fadeInUp">
-                КОМАНДА <br><span class="gold-gradient-text italic underline decoration-amber-500/20">КАК НА ЛАДОНИ</span>
+                КОМАНДА <br><span class="text-amber-500 italic underline decoration-amber-500/20">КАК НА ЛАДОНИ</span>
             </h1>
             <p class="text-lg md:text-2xl opacity-40 mb-14 max-w-2xl mx-auto leading-relaxed animate__animated animate__fadeInUp">
                 Профессиональный контроль полевых сотрудников. Фотоотчеты, GPS и авто-структура папок на вашем Диске.
             </p>
-            
-            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center animate__animated animate__fadeInUp animate__delay-1s">
-                <button onclick="handleInstallClick()" class="btn-install-gold w-full sm:w-auto px-12 py-6 text-sm gap-3">
-                   <i data-lucide="download-cloud" size="22"></i> УСТАНОВИТЬ ПРИЛОЖЕНИЕ
-                </button>
-                <a href="#pricing" class="w-full sm:w-auto px-12 py-6 border border-white/10 rounded-[1.5rem] font-bold text-sm hover:bg-white/5 transition-all uppercase tracking-widest">Тарифы</a>
-            </div>
+            <button onclick="handleInstallClick()" class="btn-install-gold w-full sm:w-auto px-12 py-6 text-sm gap-3 shadow-2xl">
+               <i data-lucide="download-cloud" size="22"></i> УСТАНОВИТЬ ПРИЛОЖЕНИЕ
+            </button>
         </div>
     </header>
 
     <section class="py-24 px-6 bg-black/40">
         <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
-            <div class="bg-[#05070a] p-8 md:p-12 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden group">
-                <div class="absolute top-0 left-0 w-full h-1 bg-amber-500/20"></div>
+            <div class="bg-[#05070a] p-8 md:p-12 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden">
                 <div class="text-amber-500/40 mb-10 font-black text-xs tracking-[8px] uppercase border-b border-white/5 pb-6">Cloud_Data_Structure</div>
-                
                 <div class="folder-node">
                     <div class="flex items-center gap-3 text-blue-400 font-black uppercase tracking-widest"><i data-lucide="user" size="18"></i> Иванов_С.А.</div>
                     <div class="folder-node">
                         <div class="flex items-center gap-3 text-green-500 font-black uppercase tracking-widest"><i data-lucide="map-pin" size="18"></i> Сочи</div>
                         <div class="folder-node">
-                            <div class="opacity-30 text-[11px] font-bold tracking-widest uppercase mb-4">28.12.2025</div>
+                            <div class="opacity-30 text-[11px] font-bold tracking-widest mb-4">28.12.2025</div>
                             <div class="folder-node italic text-amber-500/60 text-sm space-y-4">
                                 <div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Ул.Ленина_12_Монтаж.jpg</span></div>
                                 <div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Результат_ОК.jpg</span></div>
@@ -161,10 +99,8 @@
                 </div>
             </div>
             <div class="text-center lg:text-left">
-                <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase tracking-tighter">Архив <br><span class="text-amber-500">БЕЗ ХАОСА</span></h2>
-                <p class="opacity-40 text-xl italic mb-10 leading-relaxed">
-                    Забудьте про WhatsApp. Система сама раскладывает отчеты сотрудников в облаке. Сотрудник > Город > Дата. Полный порядок 24/7.
-                </p>
+                <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase">Архив <br><span class="text-amber-500">БЕЗ ХАОСА</span></h2>
+                <p class="opacity-40 text-xl italic leading-relaxed">Система сама раскладывает отчеты сотрудников в облаке. Полный порядок 24/7.</p>
             </div>
         </div>
     </section>
@@ -172,44 +108,38 @@
     <section id="pricing" class="py-32 px-6">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
             
-            <div class="price-card group">
+            <div class="price-card">
                 <div>
-                    <div class="text-amber-500 mb-6 opacity-40"><i data-lucide="settings-2" size="40"></i></div>
-                    <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-40 italic">One-Time Setup</h3>
-                    <div class="text-7xl font-black mb-4 italic tracking-tighter">1 500 <span class="text-2xl not-italic opacity-20">₽</span></div>
-                    <p class="opacity-40 text-sm italic leading-relaxed">Единоразовый платеж за настройку вашего сервера, облака и базы данных.</p>
-                </div>
-                <a href="https://t.me/gena_krokodi" class="mt-12 block w-full py-5 border border-white/10 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest hover:border-amber-500 transition-all">Заказать запуск</a>
-            </div>
-
-            <div class="price-card border-amber-500/40 bg-amber-500/5 relative scale-105 z-10 shadow-3xl">
-                <div class="absolute -top-5 left-1/2 -translate-x-1/2 bg-amber-500 text-black px-6 py-2 rounded-full text-[9px] font-black uppercase tracking-widest">Популярный выбор</div>
-                <div>
-                    <div class="text-amber-500 mb-6"><i data-lucide="zap" size="40"></i></div>
-                    <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-60 italic text-amber-500">Active License</h3>
-                    <div class="text-7xl font-black mb-4 italic tracking-tighter text-amber-500">300 <span class="text-2xl not-italic opacity-40">₽</span></div>
-                    <p class="text-white font-bold text-sm uppercase tracking-widest mb-6 opacity-40">В месяц за юзера</p>
-                    <p class="opacity-60 text-sm italic leading-relaxed">Абонентская плата за доступ сотрудника к терминалу. Безлимитные отчеты.</p>
-                </div>
-                <button onclick="handleInstallClick()" class="btn-install-gold mt-12 w-full py-6 text-xs shadow-xl">Подключиться</button>
-            </div>
-
-            <div class="price-card group">
-                <div>
-                    <div class="text-amber-500 mb-6 opacity-40"><i data-lucide="shield-check" size="40"></i></div>
-                    <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-40 italic">Premium Support</h3>
+                    <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-40 italic">Setup</h3>
                     <div class="text-7xl font-black mb-4 italic tracking-tighter">5 000 <span class="text-2xl not-italic opacity-20">₽</span></div>
-                    <p class="opacity-40 text-sm italic leading-relaxed">Полное сопровождение, обучение сотрудников и корректировка базы под ключ.</p>
+                    <p class="opacity-40 text-sm italic">Единоразово за настройку сервера, интеграцию облака и базы данных.</p>
                 </div>
-                <a href="https://t.me/gena_krokodi" class="mt-12 block w-full py-5 border border-white/10 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest hover:border-amber-500 transition-all">Обсудить пакет</a>
+                <a href="https://t.me/gena_krokodi" class="mt-12 block py-5 border border-white/10 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest hover:border-amber-500 transition-all">Заказать запуск</a>
+            </div>
+
+            <div class="price-card border-amber-500/40 bg-amber-500/5 scale-105 z-10 shadow-3xl">
+                <div>
+                    <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-60 italic text-amber-500">License</h3>
+                    <div class="text-7xl font-black mb-4 italic tracking-tighter text-amber-500">700 <span class="text-2xl not-italic opacity-40">₽</span></div>
+                    <p class="opacity-40 text-white font-bold text-[10px] uppercase tracking-widest mb-4 italic">В месяц за юзера</p>
+                </div>
+                <button onclick="handleInstallClick()" class="btn-install-gold mt-12 w-full py-6 text-xs">Подключиться</button>
+            </div>
+
+            <div class="price-card">
+                <div>
+                    <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-40 italic">Premium</h3>
+                    <div class="text-7xl font-black mb-4 italic tracking-tighter">15 000 <span class="text-2xl not-italic opacity-20">₽</span></div>
+                    <p class="opacity-40 text-sm italic">Полное VIP-сопровождение, обучение персонала и кастомные доработки.</p>
+                </div>
+                <a href="https://t.me/gena_krokodi" class="mt-12 block py-5 border border-white/10 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest hover:border-amber-500 transition-all">Обсудить</a>
             </div>
 
         </div>
     </section>
 
-    <footer class="py-24 text-center border-t border-white/5 opacity-40 px-6">
-        <p class="text-[10px] font-black uppercase tracking-[15px] mb-6">LOGIST_X 2025</p>
-        <a href="https://t.me/gena_krokodi" class="text-[11px] font-bold underline uppercase tracking-widest hover:text-amber-500 transition-all">Связаться с разработчиком</a>
+    <footer class="py-24 text-center border-t border-white/5 opacity-40">
+        <p class="text-[10px] font-black uppercase tracking-[15px]">LOGIST_X 2025</p>
     </footer>
 
     <script type="text/javascript">
@@ -220,54 +150,26 @@
        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106053460', 'ym');
        ym(106053460, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
     </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/106053460" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 
     <script>
         lucide.createIcons();
-
-        // PWA ЛОГИКА
         let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            console.log('Logist_X: Система готова к установке');
-        });
-
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
         async function handleInstallClick() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 deferredPrompt = null;
-                if (outcome === 'accepted') {
-                    console.log('Пользователь установил Logist_X');
-                    return;
-                }
+                if (outcome === 'accepted') return;
             }
-            // Если установка недоступна или уже установлена, ведем в терминал
             window.location.href = 'app/index.html';
         }
-
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('app/sw.js', { scope: './app/' })
-                .then(reg => console.log('Worker Active'))
-                .catch(err => console.error('Worker Error', err));
+                navigator.serviceWorker.register('app/sw.js', { scope: './app/' });
             });
         }
-
-        // Анимация при скролле
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
-                    entry.target.style.opacity = '1';
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.price-card, .folder-node, h1, h2').forEach(el => {
-            el.style.opacity = '0';
-            observer.observe(el);
-        });
     </script>
 </body>
 </html>
