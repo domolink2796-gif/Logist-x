@@ -96,15 +96,6 @@
 
 <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
 
-<script>
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.onkeydown = function(e) {
-        if (e.keyCode == 123) return false;
-        if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) return false;
-        if (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83)) return false;
-    };
-</script>
-
 <div id="licenseLock">
     <div style="background: #0d1117; padding: 45px; border-radius: 45px; border: 1px solid var(--border); width: 100%; max-width: 420px; text-align: center;">
         <div style="font-size: 5rem; margin-bottom: 25px;">🔒</div>
@@ -112,14 +103,12 @@
         <div style="margin-top: 30px; text-align: left;">
             <label class="stat-label" style="margin-left:10px">Введите ФИО:</label>
             <input type="text" id="lockWorkerName" class="std-input" placeholder="Иванов Иван">
-            <label class="stat-label" style="margin-left:10px">Cloud URL (Штаб):</label>
-            <input type="text" id="lockCloudUrl" class="std-input" placeholder="https://script.google.com/...">
             <label class="stat-label" style="margin-left:10px">Лицензионный Ключ:</label>
             <input type="text" id="lockLicenseKey" class="std-input" style="color:var(--accent); font-weight:900;" placeholder="LX-XXXX-XXXX">
             <div id="lockLicProgress" class="lic-progress"><div id="lockLicBar" class="lic-bar"></div></div>
             <button id="lockBtn" class="btn-act btn-blue" style="margin-top:20px;" onclick="saveAndCheckLock()">АКТИВИРОВАТЬ</button>
         </div>
-        <p style="font-size: 0.6rem; color: var(--subtext); margin-top: 20px;">Designed by NIKITIN EVGENY</p>
+        <p style="font-size: 0.6rem; color: var(--subtext); margin-top: 20px;">Powered by Robot Server</p>
     </div>
 </div>
 
@@ -143,7 +132,6 @@
         <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
         <input type="text" id="workerName" class="std-input" placeholder="Твое ФИО" oninput="saveCfg()">
         <input type="text" id="cityName" class="std-input" placeholder="Город (напр. Сочи)" oninput="saveCfg()">
-        <input type="text" id="cloudUrl" class="std-input" placeholder="Cloud URL" oninput="saveCfg()">
         <input type="text" id="licenseKey" class="std-input" placeholder="Ключ" oninput="saveCfg()">
         <div id="menuLicProgress" class="lic-progress"><div id="menuLicBar" class="lic-bar"></div></div>
         <button class="btn-act btn-blue" onclick="checkLicense()">ОБНОВИТЬ СТАТУС</button>
@@ -168,15 +156,6 @@
         <button class="btn-act btn-blue" onclick="createFullBackup()">💾 БЭКАП + ФОТО</button>
         <label class="btn-act btn-dark">🔄 ВОССТАНОВИТЬ<input type="file" style="display:none;" onchange="restoreFullBackup(this)"></label>
         <label class="btn-act btn-green" style="margin-top:10px">📊 ЗАГРУЗИТЬ EXCEL<input type="file" style="display:none;" onchange="handleExcel(this)"></label>
-    </div>
-
-    <div class="block-box" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent); text-align: center; padding: 15px;">
-        <div class="block-title" style="color: var(--accent); margin-bottom:10px;">👑 РАЗРАБОТЧИК:</div>
-        <div style="font-weight: 900; font-size: 1.1rem; color:#fff; margin-bottom:15px;">Никитин Евгений</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <a href="https://t.me/gena_krokodi" target="_blank" class="btn-act btn-blue" style="margin:0; height:50px; display:flex; align-items:center; justify-content:center;">TG</a>
-            <a href="tel:+79954470130" class="btn-act btn-green" style="margin:0; height:50px; display:flex; align-items:center; justify-content:center;">CALL</a>
-        </div>
     </div>
 
     <button class="btn-act btn-red" onclick="if(confirm('Сбросить базу?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС СИСТЕМЫ</button>
@@ -207,13 +186,22 @@
 </div>
 
 <script>
-    // ПУСТАЯ БАЗА ПО УМОЛЧАНИЮ - ВСЁ РЕШАЕТСЯ ПРИ ВХОДЕ
-    const DEFAULT_HQ = ""; 
+    // --- НАСТРОЙКИ СЕРВЕРА (МЫ ИХ ЗАПОЛНИМ ПОСЛЕ ЗАПУСКА) ---
+    const BOT_SERVER_URL = 'https://logist-x-server.onrender.com'; // Сюда впишем твой адрес
     const MASTER_KEY = "DEV-MASTER-999";
     
-    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", cloudUrl: DEFAULT_HQ, workerName: "", license: {key: "", expiry: 0, status: false}, folderId: "", sheetId: "", history: [] };
+    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
     const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
+
+    function getDeviceId() {
+        let id = localStorage.getItem('logist_device_id');
+        if (!id) {
+            id = 'D-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            localStorage.setItem('logist_device_id', id);
+        }
+        return id;
+    }
 
     function haptic() { if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(35); }
     function toast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
@@ -228,7 +216,6 @@
     }
 
     function saveCfg() {
-        DATA.cloudUrl = document.getElementById('cloudUrl')?.value.trim() || DATA.cloudUrl;
         DATA.license.key = document.getElementById('licenseKey')?.value.trim().toUpperCase() || DATA.license.key;
         DATA.workerName = document.getElementById('workerName')?.value.trim() || DATA.workerName;
         DATA.city = document.getElementById('cityName')?.value.trim() || DATA.city || "Орёл";
@@ -257,40 +244,33 @@
     }
 
     async function checkLicense() {
-        const url = DATA.cloudUrl; 
         const key = DATA.license.key;
         const worker = DATA.workerName;
-        if (key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("ДОСТУП РАЗРЕШЕН"); return; }
-        if(!url || !key || !worker) return alert("Заполните ФИО, Cloud URL и Ключ!");
+        const devId = getDeviceId();
+        if (key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("MASTER OK"); return; }
+        if(!key || !worker) return alert("Введите ФИО и Ключ!");
+        
         const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
-        const conts = [document.getElementById('lockLicProgress'), document.getElementById('menuLicProgress')];
-        conts.forEach(c => c && (c.style.display = 'block'));
-        bars.forEach(b => b && (b.style.width = '40%'));
+        bars.forEach(b => b && (b.style.width = '50%'));
+        
         try {
-            const res = await fetch(url, { method: 'POST', body: JSON.stringify({action:'check_license', licenseKey: key, workerName: worker}) });
-            bars.forEach(b => b && (b.style.width = '80%'));
+            const res = await fetch(`${BOT_SERVER_URL}/check-license`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ licenseKey: key, workerName: worker, deviceId: devId })
+            });
             const result = await res.json();
             if(result.status === "active") {
-                bars.forEach(b => b && (b.style.width = '100%'));
-                DATA.license.expiry = Number(result.newExpiry); 
+                DATA.license.expiry = Number(result.expiry);
                 saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН");
-                setTimeout(() => conts.forEach(c => c && (c.style.display = 'none')), 1000);
-            } else { alert("ОШИБКА: " + result.message); }
+            } else { alert("ОТКАЗ: " + result.message); }
         } catch(e) { alert("Ошибка связи с сервером!"); }
         finally { bars.forEach(b => b && (b.style.width = '0%')); }
     }
 
     async function saveAndCheckLock() {
-        const inputKey = document.getElementById('lockLicenseKey').value.trim().toUpperCase();
-        const inputName = document.getElementById('lockWorkerName').value.trim();
-        const inputUrl = document.getElementById('lockCloudUrl').value.trim();
-        if(!inputUrl) return alert("Необходимо ввести Cloud URL Штаба!");
-        DATA.cloudUrl = inputUrl; DATA.workerName = inputName; DATA.license.key = inputKey;
-        if (inputKey === MASTER_KEY) {
-            DATA.workerName = inputName || "Разработчик"; DATA.license.expiry = Date.now() + 315360000000;
-            DATA.license.status = true; localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
-            document.getElementById('licenseLock').style.display = 'none'; render(); toast("ДОСТУП РАЗРЕШЕН"); return;
-        }
+        DATA.workerName = document.getElementById('lockWorkerName').value.trim();
+        DATA.license.key = document.getElementById('lockLicenseKey').value.trim().toUpperCase();
         saveCfg(); await checkLicense();
     }
 
@@ -398,15 +378,14 @@
         render(); closeModal();
         const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
         for (let client of cls) {
-            const entry = { action: "save_report", worker: DATA.workerName, city: DATA.city, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, address: `${it.s} ${it.h} п.${curP}`, client: client, workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], coords: coords, ts: Date.now(), status: "Ожидание", full: curPhotos[client], licenseKey: DATA.license.key };
+            const entry = { action: "save_report", worker: DATA.workerName, city: DATA.city, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, address: `${it.s} ${it.h} п.${curP}`, client: client, workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], coords: coords, ts: Date.now(), status: "Ожидание", full: curPhotos[client], licenseKey: DATA.license.key, deviceId: getDeviceId() };
             DATA.history.unshift(entry); store.add(entry);
         }
-        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ ОТПРАВКИ"); };
+        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ"); };
     }
 
     async function syncNow() {
-        const url = DATA.cloudUrl;
-        if(syncing || !navigator.onLine || !url || !db || !DATA.license.status) return;
+        if(syncing || !navigator.onLine || !db || !DATA.license.status || !BOT_SERVER_URL) return;
         syncing = true;
         try {
             const txR = db.transaction("sync_queue", "readonly");
@@ -415,19 +394,18 @@
             if (items.length === 0) { syncing = false; return; }
             document.getElementById('syncIndicator').style.display = 'block'; document.getElementById('syncIndicator').classList.add('active-sync');
             for(let i=0; i<items.length; i++) {
-                if(items[i].status === "Отправка...") continue;
                 document.getElementById('queueCount').innerText = `${i+1}/${items.length}`;
-                await new Promise(r => { let t = db.transaction("sync_queue","readwrite"); items[i].status = "Отправка..."; t.objectStore("sync_queue").put(items[i], keys[i]).onsuccess = r; });
                 try {
-                    const { full, ...payload } = items[i];
-                    const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+                    const res = await fetch(`${BOT_SERVER_URL}/upload`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(items[i])
+                    });
                     const resJ = await res.json();
-                    if(resJ.status === "success") { 
-                        let t = db.transaction("sync_queue","readwrite"); await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r); haptic(); 
-                    } else throw 1;
-                } catch(e) { 
-                    let t = db.transaction("sync_queue","readwrite"); items[i].status = "Ошибка (ждем)"; t.objectStore("sync_queue").put(items[i], keys[i]); break; 
-                }
+                    if(resJ.success) { 
+                        let t = db.transaction("sync_queue","readwrite"); await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r);
+                    } else break;
+                } catch(e) { break; }
             }
         } finally { syncing = false; document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
     }
@@ -440,28 +418,20 @@
             const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
             document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ";
             document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Все доставлено!</p>" : 
-            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (${it.client})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();haptic();">🚀 ПНУТЬ ОЧЕРЕДЬ</button></div>`;
+            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (${it.client})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 ПНУТЬ ОЧЕРЕДЬ</button></div>`;
             document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
-        }; upd(); const intv = setInterval(() => { if(monitorOpen) upd(); else clearInterval(intv); }, 1500);
+        }; upd();
     }
 
-    async function createFullBackup() {
-        const tx = db.transaction("sync_queue", "readonly");
-        const queueItems = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
-        const blob = new Blob([JSON.stringify({ appData: DATA, syncQueue: queueItems })], {type:'application/json'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click(); toast("БЭКАП ГОТОВ");
+    function createFullBackup() {
+        const blob = new Blob([JSON.stringify({ appData: DATA })], {type:'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click();
     }
 
     function restoreFullBackup(inp) {
         let f = inp.files[0]; if(!f) return;
-        const r = new FileReader(); r.onload = async (e) => {
-            try {
-                const b = JSON.parse(e.target.result); DATA = b.appData; localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
-                const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
-                await new Promise(r => store.clear().onsuccess = r);
-                if(b.syncQueue) for(let it of b.syncQueue) store.add(it);
-                tx.oncomplete = () => location.reload();
-            } catch(err) { alert("Ошибка!"); }
+        const r = new FileReader(); r.onload = (e) => {
+            try { DATA = JSON.parse(e.target.result).appData; saveCfg(); location.reload(); } catch(err) { alert("Ошибка!"); }
         }; r.readAsText(f);
     }
 
@@ -511,14 +481,12 @@
         const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
         if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
         if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
-        if(document.getElementById('cloudUrl')) document.getElementById('cloudUrl').value = DATA.cloudUrl || "";
-        if(document.getElementById('lockCloudUrl')) document.getElementById('lockCloudUrl').value = DATA.cloudUrl || "";
         if(document.getElementById('licenseKey')) document.getElementById('licenseKey').value = DATA.license.key || "";
         document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
         document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
         checkLicenseUI(); openDB(); render();
     };
-    setInterval(syncNow, 12000);
+    setInterval(syncNow, 10000);
 </script>
 </body>
 </html>
