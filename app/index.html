@@ -103,10 +103,6 @@
         if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74 || e.keyCode == 67)) return false;
         if (e.ctrlKey && (e.keyCode == 85 || e.keyCode == 83)) return false;
     };
-    (function() {
-        const block = function() { setInterval(function() { (function() {}.constructor("debugger")()); }, 500); };
-        try { block(); } catch (err) {}
-    })();
 </script>
 
 <div id="licenseLock">
@@ -211,7 +207,7 @@
 </div>
 
 <script>
-    // ТВОЙ DEFAULT ШТАБ
+    // ПРИВЯЗАНО К ТВОЕЙ НОВОЙ БАЗЕ v86
     const DEFAULT_HQ = "https://script.google.com/macros/s/AKfycbz3ZscxDR4Ls4383w43ENWJnov5SEunvNhG_mUSzZTuawytVg2Pwn67VyOgwJ5f2FfA8A/exec";
     const MASTER_KEY = "DEV-MASTER-999";
     
@@ -266,24 +262,17 @@
         const key = DATA.license.key;
         const worker = DATA.workerName;
         if(!url || !key || !worker) return alert("Заполните ФИО и данные ключа!");
-
         const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
         const conts = [document.getElementById('lockLicProgress'), document.getElementById('menuLicProgress')];
         conts.forEach(c => c && (c.style.display = 'block'));
         bars.forEach(b => b && (b.style.width = '40%'));
-
         try {
-            const res = await fetch(url, { 
-                method: 'POST', 
-                body: JSON.stringify({action:'check_license', licenseKey: key, workerName: worker}) 
-            });
+            const res = await fetch(url, { method: 'POST', body: JSON.stringify({action:'check_license', licenseKey: key, workerName: worker}) });
             bars.forEach(b => b && (b.style.width = '80%'));
             const result = await res.json();
             if(result.status === "active") {
                 bars.forEach(b => b && (b.style.width = '100%'));
                 DATA.license.expiry = Number(result.newExpiry); 
-                DATA.folderId = result.folderId; 
-                DATA.sheetId = result.sheetId;   
                 saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН");
                 setTimeout(() => conts.forEach(c => c && (c.style.display = 'none')), 1000);
             } else { alert("ОШИБКА: " + result.message); }
@@ -295,24 +284,13 @@
         const inputKey = document.getElementById('lockLicenseKey').value.trim().toUpperCase();
         const inputName = document.getElementById('lockWorkerName').value.trim();
         const inputUrl = document.getElementById('lockCloudUrl').value.trim();
-        
         if (inputKey === MASTER_KEY) {
-            DATA.license.key = inputKey;
-            DATA.workerName = inputName || "Разработчик";
-            DATA.cloudUrl = inputUrl || DEFAULT_HQ;
-            DATA.license.expiry = Date.now() + 315360000000;
-            DATA.license.status = true;
-            localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
-            document.getElementById('licenseLock').style.display = 'none';
-            checkLicenseUI();
-            render();
-            toast("ДОСТУП РАЗРЕШЕН");
-            return;
+            DATA.license.key = inputKey; DATA.workerName = inputName || "Разработчик";
+            DATA.cloudUrl = inputUrl || DEFAULT_HQ; DATA.license.expiry = Date.now() + 315360000000;
+            DATA.license.status = true; localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
+            document.getElementById('licenseLock').style.display = 'none'; render(); toast("ДОСТУП РАЗРЕШЕН"); return;
         }
-
-        DATA.workerName = inputName;
-        DATA.cloudUrl = inputUrl || DEFAULT_HQ;
-        DATA.license.key = inputKey;
+        DATA.workerName = inputName; DATA.cloudUrl = inputUrl || DEFAULT_HQ; DATA.license.key = inputKey;
         saveCfg(); await checkLicense();
     }
 
@@ -355,10 +333,7 @@
                 pds += `<div class="p-btn ${st?'done-'+st:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
             }
             html += `<div class="card ${isDone?'is-finished':''}">
-                <div class="card-head">
-                    <div style="flex:1; margin-right:10px;">${i.s}, ${i.h}</div>
-                    <button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button>
-                </div>
+                <div class="card-head"><div style="flex:1; margin-right:10px;">${i.s}, ${i.h}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
                 <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
                 <div class="pods">${pds}</div>
             </div>`;
@@ -407,8 +382,7 @@
             if (!navigator.geolocation) return resolve("No GPS Support");
             navigator.geolocation.getCurrentPosition(
                 (pos) => resolve(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`),
-                () => resolve("GPS Disabled"),
-                { enableHighAccuracy: true, timeout: 5000 }
+                () => resolve("GPS Disabled"), { enableHighAccuracy: true, timeout: 5000 }
             );
         });
     }
@@ -418,41 +392,15 @@
         const it = DATA.list.find(x => x.id === curId);
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         if(curType !== 2) { for(let c of cls) if(!curPhotos[c]) return alert(`Нет фото для: ${c}`); }
-        
-        isSavingReport = true; haptic();
-        document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
-        
+        isSavingReport = true; haptic(); document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
         const coords = await getCoords(); 
-
-        if(!DATA.done[curId]) DATA.done[curId] = {};
-        DATA.done[curId][curP] = curType;
+        if(!DATA.done[curId]) DATA.done[curId] = {}; DATA.done[curId][curP] = curType;
         render(); closeModal();
-
-        const tx = db.transaction("sync_queue", "readwrite");
-        const store = tx.objectStore("sync_queue");
-
+        const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
         for (let client of cls) {
-            const entry = { 
-                action: "save_report", 
-                worker: DATA.workerName, 
-                city: DATA.city, 
-                image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, 
-                address: `${it.s} ${it.h} п.${curP}`, 
-                client: client, 
-                workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], 
-                price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], 
-                coords: coords, 
-                ts: Date.now(), 
-                status: "Ожидание", 
-                full: curPhotos[client],
-                licenseKey: DATA.license.key,
-                folderId: DATA.folderId, 
-                sheetId: DATA.sheetId
-            };
-            DATA.history.unshift(entry);
-            store.add(entry);
+            const entry = { action: "save_report", worker: DATA.workerName, city: DATA.city, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, address: `${it.s} ${it.h} п.${curP}`, client: client, workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], coords: coords, ts: Date.now(), status: "Ожидание", full: curPhotos[client], licenseKey: DATA.license.key };
+            DATA.history.unshift(entry); store.add(entry);
         }
-
         tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ ОТПРАВКИ"); };
     }
 
@@ -465,8 +413,7 @@
             const items = await new Promise(r => txR.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
             const keys = await new Promise(r => txR.objectStore("sync_queue").getAllKeys().onsuccess = e => r(e.target.result));
             if (items.length === 0) { syncing = false; return; }
-            document.getElementById('syncIndicator').style.display = 'block';
-            document.getElementById('syncIndicator').classList.add('active-sync');
+            document.getElementById('syncIndicator').style.display = 'block'; document.getElementById('syncIndicator').classList.add('active-sync');
             for(let i=0; i<items.length; i++) {
                 if(items[i].status === "Отправка...") continue;
                 document.getElementById('queueCount').innerText = `${i+1}/${items.length}`;
@@ -476,13 +423,10 @@
                     const res = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
                     const resJ = await res.json();
                     if(resJ.status === "success") { 
-                        let t = db.transaction("sync_queue","readwrite"); 
-                        await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r); 
-                        haptic(); 
+                        let t = db.transaction("sync_queue","readwrite"); await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r); haptic(); 
                     } else throw 1;
                 } catch(e) { 
-                    let t = db.transaction("sync_queue","readwrite"); items[i].status = "Ошибка (ждем)"; t.objectStore("sync_queue").put(items[i], keys[i]); 
-                    break; 
+                    let t = db.transaction("sync_queue","readwrite"); items[i].status = "Ошибка (ждем)"; t.objectStore("sync_queue").put(items[i], keys[i]); break; 
                 }
             }
         } finally { syncing = false; document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
@@ -496,12 +440,9 @@
             const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
             document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ";
             document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Все доставлено!</p>" : 
-            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem">
-                <b>${it.address} (${it.client})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}
-                <button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();haptic();">🚀 ПНУТЬ ОЧЕРЕДЬ</button></div>`;
+            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (${it.client})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();haptic();">🚀 ПНУТЬ ОЧЕРЕДЬ</button></div>`;
             document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
-        };
-        upd(); const intv = setInterval(() => { if(monitorOpen) upd(); else clearInterval(intv); }, 1500);
+        }; upd(); const intv = setInterval(() => { if(monitorOpen) upd(); else clearInterval(intv); }, 1500);
     }
 
     async function createFullBackup() {
@@ -524,23 +465,11 @@
         }; r.readAsText(f);
     }
 
-    function exportSryvyToExcel() {
-        let gr = {}; 
-        for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p] === 2) { if(!gr[id]) gr[id] = []; gr[id].push(p); } }
-        let reportData = []; for(let id in gr){
-            const it = DATA.list.find(x => x.id === id);
-            if(it) reportData.push({ "Город": DATA.city, "Адрес": `${it.s}, ${it.h}`, "Подъезды (Срывы)": gr[id].sort((a,b)=>a-b).join(", ") });
-        }
-        if(reportData.length === 0) return alert("Срывов нет!");
-        const ws = XLSX.utils.json_to_sheet(reportData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Срывы"); XLSX.writeFile(wb, `Sryvy_${DATA.city}.xlsx`);
-    }
-
     function showSryvy() {
         haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ";
         let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } }
         let h = "<div style='padding:15px'>";
         for(let id in gr){ const it=DATA.list.find(x=>x.id===id); h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].sort((a,b)=>a-b).join(", ")}</span></div>`; }
-        h += `<button class="btn-act btn-green" style="margin-top:20px" onclick="exportSryvyToExcel();haptic();">💾 СКАЧАТЬ EXCEL</button></div>`;
         document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Срывов нет</p>";
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
