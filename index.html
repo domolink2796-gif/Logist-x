@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>LOGIST_X | Elite Control System</title>
     
+    <title>LOGIST_X | Контроль расклейки объявлений и полевого персонала</title>
+    <meta name="description" content="LOGIST_X — система контроля расклейщиков объявлений, промоутеров и монтажников. Автоматические фотоотчеты с GPS-привязкой и облачным архивом.">
+    <meta name="keywords" content="контроль расклейки объявлений, программа для промоутеров, фотоотчет расклейка, проверка рекламных агентов, приложение для монтажников, LOGIST_X, отчетность по почтовым ящикам, мониторинг персонала">
+
     <link rel="manifest" href="app/manifest.json">
     <meta name="theme-color" content="#010409">
     <link rel="apple-touch-icon" href="app/icon-1024.png">
@@ -48,8 +51,11 @@
         .folder-node::before { content: ''; position: absolute; left: 0; top: 0.75rem; width: 1rem; border-top: 2px solid rgba(245, 158, 11, 0.2); }
         .dot-matrix { background-image: radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); background-size: 30px 30px; }
 
+        .benefit-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; padding: 2rem; transition: 0.3s; }
+        .benefit-card:hover { background: rgba(245, 158, 11, 0.05); border-color: var(--accent); }
+
         @media (max-width: 640px) {
-            .title-hero { font-size: 2.8rem !important; line-height: 1.1; }
+            .title-hero { font-size: 2.6rem !important; line-height: 1.1; }
             section { padding: 60px 1.25rem !important; }
         }
     </style>
@@ -69,16 +75,39 @@
     <header class="relative pt-48 pb-24 text-center px-4">
         <div class="max-w-4xl mx-auto">
             <h1 class="title-hero text-5xl md:text-8xl font-black mb-10 uppercase tracking-tighter animate__animated animate__fadeInUp">
-                КОМАНДА <br><span class="text-amber-500 italic underline decoration-amber-500/20">КАК НА ЛАДОНИ</span>
+                КОНТРОЛЬ <br><span class="text-amber-500 italic underline decoration-amber-500/20">БЕЗ ОБМАНА</span>
             </h1>
             <p class="text-lg md:text-2xl opacity-40 mb-14 max-w-2xl mx-auto leading-relaxed animate__animated animate__fadeInUp">
-                Профессиональный контроль полевых сотрудников. Фотоотчеты, GPS и авто-структура папок на вашем Диске.
+                Идеальное решение для расклейки рекламы и монтажных работ. Честные фотоотчеты с GPS и мгновенный архив.
             </p>
             <button onclick="handleInstallClick()" class="btn-install-gold w-full sm:w-auto px-12 py-6 text-sm gap-3 shadow-2xl">
                <i data-lucide="download-cloud" size="22"></i> УСТАНОВИТЬ ПРИЛОЖЕНИЕ
             </button>
         </div>
     </header>
+
+    <section class="py-24 px-6 border-t border-white/5">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl md:text-6xl font-black mb-16 italic uppercase text-center">Кому это <span class="text-amber-500">нужно?</span></h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="benefit-card">
+                    <div class="text-amber-500 mb-6"><i data-lucide="megaphone" size="40"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase">Рекламные агентства</h3>
+                    <p class="opacity-40 text-sm leading-relaxed">Забудьте про хаос в чатах. <strong>Контроль расклейки объявлений</strong> становится прозрачным: вы видите точное время и место каждого фото.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="text-amber-500 mb-6"><i data-lucide="wrench" size="40"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase">Монтажные бригады</h3>
+                    <p class="opacity-40 text-sm leading-relaxed">Автоматическая сортировка фотоотчетов по объектам. Больше не нужно гадать, с какого адреса прислали замену баннера или ремонт.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="text-amber-500 mb-6"><i data-lucide="truck" size="40"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase">Службы доставки</h3>
+                    <p class="opacity-40 text-sm leading-relaxed">Подтверждение доставки до двери или в почтовый ящик. Исключает претензии "я ничего не получал" благодаря GPS-привязке.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section class="py-24 px-6 bg-black/40">
         <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
@@ -91,7 +120,7 @@
                         <div class="folder-node">
                             <div class="opacity-30 text-[11px] font-bold tracking-widest mb-4">28.12.2025</div>
                             <div class="folder-node italic text-amber-500/60 text-sm space-y-4">
-                                <div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Ул.Ленина_12_Монтаж.jpg</span></div>
+                                <div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Ул.Ленина_12_Расклейка.jpg</span></div>
                                 <div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Результат_ОК.jpg</span></div>
                             </div>
                         </div>
@@ -99,8 +128,8 @@
                 </div>
             </div>
             <div class="text-center lg:text-left">
-                <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase">Архив <br><span class="text-amber-500">БЕЗ ХАОСА</span></h2>
-                <p class="opacity-40 text-xl italic leading-relaxed">Система сама раскладывает отчеты сотрудников в облаке. Полный порядок 24/7.</p>
+                <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase">Архив <br><span class="text-amber-500">ЗА 1 СЕКУНДУ</span></h2>
+                <p class="opacity-40 text-xl italic leading-relaxed">Система сама раскладывает фотоотчеты по папкам. Вы заходите на Диск и видите готовый результат работы.</p>
             </div>
         </div>
     </section>
@@ -112,7 +141,7 @@
                 <div>
                     <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-40 italic">Setup</h3>
                     <div class="text-7xl font-black mb-4 italic tracking-tighter">5 000 <span class="text-2xl not-italic opacity-20">₽</span></div>
-                    <p class="opacity-40 text-sm italic">Единоразово за настройку сервера, интеграцию облака и базы данных.</p>
+                    <p class="opacity-40 text-sm italic">Интеграция облака, настройка сервера и вашей базы данных под ключ.</p>
                 </div>
                 <a href="https://t.me/gena_krokodi" class="mt-12 block py-5 border border-white/10 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest hover:border-amber-500 transition-all">Заказать запуск</a>
             </div>
@@ -121,7 +150,7 @@
                 <div>
                     <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-60 italic text-amber-500">License</h3>
                     <div class="text-7xl font-black mb-4 italic tracking-tighter text-amber-500">700 <span class="text-2xl not-italic opacity-40">₽</span></div>
-                    <p class="opacity-40 text-white font-bold text-[10px] uppercase tracking-widest mb-4 italic">В месяц за юзера</p>
+                    <p class="opacity-40 text-white font-bold text-[10px] uppercase tracking-widest mb-4 italic">В месяц за сотрудника</p>
                 </div>
                 <button onclick="handleInstallClick()" class="btn-install-gold mt-12 w-full py-6 text-xs">Подключиться</button>
             </div>
@@ -130,7 +159,7 @@
                 <div>
                     <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-40 italic">Premium</h3>
                     <div class="text-7xl font-black mb-4 italic tracking-tighter">15 000 <span class="text-2xl not-italic opacity-20">₽</span></div>
-                    <p class="opacity-40 text-sm italic">Полное VIP-сопровождение, обучение персонала и кастомные доработки.</p>
+                    <p class="opacity-40 text-sm italic">VIP-сопровождение, обучение ваших сотрудников и любые доработки системы.</p>
                 </div>
                 <a href="https://t.me/gena_krokodi" class="mt-12 block py-5 border border-white/10 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest hover:border-amber-500 transition-all">Обсудить</a>
             </div>
@@ -140,6 +169,7 @@
 
     <footer class="py-24 text-center border-t border-white/5 opacity-40">
         <p class="text-[10px] font-black uppercase tracking-[15px]">LOGIST_X 2025</p>
+        <p class="mt-4 text-[9px] uppercase tracking-widest">Система контроля расклейки и монтажных работ</p>
     </footer>
 
     <script type="text/javascript">
@@ -150,7 +180,6 @@
        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106053460', 'ym');
        ym(106053460, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
     </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/106053460" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 
     <script>
         lucide.createIcons();
