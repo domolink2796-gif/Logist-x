@@ -207,8 +207,8 @@
 </div>
 
 <script>
-    // ПРИВЯЗАНО К ТВОЕЙ НОВОЙ БАЗЕ v86
-    const DEFAULT_HQ = "https://script.google.com/macros/s/AKfycbz3ZscxDR4Ls4383w43ENWJnov5SEunvNhG_mUSzZTuawytVg2Pwn67VyOgwJ5f2FfA8A/exec";
+    // ПУСТАЯ БАЗА ПО УМОЛЧАНИЮ - ВСЁ РЕШАЕТСЯ ПРИ ВХОДЕ
+    const DEFAULT_HQ = ""; 
     const MASTER_KEY = "DEV-MASTER-999";
     
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", cloudUrl: DEFAULT_HQ, workerName: "", license: {key: "", expiry: 0, status: false}, folderId: "", sheetId: "", history: [] };
@@ -228,7 +228,7 @@
     }
 
     function saveCfg() {
-        DATA.cloudUrl = document.getElementById('cloudUrl')?.value.trim() || DATA.cloudUrl || DEFAULT_HQ;
+        DATA.cloudUrl = document.getElementById('cloudUrl')?.value.trim() || DATA.cloudUrl;
         DATA.license.key = document.getElementById('licenseKey')?.value.trim().toUpperCase() || DATA.license.key;
         DATA.workerName = document.getElementById('workerName')?.value.trim() || DATA.workerName;
         DATA.city = document.getElementById('cityName')?.value.trim() || DATA.city || "Орёл";
@@ -257,11 +257,11 @@
     }
 
     async function checkLicense() {
-        if (DATA.license.key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("ДОСТУП РАЗРЕШЕН"); return; }
-        const url = DATA.cloudUrl || DEFAULT_HQ; 
+        const url = DATA.cloudUrl; 
         const key = DATA.license.key;
         const worker = DATA.workerName;
-        if(!url || !key || !worker) return alert("Заполните ФИО и данные ключа!");
+        if (key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("ДОСТУП РАЗРЕШЕН"); return; }
+        if(!url || !key || !worker) return alert("Заполните ФИО, Cloud URL и Ключ!");
         const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
         const conts = [document.getElementById('lockLicProgress'), document.getElementById('menuLicProgress')];
         conts.forEach(c => c && (c.style.display = 'block'));
@@ -276,7 +276,7 @@
                 saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН");
                 setTimeout(() => conts.forEach(c => c && (c.style.display = 'none')), 1000);
             } else { alert("ОШИБКА: " + result.message); }
-        } catch(e) { alert("Ошибка связи!"); }
+        } catch(e) { alert("Ошибка связи с сервером!"); }
         finally { bars.forEach(b => b && (b.style.width = '0%')); }
     }
 
@@ -284,13 +284,13 @@
         const inputKey = document.getElementById('lockLicenseKey').value.trim().toUpperCase();
         const inputName = document.getElementById('lockWorkerName').value.trim();
         const inputUrl = document.getElementById('lockCloudUrl').value.trim();
+        if(!inputUrl) return alert("Необходимо ввести Cloud URL Штаба!");
+        DATA.cloudUrl = inputUrl; DATA.workerName = inputName; DATA.license.key = inputKey;
         if (inputKey === MASTER_KEY) {
-            DATA.license.key = inputKey; DATA.workerName = inputName || "Разработчик";
-            DATA.cloudUrl = inputUrl || DEFAULT_HQ; DATA.license.expiry = Date.now() + 315360000000;
+            DATA.workerName = inputName || "Разработчик"; DATA.license.expiry = Date.now() + 315360000000;
             DATA.license.status = true; localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
             document.getElementById('licenseLock').style.display = 'none'; render(); toast("ДОСТУП РАЗРЕШЕН"); return;
         }
-        DATA.workerName = inputName; DATA.cloudUrl = inputUrl || DEFAULT_HQ; DATA.license.key = inputKey;
         saveCfg(); await checkLicense();
     }
 
@@ -405,7 +405,7 @@
     }
 
     async function syncNow() {
-        const url = DATA.cloudUrl || DEFAULT_HQ;
+        const url = DATA.cloudUrl;
         if(syncing || !navigator.onLine || !url || !db || !DATA.license.status) return;
         syncing = true;
         try {
@@ -511,7 +511,8 @@
         const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
         if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
         if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
-        if(document.getElementById('cloudUrl')) document.getElementById('cloudUrl').value = DATA.cloudUrl || DEFAULT_HQ;
+        if(document.getElementById('cloudUrl')) document.getElementById('cloudUrl').value = DATA.cloudUrl || "";
+        if(document.getElementById('lockCloudUrl')) document.getElementById('lockCloudUrl').value = DATA.cloudUrl || "";
         if(document.getElementById('licenseKey')) document.getElementById('licenseKey').value = DATA.license.key || "";
         document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
         document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
