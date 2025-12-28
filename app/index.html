@@ -186,8 +186,7 @@
 </div>
 
 <script>
-    // --- НАСТРОЙКИ СЕРВЕРА (МЫ ИХ ЗАПОЛНИМ ПОСЛЕ ЗАПУСКА) ---
-    const BOT_SERVER_URL = 'https://logist-x-server.onrender.com'; // Сюда впишем твой адрес
+    const BOT_SERVER_URL = 'https://logist-x-server.onrender.com';
     const MASTER_KEY = "DEV-MASTER-999";
     
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
@@ -196,10 +195,7 @@
 
     function getDeviceId() {
         let id = localStorage.getItem('logist_device_id');
-        if (!id) {
-            id = 'D-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-            localStorage.setItem('logist_device_id', id);
-        }
+        if (!id) { id = 'D-' + Math.random().toString(36).substr(2, 9).toUpperCase(); localStorage.setItem('logist_device_id', id); }
         return id;
     }
 
@@ -244,42 +240,29 @@
     }
 
     async function checkLicense() {
-        const key = DATA.license.key;
-        const worker = DATA.workerName;
-        const devId = getDeviceId();
+        const key = DATA.license.key; const worker = DATA.workerName; const devId = getDeviceId();
         if (key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("MASTER OK"); return; }
         if(!key || !worker) return alert("Введите ФИО и Ключ!");
-        
         const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
         bars.forEach(b => b && (b.style.width = '50%'));
-        
         try {
             const res = await fetch(`${BOT_SERVER_URL}/check-license`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ licenseKey: key, workerName: worker, deviceId: devId })
             });
             const result = await res.json();
-            if(result.status === "active") {
-                DATA.license.expiry = Number(result.expiry);
-                saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН");
-            } else { alert("ОТКАЗ: " + result.message); }
-        } catch(e) { alert("Ошибка связи с сервером!"); }
+            if(result.status === "active") { DATA.license.expiry = Number(result.expiry); saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); } else { alert("ОТКАЗ: " + result.message); }
+        } catch(e) { alert("Ошибка связи!"); }
         finally { bars.forEach(b => b && (b.style.width = '0%')); }
     }
 
-    async function saveAndCheckLock() {
-        DATA.workerName = document.getElementById('lockWorkerName').value.trim();
-        DATA.license.key = document.getElementById('lockLicenseKey').value.trim().toUpperCase();
-        saveCfg(); await checkLicense();
-    }
+    async function saveAndCheckLock() { DATA.workerName = document.getElementById('lockWorkerName').value.trim(); DATA.license.key = document.getElementById('lockLicenseKey').value.trim().toUpperCase(); saveCfg(); await checkLicense(); }
 
     function handleExcel(inp) {
         let f = inp.files[0]; if(!f) return;
-        setLoader(true); 
+        setLoader(true);
         setTimeout(() => {
-            let r = new FileReader();
-            r.onload = (e) => {
+            let r = new FileReader(); r.onload = (e) => {
                 try {
                     let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
                     let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
@@ -287,12 +270,11 @@
                     let cS = head.findIndex(v => v.includes('улица') || v.includes('адрес'));
                     let cH = head.findIndex(v => v.includes('дом'));
                     let cP = head.findIndex(v => v.includes('подъезд'));
-                    if(cS === -1) return alert("Ошибка: Столбец 'Адрес' не найден");
+                    if(cS === -1) return alert("Ошибка адреса");
                     let list = [];
                     rows.forEach((row, k) => {
                         if(k === 0 || !row[cS]) return;
-                        let cls = [];
-                        row.forEach(cell => { if(cell){ let v=String(cell).toUpperCase(); for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]); } });
+                        let cls = []; row.forEach(cell => { if(cell){ let v=String(cell).toUpperCase(); for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]); } });
                         list.push({s: row[cS], h: row[cH] || "?", p: parseInt(row[cP])||1, clients: [...new Set(cls)], id: 'ID-'+k+'-'+(row[cS]+row[cH]).replace(/\W/g,'')});
                     });
                     DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); Sfx.ok(); toast("БАЗА ОБНОВЛЕНА");
@@ -318,7 +300,7 @@
                 <div class="pods">${pds}</div>
             </div>`;
         });
-        box.innerHTML = html || "<p style='text-align:center; opacity:0.1; padding:50px;'>СПИСОК ПУСТ</p>"; updateStats();
+        box.innerHTML = html || "<p style='text-align:center; opacity:0.1; padding:50px;'>ПУСТ </p>"; updateStats();
     }
 
     function openNav(addr) { haptic(); window.open(`https://yandex.ru/maps/?text=${encodeURIComponent(DATA.city + " " + addr)}`); }
@@ -359,7 +341,7 @@
 
     function getCoords() {
         return new Promise((resolve) => {
-            if (!navigator.geolocation) return resolve("No GPS Support");
+            if (!navigator.geolocation) return resolve("No GPS");
             navigator.geolocation.getCurrentPosition(
                 (pos) => resolve(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`),
                 () => resolve("GPS Disabled"), { enableHighAccuracy: true, timeout: 5000 }
@@ -378,10 +360,27 @@
         render(); closeModal();
         const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
         for (let client of cls) {
-            const entry = { action: "save_report", worker: DATA.workerName, city: DATA.city, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, address: `${it.s} ${it.h} п.${curP}`, client: client, workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], coords: coords, ts: Date.now(), status: "Ожидание", full: curPhotos[client], licenseKey: DATA.license.key, deviceId: getDeviceId() };
+            const entry = { 
+                action: "save_report", 
+                worker: DATA.workerName, 
+                city: DATA.city, 
+                image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, 
+                address: it.s + " " + it.h,
+                pod: curP,
+                client: client, 
+                workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], 
+                price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], 
+                coords: coords, 
+                ts: Date.now(), 
+                status: "В очереди", 
+                full: curPhotos[client], 
+                licenseKey: DATA.license.key, 
+                deviceId: getDeviceId(),
+                fileName: `${it.s}_${it.h}_п.${curP}` // Ювелирная добавка: чистое имя файла
+            };
             DATA.history.unshift(entry); store.add(entry);
         }
-        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ"); };
+        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("СОХРАНЕНО"); };
     }
 
     async function syncNow() {
@@ -397,8 +396,7 @@
                 document.getElementById('queueCount').innerText = `${i+1}/${items.length}`;
                 try {
                     const res = await fetch(`${BOT_SERVER_URL}/upload`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(items[i])
                     });
                     const resJ = await res.json();
@@ -417,42 +415,27 @@
             const tx = db.transaction("sync_queue", "readonly");
             const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
             document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ";
-            document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Все доставлено!</p>" : 
-            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (${it.client})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 ПНУТЬ ОЧЕРЕДЬ</button></div>`;
+            document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Доставлено!</p>" : 
+            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.pod})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`;
             document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
         }; upd();
     }
 
-    function createFullBackup() {
-        const blob = new Blob([JSON.stringify({ appData: DATA })], {type:'application/json'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click();
-    }
-
-    function restoreFullBackup(inp) {
-        let f = inp.files[0]; if(!f) return;
-        const r = new FileReader(); r.onload = (e) => {
-            try { DATA = JSON.parse(e.target.result).appData; saveCfg(); location.reload(); } catch(err) { alert("Ошибка!"); }
-        }; r.readAsText(f);
-    }
+    function createFullBackup() { const blob = new Blob([JSON.stringify({ appData: DATA })], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click(); }
+    function restoreFullBackup(inp) { let f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { DATA = JSON.parse(e.target.result).appData; saveCfg(); location.reload(); } catch(err) { alert("Ошибка!"); } }; r.readAsText(f); }
 
     function showSryvy() {
         haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ";
         let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } }
         let h = "<div style='padding:15px'>";
-        for(let id in gr){ const it=DATA.list.find(x=>x.id===id); h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].sort((a,b)=>a-b).join(", ")}</span></div>`; }
-        document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Срывов нет</p>";
+        for(let id in gr){ const it=DATA.list.find(x=>x.id===id); h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; }
+        document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>";
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
 
     function showArchive() {
         haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; 
-        DATA.history.slice(0,50).forEach((it, idx) => { 
-            h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})">
-                <div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div>
-                <div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (${it.client})</div>
-                <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div>
-            </div>`; 
-        });
+        DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.pod})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; });
         document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; 
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
