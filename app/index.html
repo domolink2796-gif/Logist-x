@@ -186,9 +186,11 @@
 </div>
 
 <script>
-    const BOT_SERVER_URL = 'https://logist-x-server.onrender.com';
+    // Жень, здесь прописан твой новый адрес сервера Amvera
+    const BOT_SERVER_URL = 'https://amvera-logist-x-run-logist-x-server.amvera.io';
     const MASTER_KEY = "DEV-MASTER-999";
     
+    // Твои настройки работ: монтаж, реклама и pseudomona
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
     const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
