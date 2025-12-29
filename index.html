@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>LOGIST_X | Контроль расклейки объявлений и полевого персонала</title>
-    <meta name="description" content="LOGIST_X — система контроля расклейщиков объявлений, промоутеров и монтажников. Автоматические фотоотчеты с GPS-привязкой и облачным архивом.">
-    <meta name="keywords" content="контроль расклейки объявлений, программа для промоутеров, фотоотчет расклейка, проверка рекламных агентов, приложение для монтажников, LOGIST_X, отчетность по почтовым ящикам, мониторинг персонала">
+    <title>LOGIST_X | Контроль расклейки объявлений и автоматизация монтажных работ</title>
+    <meta name="description" content="LOGIST_X — ERP-система контроля полевого персонала. Автоматические отчеты в Google Таблицы с разделением по сотрудникам и GPS-привязкой.">
+    <meta name="keywords" content="контроль расклейки объявлений, программа для промоутеров, фотоотчет расклейка, проверка рекламных агентов, приложение для монтажников, LOGIST_X, ERP отчетность, автоматизация монтажа">
 
     <link rel="manifest" href="app/manifest.json">
     <meta name="theme-color" content="#010409">
@@ -19,51 +19,23 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         :root { --accent: #f59e0b; --bg: #010409; --card: rgba(13, 17, 23, 0.7); }
-        
         body { background-color: var(--bg); color: #e6edf3; font-family: 'Inter', sans-serif; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-
-        @keyframes pulse-gold {
-            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); transform: scale(1); }
-            70% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); transform: scale(1.03); }
-            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); transform: scale(1); }
-        }
-
-        .btn-install-gold {
-            background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
-            color: #000 !important;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            animation: pulse-gold 2s infinite;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center; justify-content: center;
-            border-radius: 1.5rem;
-        }
-
-        .price-card {
-            background: var(--card); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 2.5rem; padding: 2.5rem 1.5rem; transition: 0.4s ease; display: flex; flex-direction: column; justify-content: space-between;
-        }
+        @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); transform: scale(1); } 70% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); transform: scale(1.03); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); transform: scale(1); } }
+        .btn-install-gold { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #000 !important; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; animation: pulse-gold 2s infinite; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; border-radius: 1.5rem; }
+        .price-card { background: var(--card); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 2.5rem; padding: 2.5rem 1.5rem; transition: 0.4s ease; display: flex; flex-direction: column; justify-content: space-between; }
         .price-card:hover { border-color: var(--accent); transform: translateY(-10px); }
-
         .folder-node { border-left: 2px solid rgba(245, 158, 11, 0.2); margin-left: 1rem; padding-left: 1.5rem; position: relative; margin-bottom: 0.75rem; }
         .folder-node::before { content: ''; position: absolute; left: 0; top: 0.75rem; width: 1rem; border-top: 2px solid rgba(245, 158, 11, 0.2); }
         .dot-matrix { background-image: radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); background-size: 30px 30px; }
-
         .benefit-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; padding: 2rem; transition: 0.3s; }
         .benefit-card:hover { background: rgba(245, 158, 11, 0.05); border-color: var(--accent); }
-
-        @media (max-width: 640px) {
-            .title-hero { font-size: 2.6rem !important; line-height: 1.1; }
-            section { padding: 60px 1.25rem !important; }
-        }
+        @media (max-width: 640px) { .title-hero { font-size: 2.6rem !important; line-height: 1.1; } section { padding: 60px 1.25rem !important; } }
     </style>
 </head>
 <body class="dot-matrix">
 
     <nav class="fixed top-0 w-full z-[1000] bg-black/80 backdrop-blur-xl border-b border-white/5 px-6 py-4">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="max-w-77xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <div class="bg-amber-500 p-1.5 rounded-xl"><i data-lucide="shield-check" class="text-black" size="20"></i></div>
                 <span class="text-2xl font-black italic tracking-tighter">LOGIST<span class="text-amber-500">_X</span></span>
@@ -78,7 +50,7 @@
                 КОНТРОЛЬ <br><span class="text-amber-500 italic underline decoration-amber-500/20">БЕЗ ОБМАНА</span>
             </h1>
             <p class="text-lg md:text-2xl opacity-40 mb-14 max-w-2xl mx-auto leading-relaxed animate__animated animate__fadeInUp">
-                Идеальное решение для расклейки рекламы и монтажных работ. Честные фотоотчеты с GPS и мгновенный архив.
+                Автоматическая ERP-система для управления полевым персоналом. Отчеты сами раскладываются по полкам.
             </p>
             <button onclick="handleInstallClick()" class="btn-install-gold w-full sm:w-auto px-12 py-6 text-sm gap-3 shadow-2xl">
                <i data-lucide="download-cloud" size="22"></i> УСТАНОВИТЬ ПРИЛОЖЕНИЕ
@@ -88,22 +60,22 @@
 
     <section class="py-24 px-6 border-t border-white/5">
         <div class="max-w-6xl mx-auto">
-            <h2 class="text-3xl md:text-6xl font-black mb-16 italic uppercase text-center">Кому это <span class="text-amber-500">нужно?</span></h2>
+            <h2 class="text-3xl md:text-6xl font-black mb-16 italic uppercase text-center">Почему выбирают <span class="text-amber-500">LOGIST_X?</span></h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div class="benefit-card">
-                    <div class="text-amber-500 mb-6"><i data-lucide="megaphone" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase">Рекламные агентства</h3>
-                    <p class="opacity-40 text-sm leading-relaxed">Забудьте про хаос в чатах. <strong>Контроль расклейки объявлений</strong> становится прозрачным: вы видите точное время и место каждого фото.</p>
+                    <div class="text-amber-500 mb-6"><i data-lucide="layout-grid" size="40"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase">Авто-Иерархия</h3>
+                    <p class="opacity-40 text-sm leading-relaxed">Система сама создает папки на Google Drive: <br><strong>Монтажник → Объект → Город → Дата.</strong> Полный порядок в архивах.</p>
                 </div>
                 <div class="benefit-card">
-                    <div class="text-amber-500 mb-6"><i data-lucide="wrench" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase">Монтажные бригады</h3>
-                    <p class="opacity-40 text-sm leading-relaxed">Автоматическая сортировка фотоотчетов по объектам. Больше не нужно гадать, с какого адреса прислали замену баннера или ремонт.</p>
+                    <div class="text-amber-500 mb-6"><i data-lucide="table-2" size="40"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase">Листы по Именам</h3>
+                    <p class="opacity-40 text-sm leading-relaxed">Больше никакой каши в Excel. У каждого сотрудника своя вкладка с его отчетами, суммами и временем работы.</p>
                 </div>
                 <div class="benefit-card">
-                    <div class="text-amber-500 mb-6"><i data-lucide="truck" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase">Службы доставки</h3>
-                    <p class="opacity-40 text-sm leading-relaxed">Подтверждение доставки до двери или в почтовый ящик. Исключает претензии "я ничего не получал" благодаря GPS-привязке.</p>
+                    <div class="text-amber-500 mb-6"><i data-lucide="map-pin" size="40"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase">GPS-Контроль</h3>
+                    <p class="opacity-40 text-sm leading-relaxed">Каждое фото привязано к координатам и времени. Подделать отчет или отправить "старое фото" невозможно.</p>
                 </div>
             </div>
         </div>
@@ -112,38 +84,37 @@
     <section class="py-24 px-6 bg-black/40">
         <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
             <div class="bg-[#05070a] p-8 md:p-12 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden">
-                <div class="text-amber-500/40 mb-10 font-black text-xs tracking-[8px] uppercase border-b border-white/5 pb-6">Cloud_Data_Structure</div>
+                <div class="text-amber-500/40 mb-10 font-black text-xs tracking-[8px] uppercase border-b border-white/5 pb-6">ERP_Drive_Structure</div>
                 <div class="folder-node">
-                    <div class="flex items-center gap-3 text-blue-400 font-black uppercase tracking-widest"><i data-lucide="user" size="18"></i> Иванов_С.А.</div>
+                    <div class="flex items-center gap-3 text-blue-400 font-black uppercase tracking-widest"><i data-lucide="user" size="18"></i> Костик_Монтажник</div>
                     <div class="folder-node">
-                        <div class="flex items-center gap-3 text-green-500 font-black uppercase tracking-widest"><i data-lucide="map-pin" size="18"></i> Сочи</div>
+                        <div class="flex items-center gap-3 text-green-500 font-black uppercase tracking-widest"><i data-lucide="building" size="18"></i> Магнит_Объект</div>
                         <div class="folder-node">
-                            <div class="opacity-30 text-[11px] font-bold tracking-widest mb-4">28.12.2025</div>
+                            <div class="opacity-30 text-[11px] font-bold tracking-widest mb-4">Краснодар_29.12.2025</div>
                             <div class="folder-node italic text-amber-500/60 text-sm space-y-4">
-                                <div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Ул.Ленина_12_Расклейка.jpg</span></div>
-                                <div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Результат_ОК.jpg</span></div>
+                                <div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Монтаж_Завершен.jpg</span></div>
+                                <div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Чек_Оплаты.jpg</span></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="text-center lg:text-left">
-                <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase">Архив <br><span class="text-amber-500">ЗА 1 СЕКУНДУ</span></h2>
-                <p class="opacity-40 text-xl italic leading-relaxed">Система сама раскладывает фотоотчеты по папкам. Вы заходите на Диск и видите готовый результат работы.</p>
+                <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase text-amber-500">УМНЫЙ <br>АРХИВ</h2>
+                <p class="opacity-40 text-xl italic leading-relaxed">Система сама создает таблицы и вкладки. Вы получаете чистую аналитику без ручного труда.</p>
             </div>
         </div>
     </section>
 
     <section id="pricing" class="py-32 px-6">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-            
             <div class="price-card">
                 <div>
                     <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-40 italic">Setup</h3>
                     <div class="text-7xl font-black mb-4 italic tracking-tighter">5 000 <span class="text-2xl not-italic opacity-20">₽</span></div>
                     <p class="opacity-40 text-sm italic">Интеграция облака, настройка сервера и вашей базы данных под ключ.</p>
                 </div>
-                <a href="https://t.me/gena_krokodi" class="mt-12 block py-5 border border-white/10 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest hover:border-amber-500 transition-all">Заказать запуск</a>
+                <a href="https://t.me/Yevgeniy_Nikitin" class="mt-12 block py-5 border border-white/10 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest hover:border-amber-500 transition-all">Заказать запуск</a>
             </div>
 
             <div class="price-card border-amber-500/40 bg-amber-500/5 scale-105 z-10 shadow-3xl">
@@ -161,15 +132,15 @@
                     <div class="text-7xl font-black mb-4 italic tracking-tighter">15 000 <span class="text-2xl not-italic opacity-20">₽</span></div>
                     <p class="opacity-40 text-sm italic">VIP-сопровождение, обучение ваших сотрудников и любые доработки системы.</p>
                 </div>
-                <a href="https://t.me/gena_krokodi" class="mt-12 block py-5 border border-white/10 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest hover:border-amber-500 transition-all">Обсудить</a>
+                <a href="https://t.me/Yevgeniy_Nikitin" class="mt-12 block py-5 border border-white/10 rounded-2xl text-center font-black uppercase text-[10px] tracking-widest hover:border-amber-500 transition-all">Обсудить</a>
             </div>
-
         </div>
     </section>
 
     <footer class="py-24 text-center border-t border-white/5 opacity-40">
         <p class="text-[10px] font-black uppercase tracking-[15px]">LOGIST_X 2025</p>
         <p class="mt-4 text-[9px] uppercase tracking-widest">Система контроля расклейки и монтажных работ</p>
+        <p class="mt-2 text-[8px] uppercase tracking-widest italic text-amber-500/60">Разработчик: Евгений Никитин</p>
     </footer>
 
     <script type="text/javascript">
@@ -193,11 +164,6 @@
                 if (outcome === 'accepted') return;
             }
             window.location.href = 'app/index.html';
-        }
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('app/sw.js', { scope: './app/' });
-            });
         }
     </script>
 </body>
