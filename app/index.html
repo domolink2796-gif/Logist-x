@@ -186,11 +186,9 @@
 </div>
 
 <script>
-    // Жень, здесь прописан твой новый адрес сервера на Railway
     const BOT_SERVER_URL = 'https://logist-x-server-production.up.railway.app';
     const MASTER_KEY = "DEV-MASTER-999";
     
-    // Твои настройки работ
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
     const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
@@ -223,7 +221,7 @@
         DATA.names.t1 = document.getElementById('t1_name')?.value || "Монтаж";
         DATA.names.t3 = document.getElementById('t3_name')?.value || "Замена рекламы";
         DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudomona";
-        document.getElementById('cityBadge').innerText = DATA.city.toUpperCase();
+        if(document.getElementById('cityBadge')) document.getElementById('cityBadge').innerText = DATA.city.toUpperCase();
         localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
         checkLicenseUI();
     }
@@ -233,12 +231,14 @@
         const now = Date.now();
         const active = DATA.license.key && Number(DATA.license.expiry) > now;
         DATA.license.status = active;
-        document.getElementById('licenseLock').style.display = active ? 'none' : 'flex';
+        if(document.getElementById('licenseLock')) document.getElementById('licenseLock').style.display = active ? 'none' : 'flex';
         const h = document.getElementById('statLicense');
-        if(active) {
-            const d = Math.ceil((DATA.license.expiry - now) / 86400000);
-            h.innerText = (DATA.license.key === MASTER_KEY ? "∞" : d) + " дн."; h.style.color = "var(--accent)";
-        } else { h.innerText = "EXP"; h.style.color = "var(--red)"; }
+        if(h) {
+            if(active) {
+                const d = Math.ceil((DATA.license.expiry - now) / 86400000);
+                h.innerText = (DATA.license.key === MASTER_KEY ? "∞" : d) + " дн."; h.style.color = "var(--accent)";
+            } else { h.innerText = "EXP"; h.style.color = "var(--red)"; }
+        }
     }
 
     async function checkLicense() {
@@ -416,7 +416,7 @@
                     } else break;
                 } catch(e) { break; }
             }
-        } finally { syncing = false; document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
+        } finally { syncing = false; if(document.getElementById('syncIndicator')) document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
     }
 
     async function showMonitor() {
@@ -439,7 +439,7 @@
         haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ";
         let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } }
         let h = "<div style='padding:15px'>";
-        for(let id in gr){ const it=DATA.list.find(x=>x.id===id); h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; }
+        for(let id in gr){ const it=DATA.list.find(x=>x.id===id); if(it) h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; }
         document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>";
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
@@ -453,11 +453,26 @@
 
     function showArchivePhoto(idx) { const it = DATA.history[idx]; if(!it || !it.full) return; document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; }
 
-    function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing) document.getElementById('queueCount').innerText = c; }; }
+    function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; if(document.getElementById('syncIndicator')) document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing && document.getElementById('queueCount')) document.getElementById('queueCount').innerText = c; }; }
+    
     function updateStats() {
-        let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0;
-        for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { const t = DATA.done[id][p]; dn++; if(t !== 2) mon += ([0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t] * it.clients.length); } }
-        document.getElementById('statMoney').innerText = mon + " ₽"; document.getElementById('statProgress').innerText = `${dn}/${tot}`; document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
+        let tot = 0; DATA.list.forEach(i => tot += i.p); 
+        let dn = 0, mon = 0;
+        for(let id in DATA.done) { 
+            const it = DATA.list.find(x => x.id === id); 
+            if(!it) continue; 
+            for(let p in DATA.done[id]) { 
+                const t = DATA.done[id][p]; 
+                dn++; 
+                if(t !== 2) {
+                    let p_val = [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t];
+                    mon += (p_val * (it.clients.length || 1));
+                }
+            } 
+        }
+        if(document.getElementById('statMoney')) document.getElementById('statMoney').innerText = mon + " ₽"; 
+        if(document.getElementById('statProgress')) document.getElementById('statProgress').innerText = `${dn}/${tot}`; 
+        if(document.getElementById('mainProgress')) document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
     }
 
     function toggleMenu() { haptic(); Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
@@ -466,7 +481,15 @@
     
     function showWallet() { 
         Sfx.click(); haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
-        let counts = {1:0, 3:0, 4:0}; for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { let t = DATA.done[id][p]; if(counts[t]!==undefined) counts[t] += it.clients.length; } }
+        let counts = {1:0, 3:0, 4:0}; 
+        for(let id in DATA.done) { 
+            const it = DATA.list.find(x => x.id === id); 
+            if(!it) continue; 
+            for(let p in DATA.done[id]) { 
+                let t = DATA.done[id][p]; 
+                if(counts[t]!==undefined) counts[t] += (it.clients.length || 1); 
+            } 
+        }
         document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`;
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
@@ -476,8 +499,10 @@
         if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
         if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
         if(document.getElementById('licenseKey')) document.getElementById('licenseKey').value = DATA.license.key || "";
-        document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
-        document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
+        if(document.getElementById('p1')) {
+            document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
+            document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
+        }
         checkLicenseUI(); openDB(); render();
     };
     setInterval(syncNow, 12000);
