@@ -241,7 +241,6 @@
         } else { h.innerText = "EXP"; h.style.color = "var(--red)"; }
     }
 
-    // --- ВОТ ТУТ ГЛАВНОЕ ИСПРАВЛЕНИЕ ДЛЯ ТЕБЯ ---
     async function checkLicense() {
         const key = DATA.license.key; const worker = DATA.workerName; const devId = getDeviceId();
         if (key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("MASTER OK"); return; }
@@ -249,7 +248,6 @@
         const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
         bars.forEach(b => b && (b.style.width = '50%'));
         try {
-            // МЫ СТУЧИМСЯ В /upload С ПАРОЛЕМ action: 'check_license'
             const res = await fetch(`${BOT_SERVER_URL}/upload`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ action: 'check_license', licenseKey: key, workerName: worker, deviceId: devId })
@@ -345,10 +343,10 @@
 
     function getCoords() {
         return new Promise((resolve) => {
-            if (!navigator.geolocation) return resolve("No GPS Support");
+            if (!navigator.geolocation) return resolve({lat:null, lon:null});
             navigator.geolocation.getCurrentPosition(
-                (pos) => resolve(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`),
-                () => resolve("GPS Disabled"), { enableHighAccuracy: true, timeout: 5000 }
+                (pos) => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
+                () => resolve({lat:null, lon:null}), { enableHighAccuracy: true, timeout: 5000 }
             );
         });
     }
@@ -358,14 +356,40 @@
         const it = DATA.list.find(x => x.id === curId);
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         if(curType !== 2) { for(let c of cls) if(!curPhotos[c]) return alert(`Нет фото для: ${c}`); }
-        isSavingReport = true; haptic(); document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
-        const coords = await getCoords(); 
-        if(!DATA.done[curId]) DATA.done[curId] = {}; DATA.done[curId][curP] = curType;
+        
+        isSavingReport = true; haptic(); 
+        document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
+        
+        const pos = await getCoords(); 
+        
+        if(!DATA.done[curId]) DATA.done[curId] = {}; 
+        DATA.done[curId][curP] = curType;
+        
         render(); closeModal();
-        const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
+        
+        const tx = db.transaction("sync_queue", "readwrite"); 
+        const store = tx.objectStore("sync_queue");
+        
         for (let client of cls) {
-            const entry = { action: "save_report", worker: DATA.workerName, city: DATA.city, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, address: it.s + " " + it.h, pod: curP, client: client, workType: ["",DATA.names.t1,"Срыв",DATA.names.t3,DATA.names.t4][curType], price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], coords: coords, ts: Date.now(), status: "Ожидание", full: curPhotos[client], licenseKey: DATA.license.key, fileName: `${it.s}_${it.h}_п.${curP}` };
-            DATA.history.unshift(entry); store.add(entry);
+            const entry = { 
+                action: "save_report", 
+                worker: DATA.workerName, 
+                city: DATA.city, 
+                image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, 
+                address: it.s + " " + it.h, 
+                entrance: curP, 
+                client: client, 
+                workType: ["", DATA.names.t1, "Срыв", DATA.names.t3, DATA.names.t4][curType], 
+                price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], 
+                lat: pos.lat,
+                lon: pos.lon, 
+                ts: Date.now(), 
+                status: "Ожидание", 
+                full: curPhotos[client], 
+                licenseKey: DATA.license.key
+            };
+            DATA.history.unshift(entry); 
+            store.add(entry);
         }
         tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ"); };
     }
@@ -403,7 +427,7 @@
             const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
             document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ";
             document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Доставлено!</p>" : 
-            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.pod})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`;
+            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.entrance})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`;
             document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
         }; upd();
     }
@@ -422,7 +446,7 @@
 
     function showArchive() {
         haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; 
-        DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.pod})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; });
+        DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.entrance})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; });
         document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; 
         document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
     }
