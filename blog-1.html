@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Как исключить обман при расклейке | LOGIST_X</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { background-color: #010409; color: #e6edf3; font-family: 'Inter', sans-serif; }
+        .dot-matrix { background-image: radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); background-size: 30px 30px; }
+        .article-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; padding: 2.5rem; }
+    </style>
+</head>
+<body class="dot-matrix min-h-screen">
+    <nav class="p-6 border-b border-white/5 bg-black/80 backdrop-blur-xl fixed top-0 w-full z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <a href="index.html" class="flex items-center gap-2">
+                <i data-lucide="arrow-left" class="text-amber-500"></i>
+                <span class="font-black italic uppercase tracking-tighter">Назад <span class="text-amber-500">в меню</span></span>
+            </a>
+        </div>
+    </nav>
+
+    <article class="pt-32 pb-24 px-6 max-w-3xl mx-auto">
+        <div class="text-amber-500/40 mb-6 font-black text-xs tracking-[4px] uppercase italic">Экспертный материал / 30.12.2025</div>
+        <h1 class="text-4xl md:text-6xl font-black mb-10 italic uppercase leading-tight">Как исключить <span class="text-amber-500">обман</span> при расклейке объявлений</h1>
+        
+        <div class="article-card space-y-8 text-lg opacity-80 leading-relaxed italic">
+            <p>Проблема №1 в полевом маркетинге — это "рисованные" отчеты. Промоутеры часто выбрасывают тираж и присылают старые фотографии. В системе <span class="text-amber-500 font-bold">LOGIST_X</span> это физически невозможно.</p>
+            
+            <h2 class="text-2xl font-black text-white uppercase italic">1. GPS-Метка времени</h2>
+            <p>Каждое фото, отправленное через нашего бота, проходит проверку метаданных. Мы фиксируем координаты и точное время в момент съемки. Если промоутер попытается загрузить фото из галереи — система выдаст ошибку.</p>
+
+            <h2 class="text-2xl font-black text-white uppercase italic">2. Прямая выгрузка на Google Drive</h2>
+            <p>Фотографии не хранятся на телефоне сотрудника. Они мгновенно улетают на ваш сервер GS и раскладываются по папкам. Вы видите работу в режиме "Live".</p>
+
+            <div class="bg-amber-500/10 p-6 border-l-4 border-amber-500 rounded-r-xl italic">
+                "Благодаря автоматизации, контроль 100 промоутеров теперь занимает 15 минут в день вместо 5 часов ручной проверки."
+            </div>
+        </div>
+    </article>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>
