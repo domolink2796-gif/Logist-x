@@ -190,7 +190,7 @@
     const BOT_SERVER_URL = 'https://logist-x-server-production.up.railway.app';
     const MASTER_KEY = "DEV-MASTER-999";
     
-    // Твои настройки работ: монтаж, реклама и pseudomona
+    // Твои настройки работ
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
     const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
@@ -241,6 +241,7 @@
         } else { h.innerText = "EXP"; h.style.color = "var(--red)"; }
     }
 
+    // --- ВОТ ТУТ ГЛАВНОЕ ИСПРАВЛЕНИЕ ДЛЯ ТЕБЯ ---
     async function checkLicense() {
         const key = DATA.license.key; const worker = DATA.workerName; const devId = getDeviceId();
         if (key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("MASTER OK"); return; }
@@ -248,12 +249,13 @@
         const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
         bars.forEach(b => b && (b.style.width = '50%'));
         try {
-            const res = await fetch(`${BOT_SERVER_URL}/check-license`, {
+            // МЫ СТУЧИМСЯ В /upload С ПАРОЛЕМ action: 'check_license'
+            const res = await fetch(`${BOT_SERVER_URL}/upload`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ licenseKey: key, workerName: worker, deviceId: devId })
+                body: JSON.stringify({ action: 'check_license', licenseKey: key, workerName: worker, deviceId: devId })
             });
             const result = await res.json();
-            if(result.status === "active") { DATA.license.expiry = Number(result.expiry); saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); } else { alert("ОТКАЗ: " + result.message); }
+            if(result.status === "active") { DATA.license.expiry = Number(result.expiry) || Date.now() + (30*86400000); saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); } else { alert("ОТКАЗ: " + result.message); }
         } catch(e) { alert("Ошибка связи!"); }
         finally { bars.forEach(b => b && (b.style.width = '0%')); }
     }
