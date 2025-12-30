@@ -22,6 +22,11 @@
         body { background-color: var(--bg); color: #e6edf3; font-family: 'Inter', sans-serif; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
         @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); transform: scale(1); } 70% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); transform: scale(1.03); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); transform: scale(1); } }
         .btn-install-gold { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #000 !important; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; animation: pulse-gold 2s infinite; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; border-radius: 1.5rem; }
+        
+        /* Стиль для кнопки бота */
+        .btn-bot { border: 2px solid var(--accent); color: var(--accent) !important; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; border-radius: 1.5rem; background: rgba(245, 158, 11, 0.05); }
+        .btn-bot:hover { background: var(--accent); color: #000 !important; }
+
         .price-card { background: var(--card); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 2.5rem; padding: 2.5rem 1.5rem; transition: 0.4s ease; display: flex; flex-direction: column; justify-content: space-between; }
         .price-card:hover { border-color: var(--accent); transform: translateY(-5px); }
         .folder-node { border-left: 2px solid rgba(245, 158, 11, 0.2); margin-left: 1rem; padding-left: 1.5rem; position: relative; margin-bottom: 0.75rem; }
@@ -40,7 +45,10 @@
                 <div class="bg-amber-500 p-1.5 rounded-xl"><i data-lucide="shield-check" class="text-black" size="20"></i></div>
                 <span class="text-2xl font-black italic tracking-tighter">LOGIST<span class="text-amber-500">_X</span></span>
             </div>
-            <button onclick="handleInstallClick()" class="btn-install-gold px-6 py-2.5 text-[10px] hidden xs:flex">Установить</button>
+            <div class="flex gap-3">
+                <button onclick="goToBot()" class="btn-bot px-4 py-2 text-[10px] hidden sm:flex">Запустить бота</button>
+                <button onclick="handleInstallClick()" class="btn-install-gold px-6 py-2.5 text-[10px] hidden xs:flex">Установить</button>
+            </div>
         </div>
     </nav>
 
@@ -52,9 +60,14 @@
             <p class="text-lg md:text-2xl opacity-40 mb-14 max-w-2xl mx-auto leading-relaxed animate__animated animate__fadeInUp">
                 Автоматическая ERP-система для управления полевым персоналом. Отчеты сами раскладываются по полкам.
             </p>
-            <button onclick="handleInstallClick()" class="btn-install-gold w-full sm:w-auto px-12 py-6 text-sm gap-3 shadow-2xl">
-               <i data-lucide="download-cloud" size="22"></i> УСТАНОВИТЬ ПРИЛОЖЕНИЕ
-            </button>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="handleInstallClick()" class="btn-install-gold w-full sm:w-auto px-12 py-6 text-sm gap-3 shadow-2xl">
+                   <i data-lucide="download-cloud" size="22"></i> УСТАНОВИТЬ ПРИЛОЖЕНИЕ
+                </button>
+                <button onclick="goToBot()" class="btn-bot w-full sm:w-auto px-12 py-6 text-sm gap-3">
+                   <i data-lucide="message-square" size="22"></i> НАЧАТЬ РАБОТУ В BOT
+                </button>
+            </div>
         </div>
     </header>
 
@@ -106,46 +119,6 @@
         </div>
     </section>
 
-    <section class="py-24 px-6 border-t border-white/5">
-        <div class="max-w-6xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 text-center md:text-left">
-                <div>
-                    <h2 class="text-3xl md:text-6xl font-black italic uppercase">Наш <span class="text-amber-500">Блог</span></h2>
-                    <p class="opacity-40 text-sm mt-4 uppercase tracking-widest italic">Технологии и стандарты LOGIST_X</p>
-                </div>
-            </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <a href="blog-1.html" class="benefit-card flex flex-col justify-between group cursor-pointer text-left">
-                    <div>
-                        <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic">30.12.2025</div>
-                        <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 transition-colors italic">Как исключить обман при расклейке</h3>
-                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Разбираем методы GPS-контроля для полной прозрачности работы полевого персонала...</p>
-                    </div>
-                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
-                </a>
-
-                <a href="blog-2.html" class="benefit-card flex flex-col justify-between group cursor-pointer text-left">
-                    <div>
-                        <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic">28.12.2025</div>
-                        <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 transition-colors italic">Порядок на сетевых объектах</h3>
-                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Как организовать контроль на десятках точек одновременно и не потерять ни одного фото-отчета...</p>
-                    </div>
-                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
-                </a>
-
-                <a href="blog-3.html" class="benefit-card flex flex-col justify-between group cursor-pointer text-left">
-                    <div>
-                        <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic">25.12.2025</div>
-                        <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 transition-colors italic">Новые функции LOGIST_X 2026</h3>
-                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Анонсируем Telegram-панель управления и новые автоматические отчеты для руководителей...</p>
-                    </div>
-                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
-                </a>
-            </div>
-        </div>
-    </section>
-
     <section id="pricing" class="py-32 px-6">
         <div class="max-w-3xl mx-auto">
             <div class="price-card border-amber-500/40 bg-amber-500/5 shadow-3xl text-center">
@@ -165,7 +138,7 @@
                         <div class="flex items-center gap-3"><i data-lucide="check-circle-2" class="text-amber-500" size="18"></i> Техподдержка 24/7</div>
                     </div>
                 </div>
-                <button onclick="handleInstallClick()" class="btn-install-gold w-full py-7 text-sm tracking-widest">Запустить систему контроля</button>
+                <button onclick="goToBot()" class="btn-install-gold w-full py-7 text-sm tracking-widest uppercase">Запустить систему через BOT</button>
             </div>
         </div>
     </section>
@@ -176,19 +149,15 @@
         <p class="mt-2 text-[8px] uppercase tracking-widest italic text-amber-500/60">Разработчик: Евгений Никитин</p>
     </footer>
 
-    <script type="text/javascript">
-       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-       m[i].l=1*new Date();
-       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-       })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106053460', 'ym');
-       ym(106053460, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
-    </script>
-
     <script>
         lucide.createIcons();
+        
+        // Прямая ссылка на твоего бота
+        const BOT_URL = 'https://t.me/LogistX_Robot_Bot';
+
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+        
         async function handleInstallClick() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
@@ -197,6 +166,11 @@
                 if (outcome === 'accepted') return;
             }
             window.location.href = 'https://t.me/Yevgeniy_Nikitin';
+        }
+
+        // Функция перехода в бота
+        function goToBot() {
+            window.location.href = BOT_URL;
         }
     </script>
 </body>
