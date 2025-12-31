@@ -48,6 +48,12 @@
         .benefit-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; padding: 2rem; transition: 0.3s; }
         .benefit-card:hover { border-color: var(--accent); background: rgba(245, 158, 11, 0.05); }
         @media (max-width: 640px) { .title-hero { font-size: 2.6rem !important; } }
+        
+        /* Modal Styles for Legal */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-blur: 10px; overflow-y: auto; }
+        .modal-content { background: #0d1117; margin: 5% auto; padding: 40px; border: 1px solid #30363d; width: 90%; max-width: 800px; border-radius: 24px; color: #8b949e; font-size: 14px; line-height: 1.6; }
+        .modal-header { color: #f59e0b; font-weight: 900; font-size: 24px; margin-bottom: 20px; text-transform: uppercase; }
+        .close-modal { color: #fff; float: right; font-size: 28px; cursor: pointer; }
     </style>
 </head>
 <body class="dot-matrix">
@@ -185,10 +191,34 @@
         <p>Автоматизация контроля монтажников, расклейщиков объявлений и мерчандайзеров. Приложение LOGIST_X позволяет организовать сбор фотоотчетов с GPS-подтверждением прямо в Google Таблицы. Идеально для рекламных агентств, клининга и логистики. Забудьте про отчеты в WhatsApp — используйте профессиональный софт.</p>
     </section>
 
-    <footer class="py-24 text-center border-t border-white/5 opacity-40">
-        <p class="text-[10px] font-black uppercase tracking-[15px]">LOGIST_X 2025-2026</p>
-        <p class="mt-4 text-[9px] uppercase tracking-widest italic text-amber-500/60">Разработчик: Евгений Никитин</p>
+    <footer class="py-24 text-center border-t border-white/5 bg-[#05070a]">
+        <p class="text-[10px] font-black uppercase tracking-[15px] opacity-40">LOGIST_X 2025-2026</p>
+        <div class="mt-8 text-[11px] text-amber-500/80 space-y-2 uppercase tracking-widest italic">
+            <p>Никитин Евгений Анатольевич</p>
+            <p>ИНН: 575405332940</p>
+            <p>Email: evgeny_orel@mail.ru | Тел: +7 995 447-01-30</p>
+        </div>
+        <div class="mt-6 flex justify-center gap-6 text-[10px] uppercase font-bold tracking-tighter">
+            <a href="javascript:void(0)" onclick="openModal('modalPrivacy')" class="text-white/40 hover:text-amber-500 transition-colors">Политика конфиденциальности</a>
+            <a href="javascript:void(0)" onclick="openModal('modalTerms')" class="text-white/40 hover:text-amber-500 transition-colors">Публичная оферта</a>
+        </div>
     </footer>
+
+    <div id="modalPrivacy" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span>
+            <div class="modal-header">Политика конфиденциальности</div>
+            <p>Настоящая политика действует в отношении всей информации, которую сервис LOGIST_X может получить о пользователе во время использования приложения. Мы собираем только необходимые данные для работы сервиса: GPS-координаты фотографий и идентификаторы устройств. Данные хранятся на вашем личном аккаунте Google Drive и не передаются третьим лицам.</p>
+        </div>
+    </div>
+
+    <div id="modalTerms" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modalTerms')">&times;</span>
+            <div class="modal-header">Публичная оферта</div>
+            <p>Сервис LOGIST_X (ИП Никитин Е.А.) предоставляет доступ к программному обеспечению для контроля полевого персонала на условиях подписки. Стоимость доступа составляет 1500 рублей в месяц за одного сотрудника. Оплата производится через платежный шлюз. Доступ предоставляется моментально после подтверждения оплаты.</p>
+        </div>
+    </div>
 
     <script>
         lucide.createIcons();
@@ -203,6 +233,10 @@
                 deferredPrompt = null;
             } else { alert('Используйте меню браузера "На экран Домой" для установки приложения.'); }
         }
+
+        function openModal(id) { document.getElementById(id).style.display = "block"; }
+        function closeModal(id) { document.getElementById(id).style.display = "none"; }
+        window.onclick = function(event) { if (event.target.className === 'modal') { event.target.style.display = "none"; } }
     </script>
 </body>
 </html>
