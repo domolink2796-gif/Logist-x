@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>LOGIST_X | Контроль расклейки объявлений и автоматизация монтажных работ</title>
-    <meta name="description" content="LOGIST_X — ERP-система контроля полевого персонала. Автоматические отчеты в Google Таблицы с разделением по сотрудникам и GPS-привязкой.">
+    <title>LOGIST_X | Контроль монтажников, фотоотчеты расклейки и автоматизация работ</title>
+    <meta name="description" content="LOGIST_X — система контроля полевого персонала. Автоматические фотоотчеты в Google Таблицы, GPS-привязка и порядок на Google Диске для монтажников и мерчандайзеров.">
+    <meta name="keywords" content="контроль монтажников, фотоотчет расклейка, программа для мерчандайзеров, контроль полевого персонала, автоматизация фотоотчетов, GPS контроль сотрудников, отчеты в google таблицы">
     
     <link rel="manifest" href="app/manifest.json">
     <meta name="theme-color" content="#010409">
@@ -50,10 +51,11 @@
     <header class="relative pt-48 pb-24 text-center px-4">
         <div class="max-w-4xl mx-auto">
             <h1 class="text-5xl md:text-8xl font-black mb-10 uppercase tracking-tighter animate__animated animate__fadeInUp">
-                КОНТРОЛЬ <br><span class="text-amber-500 italic underline decoration-amber-500/20">БЕЗ ОБМАНА</span>
+                КОНТРОЛЬ <br><span class="text-amber-500 italic underline decoration-amber-500/20">МОНТАЖНИКОВ</span>
+                <br><span class="text-white text-2xl md:text-4xl block mt-4 opacity-90">И ФОТООТЧЕТОВ БЕЗ ОБМАНА</span>
             </h1>
             <p class="text-lg md:text-2xl opacity-40 mb-14 max-w-2xl mx-auto leading-relaxed animate__animated animate__fadeInUp italic">
-                Выберите инструмент для начала работы в LOGIST_X:
+                Выберите инструмент для автоматизации отчетности в LOGIST_X:
             </p>
             <div class="flex flex-col md:flex-row gap-4 justify-center items-center">
                 <button onclick="handleInstallClick()" class="btn-install-gold w-full md:w-auto px-10 py-6 text-sm gap-3 shadow-2xl">
@@ -73,17 +75,17 @@
                 <div class="benefit-card">
                     <div class="text-amber-500 mb-6"><i data-lucide="layout-grid" size="40"></i></div>
                     <h3 class="text-xl font-black mb-4 uppercase italic">Авто-Иерархия</h3>
-                    <p class="opacity-40 text-sm leading-relaxed italic">Система сама создает папки на Drive: <strong>Монтажник → Объект → Город → Дата.</strong></p>
+                    <p class="opacity-40 text-sm leading-relaxed italic">Система сама создает папки на Google Drive: <strong>Монтажник → Объект → Город → Дата.</strong></p>
                 </div>
                 <div class="benefit-card">
                     <div class="text-amber-500 mb-6"><i data-lucide="table-2" size="40"></i></div>
                     <h3 class="text-xl font-black mb-4 uppercase italic">Листы по Именам</h3>
-                    <p class="opacity-40 text-sm leading-relaxed italic">У каждого сотрудника своя вкладка с его отчетами и суммами. Больше никакой каши.</p>
+                    <p class="opacity-40 text-sm leading-relaxed italic">У каждого сотрудника своя вкладка с его отчетами и суммами. Больше никакой каши в таблицах.</p>
                 </div>
                 <div class="benefit-card">
                     <div class="text-amber-500 mb-6"><i data-lucide="map-pin" size="40"></i></div>
                     <h3 class="text-xl font-black mb-4 uppercase italic">GPS-Контроль</h3>
-                    <p class="opacity-40 text-sm leading-relaxed italic">Каждое фото привязано к координатам. Подделать отчет или прислать старое фото невозможно.</p>
+                    <p class="opacity-40 text-sm leading-relaxed italic">Каждое фото привязано к координатам. Подделать отчет или прислать старое фото из галереи невозможно.</p>
                 </div>
             </div>
         </div>
@@ -105,7 +107,7 @@
             </div>
             <div class="text-center lg:text-left">
                 <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase text-amber-500 leading-none">УМНЫЙ <br>АРХИВ</h2>
-                <p class="opacity-40 text-xl italic leading-relaxed">Система сама создает таблицы и вкладки. Вы получаете чистую аналитику без ручного труда.</p>
+                <p class="opacity-40 text-xl italic leading-relaxed">Система сама распределяет фото по адресам. Вы получаете чистую аналитику и готовые фотоотчеты без ручного труда.</p>
             </div>
         </div>
     </section>
@@ -115,7 +117,7 @@
             <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                 <div>
                     <h2 class="text-3xl md:text-6xl font-black italic uppercase">Наш <span class="text-amber-500">Блог</span></h2>
-                    <p class="opacity-40 text-sm mt-4 uppercase tracking-widest italic">Технологии и стандарты LOGIST_X</p>
+                    <p class="opacity-40 text-sm mt-4 uppercase tracking-widest italic">Стандарты автоматизации LOGIST_X</p>
                 </div>
             </div>
 
@@ -124,7 +126,7 @@
                     <div>
                         <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">30.12.2025</div>
                         <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 transition-colors italic">Как исключить обман при расклейке</h3>
-                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Разбираем методы GPS-контроля для полной прозрачности работы полевого персонала...</p>
+                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Разбираем методы GPS-контроля и автоматической фотофиксации для прозрачности работы полевого персонала...</p>
                     </div>
                     <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
                 </a>
@@ -132,7 +134,7 @@
                     <div>
                         <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">28.12.2025</div>
                         <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 transition-colors italic">Порядок на сетевых объектах</h3>
-                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Как организовать контроль на десятках точек одновременно и не потерять ни одного отчета...</p>
+                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Как организовать контроль монтажных работ на десятках точек одновременно и не потерять ни одного отчета...</p>
                     </div>
                     <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
                 </a>
@@ -140,7 +142,7 @@
                     <div>
                         <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">25.12.2025</div>
                         <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 transition-colors italic">Новые функции LOGIST_X 2026</h3>
-                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Анонсируем Telegram-панель управления и новые автоматические отчеты для руководителей...</p>
+                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Анонсируем Telegram-панель управления и новые автоматические PDF-отчеты для руководителей и заказчиков...</p>
                     </div>
                     <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
                 </a>
@@ -155,16 +157,21 @@
                 <div class="text-7xl md:text-8xl font-black mb-4 italic tracking-tighter text-amber-500">1 500 <span class="text-2xl not-italic opacity-40">₽</span></div>
                 <p class="opacity-60 text-white font-bold text-sm uppercase tracking-widest mb-10 italic">В месяц за сотрудника</p>
                 <div class="space-y-4 max-w-sm mx-auto text-left mb-12 opacity-80 italic text-sm">
-                    <div class="flex items-center gap-3"><i data-lucide="check-circle-2" class="text-amber-500" size="18"></i> Подключение сервера GS</div>
-                    <div class="flex items-center gap-3"><i data-lucide="check-circle-2" class="text-amber-500" size="18"></i> Telegram-бот для персонала</div>
+                    <div class="flex items-center gap-3"><i data-lucide="check-circle-2" class="text-amber-500" size="18"></i> Подключение сервера и Google Drive</div>
+                    <div class="flex items-center gap-3"><i data-lucide="check-circle-2" class="text-amber-500" size="18"></i> Приложение для персонала (PWA)</div>
+                    <div class="flex items-center gap-3"><i data-lucide="check-circle-2" class="text-amber-500" size="18"></i> Техподдержка и настройка таблиц</div>
                 </div>
                 <button onclick="goToBot()" class="btn-install-gold w-full py-7 text-sm tracking-widest uppercase italic">Запустить через BOT</button>
             </div>
         </div>
     </section>
 
+    <section class="py-10 px-6 opacity-20 text-[10px] text-center max-w-4xl mx-auto">
+        <p>Профессиональное решение для рекламных агентств, компаний по расклейке объявлений и логистических фирм. Система LOGIST_X помогает автоматизировать контроль монтажников наружной рекламы, мерчандайзеров и промоутеров. Наше приложение заменяет бесконечные чаты в WhatsApp и Telegram, обеспечивая автоматическую сортировку фотоотчетов по папкам на Google Диске и мгновенное заполнение отчетных таблиц с GPS подтверждением координат.</p>
+    </section>
+
     <footer class="py-24 text-center border-t border-white/5 opacity-40">
-        <p class="text-[10px] font-black uppercase tracking-[15px]">LOGIST_X 2025</p>
+        <p class="text-[10px] font-black uppercase tracking-[15px]">LOGIST_X 2025-2026</p>
         <p class="mt-4 text-[9px] uppercase tracking-widest italic text-amber-500/60">Разработчик: Евгений Никитин</p>
     </footer>
 
