@@ -302,4 +302,4 @@
     function closeModal() { document.getElementById('task-modal').style.display = 'none'; IMGS = { pre: null, post: null, price: null }; document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); }
 </script>
 </body>
-</html>
+</html> 
