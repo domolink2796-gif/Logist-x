@@ -54,8 +54,12 @@
         <div class="s-box"><span class="s-v" id="st-done" style="color:var(--green)">0</span><span class="s-t">Визитов</span></div>
     </div>
     <div id="user-info" style="font-size: 10px; opacity: 0.5; margin-bottom: 10px; text-transform: uppercase;"></div>
-    <label class="btn-blue" for="file-in">ЗАГРУЗИТЬ ПЛАН (.XLSX)</label>
+    <div style="display:flex; gap:10px;">
+        <label class="btn-blue" for="file-in" style="flex:1;">ПЛАН (.XLSX)</label>
+        <div class="btn-blue" onclick="clearPlan()" style="flex:0.3; background:var(--red);">🗑️</div>
+    </div>
     <input type="file" id="file-in" class="hidden" onchange="processFile(this)">
+    <div id="sync-status" style="font-size:9px; text-align:center; color:var(--green); opacity:0.8;"></div>
 </div>
 
 <input type="text" id="srch" placeholder="Поиск адреса..." oninput="render()">
@@ -74,19 +78,19 @@
 
         <div id="visit-report-block" class="hidden">
             <span class="f-label">Улица</span>
-            <input type="text" id="inp-street">
+            <input type="text" id="inp-street" oninput="saveCurrentDraft()">
             <span class="f-label">Дом / Подъезд</span>
-            <input type="text" id="inp-house">
+            <input type="text" id="inp-house" oninput="saveCurrentDraft()">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div><span class="f-label">Остаток</span><input type="number" id="inp-stock" value="0"></div>
-                <div><span class="f-label">Фейсинг</span><input type="number" id="inp-shelf" value="0"></div>
+                <div><span class="f-label">Остаток</span><input type="number" id="inp-stock" value="0" oninput="saveCurrentDraft()"></div>
+                <div><span class="f-label">Фейсинг</span><input type="number" id="inp-shelf" value="0" oninput="saveCurrentDraft()"></div>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div><span class="f-label">Цена МЫ</span><input type="number" id="inp-price-my" placeholder="0"></div>
-                <div><span class="f-label">Цена КОНК.</span><input type="number" id="inp-price-comp" placeholder="0"></div>
+                <div><span class="f-label">Цена МЫ</span><input type="number" id="inp-price-my" placeholder="0" oninput="saveCurrentDraft()"></div>
+                <div><span class="f-label">Цена КОНК.</span><input type="number" id="inp-price-comp" placeholder="0" oninput="saveCurrentDraft()"></div>
             </div>
             <span class="f-label">Срок годности</span>
-            <input type="date" id="inp-date-exp">
+            <input type="date" id="inp-date-exp" oninput="saveCurrentDraft()">
             <span class="f-label">Фотоотчет</span>
             <div class="photo-grid">
                 <label class="cam-btn" id="lbl-pre" for="cam-pre">📸<br>ДО</label>
@@ -98,7 +102,6 @@
             </div>
             <button class="btn-blue" id="send-btn" style="background:var(--green); color:black; margin-top:20px;" onclick="generateAndSend()">ЗАВЕРШИТЬ И ОТПРАВИТЬ</button>
         </div>
-        
         <button class="btn-blue" style="background:none; color:#555;" onclick="closeModal()">ОТМЕНА</button>
     </div>
 </div>
@@ -146,9 +149,13 @@
     window.onload = () => {
         const savedKey = localStorage.getItem('merch_key');
         const savedName = localStorage.getItem('merch_name');
+        const savedShops = localStorage.getItem('merch_shops');
         if(savedKey) document.getElementById('license-key-field').value = savedKey;
         if(savedName) document.getElementById('worker-name-field').value = savedName;
+        if(savedShops) { STATE.shops = JSON.parse(savedShops); render(); }
     };
+
+    function saveToMemory() { localStorage.setItem('merch_shops', JSON.stringify(STATE.shops)); }
 
     function getDist(lat1, lon1, lat2, lon2) {
         const R = 6371e3;
@@ -177,6 +184,7 @@
                 localStorage.setItem('merch_name', name);
                 document.getElementById('auth-screen').style.display = 'none';
                 document.getElementById('user-info').innerText = "Сотрудник: " + name;
+                document.getElementById('sync-status').innerText = "☁️ СИНХРОНИЗИРОВАНО";
             } else { alert("Ошибка: " + (data.message || "Неверный ключ")); }
         } catch(e) { alert("Ошибка соединения с сервером"); }
         btn.innerText = "ВХОД";
@@ -197,27 +205,60 @@
                 id: i, addr: r[idxA], net: idxN !== -1 ? r[idxN] : "ТТ", 
                 targetLat: idxLat !== -1 ? parseFloat(String(r[idxLat]).replace(',', '.')) : null,
                 targetLon: idxLon !== -1 ? parseFloat(String(r[idxLon]).replace(',', '.')) : null,
-                done: false
+                done: false, draft: {}
             }));
-            render();
+            saveToMemory(); render();
         };
         reader.readAsArrayBuffer(inp.files[0]);
     }
+
+    function clearPlan() { if(confirm("Удалить текущий план?")) { STATE.shops = []; localStorage.removeItem('merch_shops'); render(); } }
 
     function openModal(id) {
         STATE.current = STATE.shops.find(s => s.id === id);
         document.getElementById('m-net').innerText = STATE.current.net;
         document.getElementById('display-address').innerText = STATE.current.addr;
-        document.getElementById('inp-street').value = STATE.current.addr;
+        
+        // Восстановление черновика
+        const d = STATE.current.draft || {};
+        document.getElementById('inp-street').value = d.street || STATE.current.addr;
+        document.getElementById('inp-house').value = d.house || "";
+        document.getElementById('inp-stock').value = d.stock || 0;
+        document.getElementById('inp-shelf').value = d.shelf || 0;
+        document.getElementById('inp-price-my').value = d.pMy || "";
+        document.getElementById('inp-price-comp').value = d.pComp || "";
+        document.getElementById('inp-date-exp').value = d.dExp || "";
+        
         document.getElementById('gps-msg').innerText = STATE.current.targetLat ? "📍 Контроль GPS включен" : "⚠️ План без координат";
-        document.getElementById('visit-start-block').classList.remove('hidden');
-        document.getElementById('visit-report-block').classList.add('hidden');
+        
+        if (STATE.current.startTimeRaw) {
+            document.getElementById('visit-start-block').classList.add('hidden');
+            document.getElementById('visit-report-block').classList.remove('hidden');
+        } else {
+            document.getElementById('visit-start-block').classList.remove('hidden');
+            document.getElementById('visit-report-block').classList.add('hidden');
+        }
         document.getElementById('task-modal').style.display = 'flex';
     }
 
+    function saveCurrentDraft() {
+        if (!STATE.current) return;
+        STATE.current.draft = {
+            street: document.getElementById('inp-street').value,
+            house: document.getElementById('inp-house').value,
+            stock: document.getElementById('inp-stock').value,
+            shelf: document.getElementById('inp-shelf').value,
+            pMy: document.getElementById('inp-price-my').value,
+            pComp: document.getElementById('inp-price-comp').value,
+            dExp: document.getElementById('inp-date-exp').value
+        };
+        saveToMemory();
+    }
+
     function beginVisit() {
-        STATE.current.startTimeRaw = new Date();
-        STATE.current.startTime = STATE.current.startTimeRaw.toLocaleTimeString("ru-RU", {hour: '2-digit', minute:'2-digit'});
+        STATE.current.startTimeRaw = new Date().toISOString();
+        STATE.current.startTime = new Date().toLocaleTimeString("ru-RU", {hour: '2-digit', minute:'2-digit'});
+        saveToMemory();
         document.getElementById('visit-start-block').classList.add('hidden');
         document.getElementById('visit-report-block').classList.remove('hidden');
     }
@@ -242,6 +283,7 @@
     async function generateAndSend() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужны все 3 фото!");
         const btn = document.getElementById('send-btn');
+        document.getElementById('sync-status').innerText = "🔄 ОТПРАВКА ОТЧЕТА...";
         btn.innerText = "ПРОВЕРКА GPS..."; btn.disabled = true;
 
         navigator.geolocation.getCurrentPosition(async (pos) => {
@@ -254,17 +296,14 @@
                     return;
                 }
             }
-            btn.innerText = "СБОРКА ОТЧЕТА...";
+            btn.innerText = "СБОРКА PDF...";
             const street = document.getElementById('inp-street').value.trim();
             const house = document.getElementById('inp-house').value.trim();
             const finalAddr = street + " " + house;
-            
             const endTimeRaw = new Date();
             const endTime = endTimeRaw.toLocaleTimeString("ru-RU", {hour: '2-digit', minute:'2-digit'});
-            
-            const diffMs = endTimeRaw - STATE.current.startTimeRaw;
-            const diffMins = Math.round(diffMs / 60000);
-            const durationText = diffMins + " мин";
+            const diffMs = endTimeRaw - new Date(STATE.current.startTimeRaw);
+            const durationText = Math.round(diffMs / 60000) + " мин";
 
             document.getElementById('p-date').innerText = new Date().toLocaleString();
             document.getElementById('p-net').innerText = STATE.current.net;
@@ -273,7 +312,6 @@
             document.getElementById('p-start-time').innerText = STATE.current.startTime;
             document.getElementById('p-end-time').innerText = endTime;
             document.getElementById('p-duration').innerText = durationText;
-            
             document.getElementById('p-stock').innerText = document.getElementById('inp-stock').value;
             document.getElementById('p-shelf').innerText = document.getElementById('inp-shelf').value;
             document.getElementById('p-p-my').innerText = document.getElementById('inp-price-my').value;
@@ -298,16 +336,20 @@
                         priceComp: document.getElementById('inp-price-comp').value,
                         expDate: document.getElementById('inp-date-exp').value,
                         startTime: STATE.current.startTime, endTime: endTime,
-                        duration: durationText,
-                        lat: uLat, lon: uLon, pdf: pdf.output('datauristring')
+                        duration: durationText, lat: uLat, lon: uLon, pdf: pdf.output('datauristring')
                     })
                 });
                 const result = await res.json();
-                if(result.success) { alert("ОТЧЕТ ПРИНЯТ"); STATE.current.done = true; closeModal(); render(); }
-                else { alert("Ошибка сервера: " + result.error); }
-            } catch(e) { alert("Ошибка сети"); }
+                if(result.success) { 
+                    alert("ОТЧЕТ ПРИНЯТ"); 
+                    STATE.current.done = true; 
+                    STATE.current.draft = {}; // очистка после успеха
+                    document.getElementById('sync-status').innerText = "✅ ОТПРАВЛЕНО";
+                    closeModal(); saveToMemory(); render(); 
+                } else { alert("Ошибка сервера: " + result.error); }
+            } catch(e) { alert("Ошибка сети. Отчет не отправлен!"); document.getElementById('sync-status').innerText = "⚠️ ОШИБКА СЕТИ"; }
             btn.innerText = "ЗАВЕРШИТЬ И ОТПРАВИТЬ"; btn.disabled = false;
-        }, () => { alert("Ошибка: Включите GPS!"); btn.innerText = "ЗАВЕРШИТЬ И ОТПРАВИТЬ"; btn.disabled = false; }, { enableHighAccuracy: true });
+        }, () => { alert("Ошибка GPS!"); btn.innerText = "ЗАВЕРШИТЬ И ОТПРАВИТЬ"; btn.disabled = false; }, { enableHighAccuracy: true });
     }
 
     function render() {
@@ -316,11 +358,11 @@
         document.getElementById('st-done').innerText = STATE.shops.filter(s => s.done).length;
         document.getElementById('list').innerHTML = STATE.shops.map(s => {
             if(f && !s.addr.toLowerCase().includes(f)) return '';
-            return `<div class="card" onclick="openModal(${s.id})"><div class="dot" style="background:${s.done ? 'var(--green)' : '#222'}"></div><div class="card-net">${s.net}</div><div class="card-addr">${s.addr}</div></div>`;
+            return `<div class="card" onclick="openModal(${s.id})"><div class="dot" style="background:${s.done ? 'var(--green)' : (s.startTimeRaw ? 'var(--blue)' : '#222')}"></div><div class="card-net">${s.net}</div><div class="card-addr">${s.addr}</div></div>`;
         }).join('');
     }
 
-    function closeModal() { document.getElementById('task-modal').style.display = 'none'; IMGS = { pre: null, post: null, price: null }; document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); }
+    function closeModal() { document.getElementById('task-modal').style.display = 'none'; STATE.current = null; IMGS = { pre: null, post: null, price: null }; document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); }
 </script>
 </body>
 </html>
