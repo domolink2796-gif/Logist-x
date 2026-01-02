@@ -68,7 +68,7 @@
         <div id="m-net" style="color:var(--accent); font-weight:800; font-size:0.8rem; text-transform:uppercase;"></div>
         <div id="start-block">
             <div id="disp-addr" style="font-size: 1.2rem; font-weight: 700; margin: 15px 0;"></div>
-            <button class="btn-blue" style="background:var(--green); color:black;" onclick="begin()">НАЧАТЬ ВИЗИТ</button>
+            <button class="btn-blue" id="begin-btn" style="background:var(--green); color:black;" onclick="begin()">НАЧАТЬ ВИЗИТ</button>
         </div>
         <div id="report-block" class="hidden">
             <span class="f-label">Адрес точки</span>
@@ -189,12 +189,21 @@
         else { document.getElementById('start-block').classList.remove('hidden'); document.getElementById('report-block').classList.add('hidden'); }
     }
 
-    function begin() { cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); openModal(cur.id); }
+    async function begin() {
+        const btn = document.getElementById('begin-btn'); btn.innerText = "ПОИСК GPS...";
+        if(!cur.lat || !cur.lon) {
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cur.city + ' ' + cur.addr)}`);
+                const d = await res.json();
+                if(d[0]) { cur.lat = parseFloat(d[0].lat); cur.lon = parseFloat(d[0].lon); }
+            } catch(e) { console.log("Geocode error"); }
+        }
+        cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); openModal(cur.id); btn.innerText = "НАЧАТЬ ВИЗИТ";
+    }
 
     async function saveToQueue() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужно 3 фото");
         const btn = document.getElementById('finish-btn'); btn.innerText = "ГЕНЕРАЦИЯ..."; btn.disabled = true;
-        
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const now = new Date(), startStr = new Date(cur.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), endStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), durMin = Math.round((now - cur.start) / 60000);
             document.getElementById('p-date').innerText = now.toLocaleString(); document.getElementById('p-start-t').innerText = startStr; document.getElementById('p-end-t').innerText = endStr;
@@ -204,12 +213,10 @@
             document.getElementById('p-p1').innerText = document.getElementById('i-p1').value; document.getElementById('p-p2').innerText = document.getElementById('i-p2').value;
             document.getElementById('p-exp-val').innerText = document.getElementById('i-exp').value || "-";
             document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
-            
             setTimeout(async () => {
                 const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1, useCORS: true });
                 const pdfFull = canvas.toDataURL('image/jpeg', 0.5);
-                const pdfName = (cur.net + "_" + cur.addr).replace(/[\s\/]/g, '_').replace(/[^а-яёa-z0-9_]/gi, '');
-
+                const pdfName = (cur.net + "_" + cur.addr).replace(/[^а-яёa-z0-9]/gi, '_');
                 const report = {
                     worker: DATA.name, net: cur.net, city: cur.city || "Орёл", address: cur.addr,
                     stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value,
@@ -217,19 +224,12 @@
                     expDate: document.getElementById('i-exp').value, duration: durMin + " МИН", pdf: pdfFull, pdfName: pdfName,
                     lat: pos.coords.latitude, lon: pos.coords.longitude, sending: 0
                 };
-
                 const tx = db.transaction("reports", "readwrite");
                 tx.objectStore("reports").add(report);
                 tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
                 btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
             }, 500);
-        }, (err) => { 
-            let msg = "Ошибка GPS: "; 
-            if(err.code == 1) msg += "Доступ запрещен. Включите в настройках браузера.";
-            else if(err.code == 2) msg += "Местоположение недоступно.";
-            else msg += "Таймаут ожидания.";
-            alert(msg); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; 
-        }, { enableHighAccuracy: true, timeout: 10000 });
+        }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true, timeout: 10000 });
     }
 
     async function sync() {
