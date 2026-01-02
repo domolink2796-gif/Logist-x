@@ -17,6 +17,11 @@
         .s-box { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; }
         .s-v { display: block; font-size: 1.1rem; font-weight: 800; }
         .s-t { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; margin-top: 4px; font-weight: 700; }
+        
+        /* Анимация мигания как в Логисте */
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .sync-active { animation: blink 1s infinite; background: var(--green) !important; color: #000 !important; }
+        
         #syncIndicator { background: var(--accent); color: #000; padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.7rem; border: none; cursor: pointer; display: none; margin-left: auto; }
         .btn-blue { background: var(--blue); color: white; padding: 16px; border-radius: 14px; text-align: center; font-weight: 700; cursor: pointer; border: none; width: 100%; display: block; box-sizing: border-box; margin-bottom: 10px; text-decoration: none; }
         #srch { width: calc(100% - 30px); margin: 10px 15px; padding: 14px; background: var(--card); border: 1px solid var(--border); color: white; border-radius: 12px; box-sizing: border-box; }
@@ -47,7 +52,7 @@
 <div class="header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="logo">LOGIST_X <span>MERCH</span></div>
-        <button id="syncIndicator" onclick="alert('Осталось в очереди: ' + queueCount)">📦 <span id="qCount">0</span></button>
+        <button id="syncIndicator">📦 <span id="qCount">0</span></button>
     </div>
     <div class="stats-main">
         <div class="s-box"><span class="s-v" id="st-total">0</span><span class="s-t">Точек</span></div>
@@ -135,7 +140,7 @@
     let cur = null, db, syncing = false, queueCount = 0;
 
     function openDB() {
-        const req = indexedDB.open("MerchX_DB_Final", 1);
+        const req = indexedDB.open("MerchX_DB_V4", 1);
         req.onupgradeneeded = (e) => e.target.result.createObjectStore("reports", { autoIncrement: true });
         req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); sync(); };
     }
@@ -145,7 +150,7 @@
         DATA.key = localStorage.getItem('m_key') || "";
         if(DATA.key && DATA.name) document.getElementById('auth-screen').style.display='none';
         DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]");
-        openDB(); render(); setInterval(sync, 10000);
+        openDB(); render(); setInterval(sync, 8000);
     };
 
     async function saveAuth() {
@@ -214,12 +219,11 @@
     async function saveToQueue() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Загрузите 3 фото");
         const btn = document.getElementById('finish-btn');
-        btn.innerText = "ГЕНЕРАЦИЯ PDF..."; btn.disabled = true;
+        btn.innerText = "СБОРКА ОТЧЕТА..."; btn.disabled = true;
         
         const dur = Math.round((Date.now() - cur.start) / 60000) + " мин";
         const share = document.getElementById('share-val').innerText;
 
-        // Рендер PDF
         document.getElementById('p-date').innerText = new Date().toLocaleString();
         document.getElementById('p-net').innerText = cur.net;
         document.getElementById('p-addr-val').innerText = cur.addr;
@@ -236,20 +240,21 @@
         document.getElementById('p-i3').src = IMGS.price;
 
         const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1 });
-        const pdfBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        const pdfBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
         const report = {
             worker: DATA.name,
             net: cur.net,
             address: cur.addr,
             stock: document.getElementById('i-stock').value,
-            faces: document.getElementById('i-faces').value, // Соответствует серверу
+            faces: document.getElementById('i-faces').value,
             share: share,
             priceMy: document.getElementById('i-p1').value,
             priceComp: document.getElementById('i-p2').value,
             expDate: document.getElementById('i-exp').value,
             duration: dur,
-            pdf: pdfBase64
+            pdf: pdfBase64,
+            lat: 0, lon: 0, targetLat: 0, targetLon: 0 // Заглушки для сервера
         };
 
         const tx = db.transaction("reports", "readwrite");
@@ -265,9 +270,13 @@
     async function sync() {
         if(syncing || !navigator.onLine || !db) return;
         syncing = true;
+        const ind = document.getElementById('syncIndicator');
+        ind.classList.add('sync-active');
+
         const tx = db.transaction("reports", "readwrite");
         const store = tx.objectStore("reports");
         const req = store.openCursor();
+        
         req.onsuccess = async (e) => {
             const cursor = e.target.result;
             if(cursor) {
@@ -278,10 +287,26 @@
                         body: JSON.stringify(cursor.value)
                     });
                     const d = await res.json();
-                    if(d.success) { cursor.delete(); updateQueueUI(); }
-                } catch(err) { console.log("Offline"); }
+                    if(d.success) {
+                        cursor.delete();
+                        updateQueueUI();
+                    } else {
+                        console.error("Server Error:", d.error);
+                        // Если ошибка от сервера, не удаляем из очереди, но и не вешаем процесс
+                        syncing = false;
+                        ind.classList.remove('sync-active');
+                    }
+                } catch(err) { 
+                    console.log("Network error");
+                    syncing = false;
+                    ind.classList.remove('sync-active');
+                }
                 cursor.continue();
-            } else syncing = false;
+            } else {
+                syncing = false;
+                ind.classList.remove('sync-active');
+                updateQueueUI();
+            }
         };
     }
 
