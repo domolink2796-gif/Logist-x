@@ -17,7 +17,7 @@
         .s-box { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; }
         .s-v { display: block; font-size: 1.1rem; font-weight: 800; }
         .s-t { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; margin-top: 4px; font-weight: 700; }
-        #syncIndicator { background: var(--accent); color: #000; padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.7rem; border: none; cursor: pointer; display: none; }
+        #syncIndicator { background: var(--accent); color: #000; padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.7rem; border: none; cursor: pointer; display: none; margin-left: auto; }
         .btn-blue { background: var(--blue); color: white; padding: 16px; border-radius: 14px; text-align: center; font-weight: 700; cursor: pointer; border: none; width: 100%; display: block; box-sizing: border-box; margin-bottom: 10px; text-decoration: none; }
         #srch { width: calc(100% - 30px); margin: 10px 15px; padding: 14px; background: var(--card); border: 1px solid var(--border); color: white; border-radius: 12px; box-sizing: border-box; }
         .card { background: var(--card); border: 1px solid var(--border); margin: 10px 15px; padding: 18px; border-radius: 16px; position: relative; }
@@ -47,7 +47,7 @@
 <div class="header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="logo">LOGIST_X <span>MERCH</span></div>
-        <button id="syncIndicator" onclick="alert('В очереди: ' + queueCount)">📦 <span id="qCount">0</span></button>
+        <button id="syncIndicator" onclick="alert('Осталось в очереди: ' + queueCount)">📦 <span id="qCount">0</span></button>
     </div>
     <div class="stats-main">
         <div class="s-box"><span class="s-v" id="st-total">0</span><span class="s-t">Точек</span></div>
@@ -73,7 +73,7 @@
             <input type="text" id="inp-addr" readonly>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                 <div><span class="f-label">Остаток</span><input type="number" id="i-stock" value="0"></div>
-                <div><span class="f-label">Наш Фейсинг</span><input type="number" id="i-shelf" value="0" oninput="calcShare()"></div>
+                <div><span class="f-label">Наш Фейсинг</span><input type="number" id="i-faces" value="0" oninput="calcShare()"></div>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                 <div><span class="f-label">Всего на полке</span><input type="number" id="i-total-faces" value="0" oninput="calcShare()"></div>
@@ -99,6 +99,7 @@
         <button class="btn-blue" style="background:none; color:#555;" onclick="closeModal()">ОТМЕНА</button>
     </div>
 </div>
+
 <div id="pdf-render">
     <div style="display:flex; justify-content:space-between; border-bottom:5px solid #000; padding-bottom:10px;">
         <div style="font-size:28px; font-weight:900;">LOGIST_X <span style="color:#f59e0b">MERCH</span></div>
@@ -109,15 +110,15 @@
         <div id="p-addr-val" style="font-size:26px; font-weight:900;"></div>
         <div id="p-worker"></div>
         <div style="margin-top:5px; font-size:13px; font-weight:900; background:#f59e0b; color:#000; padding:8px; border-radius:4px; display:inline-block;">ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ: <span id="p-dur"></span></div>
-        <div id="p-share-text" style="margin-top:5px; font-size:13px; font-weight:900; border:2px solid #000; padding:6px; border-radius:4px; display:inline-block; margin-left:10px;"></div>
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:25px;">
         <div style="background:#f4f4f4; padding:20px; border-radius:15px;">
-            <div style="font-size:32px; font-weight:900;"><span id="p-stock"></span> / <span id="p-shelf"></span></div>
-            <div id="p-exp-val" style="color:#ff3b30; font-weight:800;"></div>
+            <div style="font-size:32px; font-weight:900;"><span id="p-stock"></span> / <span id="p-faces"></span></div>
+            <div style="font-weight:800; color:#f59e0b;">ДОЛЯ: <span id="p-share"></span>%</div>
         </div>
         <div style="background:#f4f4f4; padding:20px; border-radius:15px;">
             <div style="font-size:28px; font-weight:900;"><span id="p-p1"></span> / <span id="p-p2"></span></div>
+            <div id="p-exp-val" style="color:#ff3b30; font-weight:800;"></div>
         </div>
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:30px;">
@@ -126,65 +127,69 @@
         <img id="p-i3" style="width:100%; border-radius:10px;">
     </div>
 </div>
+
 <script>
     const API = 'https://logist-x-server-production.up.railway.app';
     let DATA = { shops: [], name: "", key: "" };
     let IMGS = { pre: null, post: null, price: null };
     let cur = null, db, syncing = false, queueCount = 0;
+
     function openDB() {
-        const req = indexedDB.open("MerchX_Queue_v2", 1);
+        const req = indexedDB.open("MerchX_DB_Final", 1);
         req.onupgradeneeded = (e) => e.target.result.createObjectStore("reports", { autoIncrement: true });
         req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); sync(); };
     }
+
     window.onload = () => {
         DATA.name = localStorage.getItem('m_name') || "";
         DATA.key = localStorage.getItem('m_key') || "";
         if(DATA.key && DATA.name) document.getElementById('auth-screen').style.display='none';
         DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]");
-        openDB(); render(); setInterval(sync, 15000);
+        openDB(); render(); setInterval(sync, 10000);
     };
+
     async function saveAuth() {
         const n = document.getElementById('work-name').value.trim();
         const k = document.getElementById('lic-key').value.trim().toUpperCase();
-        if(!n || !k) return alert("Введите имя и ключ!");
-        const btn = document.getElementById('auth-btn');
-        btn.innerText = "ПРОВЕРКА..."; btn.style.opacity = "0.5";
+        if(!n || !k) return alert("Введите данные");
         try {
             const res = await fetch(`${API}/check-license`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ licenseKey: k, workerName: n })
             });
-            const data = await res.json();
-            if(data.status === 'active') {
+            const d = await res.json();
+            if(d.status === 'active') {
                 DATA.name = n; DATA.key = k;
                 localStorage.setItem('m_name', n); localStorage.setItem('m_key', k);
                 document.getElementById('auth-screen').style.display='none';
-            } else { alert(data.message || "Ошибка лицензии"); }
-        } catch(e) { alert("Ошибка связи с сервером"); }
-        btn.innerText = "АКТИВИРОВАТЬ"; btn.style.opacity = "1";
+            } else alert(d.message);
+        } catch(e) { alert("Ошибка сервера"); }
     }
+
     function calcShare() {
-        const mine = parseFloat(document.getElementById('i-shelf').value) || 0;
+        const mine = parseFloat(document.getElementById('i-faces').value) || 0;
         const total = parseFloat(document.getElementById('i-total-faces').value) || 0;
         const share = total > 0 ? Math.round((mine / total) * 100) : 0;
         document.getElementById('share-val').innerText = share;
     }
+
     function render() {
         const list = document.getElementById('list');
-        const search = document.getElementById('srch').value.toLowerCase();
+        const s = document.getElementById('srch').value.toLowerCase();
         document.getElementById('st-total').innerText = DATA.shops.length;
-        document.getElementById('st-done').innerText = DATA.shops.filter(s => s.done).length;
-        list.innerHTML = DATA.shops.filter(s => s.addr.toLowerCase().includes(search)).map(s => `
-            <div class="card" onclick="openModal(${s.id})">
-                <div class="dot" style="background:${s.done ? 'var(--green)' : (s.start ? 'var(--blue)' : '#222')}"></div>
-                <div class="card-net">${s.net}</div>
-                <div class="card-addr">${s.addr}</div>
+        document.getElementById('st-done').innerText = DATA.shops.filter(x => x.done).length;
+        list.innerHTML = DATA.shops.filter(x => x.addr.toLowerCase().includes(s)).map(x => `
+            <div class="card" onclick="openModal(${x.id})">
+                <div class="dot" style="background:${x.done ? 'var(--green)' : (x.start ? 'var(--blue)' : '#222')}"></div>
+                <div class="card-net">${x.net}</div>
+                <div class="card-addr">${x.addr}</div>
             </div>`).join('');
     }
+
     function openModal(id) {
-        cur = DATA.shops.find(s => s.id === id);
-        if(cur.done) return alert("Визит завершен");
+        cur = DATA.shops.find(x => x.id === id);
+        if(cur.done) return;
         document.getElementById('disp-addr').innerText = cur.addr;
         document.getElementById('inp-addr').value = cur.addr;
         document.getElementById('m-net').innerText = cur.net;
@@ -197,56 +202,66 @@
             document.getElementById('report-block').classList.add('hidden');
         }
     }
+
     function begin() {
-        cur.start = new Date().getTime();
+        cur.start = Date.now();
         localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
         render();
         document.getElementById('start-block').classList.add('hidden');
         document.getElementById('report-block').classList.remove('hidden');
     }
+
     async function saveToQueue() {
-        if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужны все 3 фото!");
+        if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Загрузите 3 фото");
         const btn = document.getElementById('finish-btn');
-        btn.innerText = "СБОРКА PDF..."; btn.disabled = true;
-        const dur = Math.round((new Date().getTime() - cur.start) / 60000) + " мин";
+        btn.innerText = "ГЕНЕРАЦИЯ PDF..."; btn.disabled = true;
+        
+        const dur = Math.round((Date.now() - cur.start) / 60000) + " мин";
         const share = document.getElementById('share-val').innerText;
+
+        // Рендер PDF
         document.getElementById('p-date').innerText = new Date().toLocaleString();
         document.getElementById('p-net').innerText = cur.net;
         document.getElementById('p-addr-val').innerText = cur.addr;
         document.getElementById('p-worker').innerText = DATA.name;
         document.getElementById('p-dur').innerText = dur;
-        document.getElementById('p-share-text').innerText = "ДОЛЯ ПОЛКИ: " + share + "%";
         document.getElementById('p-stock').innerText = document.getElementById('i-stock').value;
-        document.getElementById('p-shelf').innerText = document.getElementById('i-shelf').value;
+        document.getElementById('p-faces').innerText = document.getElementById('i-faces').value;
+        document.getElementById('p-share').innerText = share;
         document.getElementById('p-p1').innerText = document.getElementById('i-p1').value;
         document.getElementById('p-p2').innerText = document.getElementById('i-p2').value;
         document.getElementById('p-exp-val').innerText = "СРОК: " + (document.getElementById('i-exp').value || "-");
         document.getElementById('p-i1').src = IMGS.pre;
         document.getElementById('p-i2').src = IMGS.post;
         document.getElementById('p-i3').src = IMGS.price;
+
         const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1 });
-        const finalImg = canvas.toDataURL('image/jpeg', 0.7);
+        const pdfBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
         const report = {
             worker: DATA.name,
             net: cur.net,
             address: cur.addr,
             stock: document.getElementById('i-stock').value,
-            faces: document.getElementById('i-shelf').value,
+            faces: document.getElementById('i-faces').value, // Соответствует серверу
             share: share,
             priceMy: document.getElementById('i-p1').value,
             priceComp: document.getElementById('i-p2').value,
             expDate: document.getElementById('i-exp').value,
             duration: dur,
-            pdf: finalImg
+            pdf: pdfBase64
         };
+
         const tx = db.transaction("reports", "readwrite");
         tx.objectStore("reports").add(report);
         tx.oncomplete = () => {
-            cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+            cur.done = true;
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
             btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
             closeModal(); render(); updateQueueUI(); sync();
         };
     }
+
     async function sync() {
         if(syncing || !navigator.onLine || !db) return;
         syncing = true;
@@ -255,20 +270,21 @@
         const req = store.openCursor();
         req.onsuccess = async (e) => {
             const cursor = e.target.result;
-            if (cursor) {
+            if(cursor) {
                 try {
                     const res = await fetch(`${API}/merch-upload`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(cursor.value)
                     });
-                    const resJ = await res.json();
-                    if(resJ.success) { cursor.delete(); updateQueueUI(); }
-                } catch(err) { console.log("Sync error"); }
+                    const d = await res.json();
+                    if(d.success) { cursor.delete(); updateQueueUI(); }
+                } catch(err) { console.log("Offline"); }
                 cursor.continue();
-            } else { syncing = false; updateQueueUI(); }
+            } else syncing = false;
         };
     }
+
     function updateQueueUI() {
         const tx = db.transaction("reports", "readonly");
         tx.objectStore("reports").count().onsuccess = (e) => {
@@ -277,8 +293,8 @@
             document.getElementById('qCount').innerText = queueCount;
         };
     }
+
     function cam(input, type) {
-        const file = input.files[0];
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image(); img.src = e.target.result;
@@ -289,31 +305,31 @@
                 canvas.width = w; canvas.height = h;
                 canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                 IMGS[type] = canvas.toDataURL('image/jpeg', 0.6);
-                document.getElementById('l-p' + (type==='pre'?1:type==='post'?2:3)).classList.add('ok');
+                const btnId = type==='pre'?'l-p1':(type==='post'?'l-p2':'l-p3');
+                document.getElementById(btnId).classList.add('ok');
             };
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(input.files[0]);
     }
+
     function handleFile(inp) {
-        const f = inp.files[0];
         const reader = new FileReader();
         reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const wb = XLSX.read(data, {type:'array'});
+            const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            DATA.shops = rows.map((r, idx) => ({ id: idx, net: r['Сеть'] || 'МАРКЕТ', addr: r['Адрес'] || 'Адрес не указан', done: false, start: null }));
+            DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', addr: r['Адрес'] || 'Адрес?', done: false, start: null }));
             localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render();
         };
-        reader.readAsArrayBuffer(f);
+        reader.readAsArrayBuffer(inp.files[0]);
     }
+
     function closeModal() {
         document.getElementById('task-modal').style.display='none';
         IMGS = { pre:null, post:null, price:null };
         document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok'));
-        document.getElementById('i-exp').value = ""; document.getElementById('i-total-faces').value = 0;
-        document.getElementById('share-val').innerText = "0";
     }
-    function clearData() { if(confirm("Удалить всё?")) { localStorage.clear(); location.reload(); } }
+
+    function clearData() { if(confirm("Очистить всё?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
