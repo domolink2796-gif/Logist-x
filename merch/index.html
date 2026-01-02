@@ -111,38 +111,27 @@
         <div id="p-net" style="color:#f59e0b; font-weight:800; font-size:16px; text-transform:uppercase;"></div>
         <div id="p-addr-val" style="font-size:28px; font-weight:900; margin-bottom:5px;"></div>
         <div style="font-size:14px; opacity:0.6;">Мерчендайзер: <span id="p-worker"></span></div>
-        <div style="font-size:12px; font-weight:700; margin-top:10px;">
-            НАЧАЛО: <span id="p-start-t"></span> | КОНЕЦ: <span id="p-end-t"></span>
-        </div>
-        <div style="background:#f59e0b; color:#000; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:900; font-size:14px; margin-top:10px; text-transform:uppercase;">
-            ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ: <span id="p-dur"></span>
-        </div>
+        <div style="font-size:12px; font-weight:700; margin-top:10px;">НАЧАЛО: <span id="p-start-t"></span> | КОНЕЦ: <span id="p-end-t"></span></div>
+        <div style="background:#f59e0b; color:#000; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:900; font-size:14px; margin-top:10px; text-transform:uppercase;">ВРЕМЯ В МАГАЗИНЕ: <span id="p-dur"></span></div>
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:25px;">
         <div style="background:#f8f8f8; padding:20px; border-radius:20px;">
             <div style="font-size:10px; text-transform:uppercase; opacity:0.5; font-weight:800;">Остаток / Фейсинг</div>
-            <div style="font-size:40px; font-weight:900; margin:10px 0;"><span id="p-stock"></span> / <span id="p-faces"></span></div>
-            <div style="font-size:10px; text-transform:uppercase; opacity:0.5; font-weight:800;">Срок годности</div>
-            <div id="p-exp-val" style="color:#ff3b30; font-weight:900; font-size:22px;"></div>
+            <div style="font-size:38px; font-weight:900; margin:10px 0;"><span id="p-stock"></span> / <span id="p-faces"></span></div>
+            <div style="font-size:10px; text-transform:uppercase; opacity:0.5; font-weight:800; margin-top:10px;">Доля на полке</div>
+            <div style="font-size:24px; font-weight:900; color:#f59e0b;"><span id="p-share"></span>%</div>
         </div>
         <div style="background:#f8f8f8; padding:20px; border-radius:20px;">
-            <div style="font-size:10px; text-transform:uppercase; opacity:0.5; font-weight:800;">Цены (Мы / Конкурент)</div>
-            <div style="font-size:40px; font-weight:900; margin:10px 0;"><span id="p-p1"></span> / <span id="p-p2"></span></div>
+            <div style="font-size:10px; text-transform:uppercase; opacity:0.5; font-weight:800;">Цены (Мы / Конк.)</div>
+            <div style="font-size:38px; font-weight:900; margin:10px 0;"><span id="p-p1"></span> / <span id="p-p2"></span></div>
+            <div style="font-size:10px; text-transform:uppercase; opacity:0.5; font-weight:800; margin-top:10px;">Срок годности</div>
+            <div id="p-exp-val" style="color:#ff3b30; font-weight:900; font-size:20px;"></div>
         </div>
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:35px; text-align:center;">
-        <div>
-            <div style="font-size:12px; font-weight:800; text-transform:uppercase; margin-bottom:8px;">Фото ДО</div>
-            <img id="p-i1" style="width:100%; border-radius:15px; background:#000; aspect-ratio:3/4; object-fit:cover;">
-        </div>
-        <div>
-            <div style="font-size:12px; font-weight:800; text-transform:uppercase; margin-bottom:8px;">Фото ПОСЛЕ</div>
-            <img id="p-i2" style="width:100%; border-radius:15px; background:#000; aspect-ratio:3/4; object-fit:cover;">
-        </div>
-        <div>
-            <div style="font-size:12px; font-weight:800; text-transform:uppercase; margin-bottom:8px;">Ценник</div>
-            <img id="p-i3" style="width:100%; border-radius:15px; background:#000; aspect-ratio:3/4; object-fit:cover;">
-        </div>
+        <div><div style="font-size:12px; font-weight:800; text-transform:uppercase; margin-bottom:8px;">Фото ДО</div><img id="p-i1" style="width:100%; border-radius:15px; background:#000; aspect-ratio:3/4; object-fit:cover;"></div>
+        <div><div style="font-size:12px; font-weight:800; text-transform:uppercase; margin-bottom:8px;">Фото ПОСЛЕ</div><img id="p-i2" style="width:100%; border-radius:15px; background:#000; aspect-ratio:3/4; object-fit:cover;"></div>
+        <div><div style="font-size:12px; font-weight:800; text-transform:uppercase; margin-bottom:8px;">Ценник</div><img id="p-i3" style="width:100%; border-radius:15px; background:#000; aspect-ratio:3/4; object-fit:cover;"></div>
     </div>
 </div>
 
@@ -154,9 +143,7 @@
         const req = indexedDB.open("MerchX_Final_Sync", 4);
         req.onupgradeneeded = (e) => {
             const dbRef = e.target.result;
-            if(!dbRef.objectStoreNames.contains("reports")) {
-                dbRef.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
-            }
+            if(!dbRef.objectStoreNames.contains("reports")) { dbRef.createObjectStore("reports", { keyPath: "id", autoIncrement: true }); }
         };
         req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 8000); };
     }
@@ -209,44 +196,31 @@
         const btn = document.getElementById('finish-btn'); btn.innerText = "ГЕНЕРАЦИЯ..."; btn.disabled = true;
         
         navigator.geolocation.getCurrentPosition(async (pos) => {
-            const now = new Date();
-            const startStr = new Date(cur.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const endStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            const durMin = Math.round((now - cur.start) / 60000);
-
-            document.getElementById('p-date').innerText = now.toLocaleString();
-            document.getElementById('p-start-t').innerText = startStr;
-            document.getElementById('p-end-t').innerText = endStr;
-            document.getElementById('p-dur').innerText = durMin + " МИН";
-            
-            document.getElementById('p-net').innerText = cur.net; document.getElementById('p-addr-val').innerText = cur.addr;
-            document.getElementById('p-worker').innerText = DATA.name;
-            document.getElementById('p-stock').innerText = document.getElementById('i-stock').value;
-            document.getElementById('p-faces').innerText = document.getElementById('i-faces').value;
-            document.getElementById('p-p1').innerText = document.getElementById('i-p1').value;
-            document.getElementById('p-p2').innerText = document.getElementById('i-p2').value;
+            const now = new Date(), startStr = new Date(cur.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), endStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), durMin = Math.round((now - cur.start) / 60000);
+            document.getElementById('p-date').innerText = now.toLocaleString(); document.getElementById('p-start-t').innerText = startStr; document.getElementById('p-end-t').innerText = endStr;
+            document.getElementById('p-dur').innerText = durMin + " МИН"; document.getElementById('p-net').innerText = cur.net; document.getElementById('p-addr-val').innerText = cur.addr;
+            document.getElementById('p-worker').innerText = DATA.name; document.getElementById('p-stock').innerText = document.getElementById('i-stock').value;
+            document.getElementById('p-faces').innerText = document.getElementById('i-faces').value; document.getElementById('p-share').innerText = document.getElementById('share-val').innerText;
+            document.getElementById('p-p1').innerText = document.getElementById('i-p1').value; document.getElementById('p-p2').innerText = document.getElementById('i-p2').value;
             document.getElementById('p-exp-val').innerText = document.getElementById('i-exp').value || "-";
             document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
             
             setTimeout(async () => {
                 const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1, useCORS: true });
                 const pdfFull = canvas.toDataURL('image/jpeg', 0.5);
+                const pdfName = (cur.net + "_" + cur.addr).replace(/[^а-яёa-z0-9]/gi, '_');
 
                 const report = {
                     worker: DATA.name, net: cur.net, city: cur.city || "Орёл", address: cur.addr,
                     stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value,
                     share: document.getElementById('share-val').innerText, priceMy: document.getElementById('i-p1').value, priceComp: document.getElementById('i-p2').value,
-                    expDate: document.getElementById('i-exp').value, duration: durMin + " МИН", pdf: pdfFull,
+                    expDate: document.getElementById('i-exp').value, duration: durMin + " МИН", pdf: pdfFull, pdfName: pdfName,
                     lat: pos.coords.latitude, lon: pos.coords.longitude, sending: 0
                 };
 
                 const tx = db.transaction("reports", "readwrite");
                 tx.objectStore("reports").add(report);
-                tx.oncomplete = () => {
-                    cur.done = true;
-                    localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
-                    closeModal(); render(); updateQueueUI(); sync();
-                };
+                tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
                 btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
             }, 500);
         }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true, timeout: 10000 });
@@ -263,16 +237,8 @@
                 try {
                     const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(report) });
                     const d = await res.json();
-                    if(d.success) {
-                        const delTx = db.transaction("reports", "readwrite");
-                        delTx.objectStore("reports").delete(rid);
-                        lastError = "ОК";
-                    } else { throw new Error(d.error); }
-                } catch(err) {
-                    lastError = err.message; report.sending = 0;
-                    const errTx = db.transaction("reports", "readwrite");
-                    errTx.objectStore("reports").put(report, rid);
-                }
+                    if(d.success) { const delTx = db.transaction("reports", "readwrite"); delTx.objectStore("reports").delete(rid); lastError = "ОК"; } else { throw new Error(d.error); }
+                } catch(err) { lastError = err.message; report.sending = 0; const errTx = db.transaction("reports", "readwrite"); errTx.objectStore("reports").put(report, rid); }
                 syncing = false; updateQueueUI();
             } else { syncing = false; updateQueueUI(); }
         };
@@ -283,18 +249,12 @@
         if(!db) return; const tx = db.transaction("reports", "readonly");
         tx.objectStore("reports").count().onsuccess = (e) => {
             const count = e.target.result; const ind = document.getElementById('syncIndicator');
-            ind.style.display = count > 0 ? 'block' : 'none';
-            document.getElementById('qCount').innerText = count;
+            ind.style.display = count > 0 ? 'block' : 'none'; document.getElementById('qCount').innerText = count;
             if(syncing && count > 0) ind.classList.add('sync-active'); else ind.classList.remove('sync-active');
         };
     }
 
-    function checkQueue() {
-        const tx = db.transaction("reports", "readonly");
-        tx.objectStore("reports").count().onsuccess = (e) => {
-            alert(`ОЧЕРЕДЬ: ${e.target.result}\nСТАТУС: ${lastError}`);
-        };
-    }
+    function checkQueue() { const tx = db.transaction("reports", "readonly"); tx.objectStore("reports").count().onsuccess = (e) => { alert(`ОЧЕРЕДЬ: ${e.target.result}\nСТАТУС: ${lastError}`); }; }
 
     function cam(i, t) {
         if(!i.files[0]) return; const r = new FileReader();
