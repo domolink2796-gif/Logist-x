@@ -101,6 +101,7 @@
         <button class="btn-blue" style="background:none; color:#555;" onclick="closeModal()">ОТМЕНА</button>
     </div>
 </div>
+
 <div id="pdf-render">
     <div style="display:flex; justify-content:space-between; border-bottom:5px solid #000; padding-bottom:10px;">
         <div style="font-size:28px; font-weight:900;">LOGIST_X <span style="color:#f59e0b">MERCH</span></div>
@@ -110,7 +111,7 @@
         <div id="p-net" style="color:#f59e0b; font-weight:800; font-size:18px;"></div>
         <div id="p-addr-val" style="font-size:26px; font-weight:900;"></div>
         <div id="p-worker"></div>
-        <div style="margin-top:5px; font-size:13px; font-weight:900; background:#f59e0b; color:#000; padding:8px; border-radius:4px; display:inline-block;">ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ: <span id="p-dur"></span></div>
+        <div style="margin-top:5px; font-size:13px; font-weight:900; background:#f59e0b; color:#000; padding:8px; border-radius:4px; display:inline-block;">ВРЕМЯ: <span id="p-dur"></span></div>
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:25px;">
         <div style="background:#f4f4f4; padding:20px; border-radius:15px;">
@@ -128,20 +129,27 @@
         <img id="p-i3" style="width:100%; border-radius:10px;">
     </div>
 </div>
+
 <script>
     const API = 'https://logist-x-server-production.up.railway.app';
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, lastError = "Ожидание...";
 
     function openDB() {
-        const req = indexedDB.open("MerchX_Ultra_V1", 1);
-        req.onupgradeneeded = (e) => e.target.result.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
-        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 10000); };
+        const req = indexedDB.open("MerchX_Final_Sync", 2);
+        req.onupgradeneeded = (e) => {
+            if(!e.target.result.objectStoreNames.contains("reports")) {
+                e.target.result.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
+            }
+        };
+        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 8000); };
     }
+
     window.onload = () => {
         DATA.name = localStorage.getItem('m_name') || ""; DATA.key = localStorage.getItem('m_key') || "";
         if(DATA.key && DATA.name) document.getElementById('auth-screen').style.display='none';
         DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]"); openDB(); render();
     };
+
     async function saveAuth() {
         const n = document.getElementById('work-name').value.trim(), k = document.getElementById('lic-key').value.trim().toUpperCase();
         if(!n || !k) return alert("Введите данные");
@@ -149,12 +157,14 @@
             const res = await fetch(`${API}/check-license`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ licenseKey: k, workerName: n }) });
             const d = await res.json();
             if(d.status === 'active') { DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); document.getElementById('auth-screen').style.display='none'; } else alert(d.message);
-        } catch(e) { alert("Ошибка сервера"); }
+        } catch(e) { alert("Сервер недоступен"); }
     }
+
     function calcShare() {
         const mine = parseFloat(document.getElementById('i-faces').value) || 0, total = parseFloat(document.getElementById('i-total-faces').value) || 0;
         document.getElementById('share-val').innerText = total > 0 ? Math.round((mine / total) * 100) : 0;
     }
+
     function render() {
         const list = document.getElementById('list'), s = document.getElementById('srch').value.toLowerCase();
         document.getElementById('st-total').innerText = DATA.shops.length;
@@ -166,6 +176,7 @@
                 <div class="card-addr">${x.addr}</div>
             </div>`).join('');
     }
+
     function openModal(id) {
         cur = DATA.shops.find(x => x.id === id); if(cur.done) return;
         document.getElementById('disp-addr').innerText = cur.addr; document.getElementById('inp-addr').value = cur.addr; document.getElementById('m-net').innerText = cur.net;
@@ -173,10 +184,13 @@
         if(cur.start) { document.getElementById('start-block').classList.add('hidden'); document.getElementById('report-block').classList.remove('hidden'); }
         else { document.getElementById('start-block').classList.remove('hidden'); document.getElementById('report-block').classList.add('hidden'); }
     }
+
     function begin() { cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); openModal(cur.id); }
+
     async function saveToQueue() {
-        if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Загрузите 3 фото");
-        const btn = document.getElementById('finish-btn'); btn.innerText = "ПОДОЖДИТЕ..."; btn.disabled = true;
+        if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужно 3 фото");
+        const btn = document.getElementById('finish-btn'); btn.innerText = "ГЕНЕРАЦИЯ PDF..."; btn.disabled = true;
+        
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const dur = Math.round((Date.now() - cur.start) / 60000) + " мин";
             document.getElementById('p-date').innerText = new Date().toLocaleString();
@@ -189,48 +203,59 @@
             document.getElementById('p-p2').innerText = document.getElementById('i-p2').value;
             document.getElementById('p-exp-val').innerText = "СРОК: " + (document.getElementById('i-exp').value || "-");
             document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
+            
             const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1 });
-            const pdfBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+            const pdfFull = canvas.toDataURL('image/jpeg', 0.7);
+
             const report = {
                 worker: DATA.name, net: cur.net, city: cur.city || "Орёл", address: cur.addr,
                 stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value,
                 share: document.getElementById('share-val').innerText, priceMy: document.getElementById('i-p1').value, priceComp: document.getElementById('i-p2').value,
-                expDate: document.getElementById('i-exp').value, duration: dur, pdf: pdfBase64,
+                expDate: document.getElementById('i-exp').value, duration: dur, pdf: pdfFull,
                 lat: pos.coords.latitude, lon: pos.coords.longitude, targetLat: cur.lat || 0, targetLon: cur.lon || 0,
-                isSending: false 
+                sending: false
             };
-            const tx = db.transaction("reports", "readwrite"); tx.objectStore("reports").add(report);
-            tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
+
+            const tx = db.transaction("reports", "readwrite");
+            tx.objectStore("reports").add(report);
+            tx.oncomplete = () => {
+                cur.done = true;
+                localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+                closeModal(); render(); updateQueueUI(); sync();
+            };
             btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
         }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true });
     }
+
     async function sync() {
         if(syncing || !navigator.onLine || !db) return; syncing = true;
         const tx = db.transaction("reports", "readwrite"), store = tx.objectStore("reports"), req = store.openCursor();
         req.onsuccess = async (e) => {
             const cursor = e.target.result;
             if(cursor) {
-                if (cursor.value.isSending) { cursor.continue(); return; }
-                const reportId = cursor.key;
-                const updateTx = db.transaction("reports", "readwrite");
-                const obj = cursor.value; obj.isSending = true; updateTx.objectStore("reports").put(obj, reportId);
+                if(cursor.value.sending) { cursor.continue(); return; }
+                const rid = cursor.key; const obj = cursor.value; obj.sending = true;
+                const upTx = db.transaction("reports", "readwrite"); upTx.objectStore("reports").put(obj);
                 try {
-                    const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(cursor.value) });
+                    const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(obj) });
                     const d = await res.json();
-                    if(d.success) { 
-                        const delTx = db.transaction("reports", "readwrite"); delTx.objectStore("reports").delete(reportId);
-                        lastError = "Успешно!"; updateQueueUI(); cursor.continue(); 
-                    } else { 
-                        const resetTx = db.transaction("reports", "readwrite"); obj.isSending = false; resetTx.objectStore("reports").put(obj, reportId);
-                        lastError = d.error || "Ошибка"; syncing = false; updateQueueUI();
+                    if(d.success) {
+                        const delTx = db.transaction("reports", "readwrite"); delTx.objectStore("reports").delete(rid);
+                        lastError = "Отправлено!"; updateQueueUI(); cursor.continue();
+                    } else {
+                        lastError = d.error || "Ошибка"; obj.sending = false;
+                        const reTx = db.transaction("reports", "readwrite"); reTx.objectStore("reports").put(obj);
+                        syncing = false; updateQueueUI();
                     }
-                } catch(err) { 
-                    const resetTx = db.transaction("reports", "readwrite"); obj.isSending = false; resetTx.objectStore("reports").put(obj, reportId);
-                    lastError = "Сервер недоступен"; syncing = false; updateQueueUI();
+                } catch(err) {
+                    lastError = "Нет связи"; obj.sending = false;
+                    const reTx = db.transaction("reports", "readwrite"); reTx.objectStore("reports").put(obj);
+                    syncing = false; updateQueueUI();
                 }
             } else { syncing = false; updateQueueUI(); }
         };
     }
+
     function updateQueueUI() {
         const tx = db.transaction("reports", "readonly");
         tx.objectStore("reports").count().onsuccess = (e) => {
@@ -241,10 +266,20 @@
             if(syncing) ind.classList.add('sync-active'); else ind.classList.remove('sync-active');
         };
     }
+
     function checkQueue() {
         const tx = db.transaction("reports", "readonly");
-        tx.objectStore("reports").count().onsuccess = (e) => alert(`В очереди: ${e.target.result} отчетов.\nСтатус: ${lastError}`);
+        const store = tx.objectStore("reports");
+        store.count().onsuccess = (e) => {
+            const count = e.target.result;
+            if(count === 0) return alert("Все отчеты отправлены!");
+            store.openCursor().onsuccess = (ev) => {
+                const c = ev.target.result;
+                if(c) alert(`В ОЧЕРЕДИ: ${count}\nТЕКУЩИЙ: ${c.value.address}\nСТАТУС: ${lastError}`);
+            };
+        };
     }
+
     function cam(i, t) {
         if(!i.files[0]) return; const r = new FileReader();
         r.onload = (e) => {
@@ -258,6 +293,7 @@
             };
         }; r.readAsDataURL(i.files[0]);
     }
+
     function handleFile(inp) {
         const r = new FileReader(); r.onload = (e) => {
             const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
@@ -266,8 +302,9 @@
             localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render();
         }; r.readAsArrayBuffer(inp.files[0]);
     }
+
     function closeModal() { document.getElementById('task-modal').style.display='none'; IMGS = { pre:null, post:null, price:null }; document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); }
-    function clearData() { if(confirm("Очистить все?")) { localStorage.clear(); location.reload(); } }
+    function clearData() { if(confirm("Очистить все данные?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
