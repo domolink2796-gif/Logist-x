@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>LOGIST_X | Elite Pro Robot Edition</title>
-    
     <link rel="manifest" href="../manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,193 +11,157 @@
     <meta name="apple-mobile-web-app-title" content="Logist_X">
     <meta name="theme-color" content="#010409">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1162/1162456.png">
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
+        /* Весь твой оригинальный CSS блок сохранен полностью */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         :root { --bg: #010409; --card: rgba(22, 27, 34, 0.95); --accent: #f59e0b; --green: #238636; --red: #da3633; --blue: #2f81f7; --purp: #8957e5; --text: #e6edf3; --subtext: #8b949e; --border: rgba(48, 54, 61, 1); }
-        
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 160px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; background-image: radial-gradient(circle at 0% 0%, rgba(245, 158, 11, 0.05) 0%, transparent 50%); user-select: none; -webkit-user-select: none; }
-        
         header { background: rgba(1, 4, 9, 0.92); backdrop-filter: blur(18px); padding: 16px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top, 16px); }
         .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
         .app-name { font-weight: 900; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 5px; color: var(--accent); font-style: italic; }
-        
         #syncIndicator { background: var(--text); color: var(--bg); padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.65rem; border: none; cursor: pointer; display: none; transition: all 0.3s ease; }
         #syncIndicator.active-sync { background: var(--accent); box-shadow: 0 0 15px var(--accent); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-
         .search-box { width: 100%; padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 0.95rem; outline: none; background: #0d1117; color: white; box-sizing: border-box; }
         .stats-dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 15px; }
         .stat-block { text-align: center; background: #0d1117; padding: 12px 4px; border-radius: 12px; border: 1px solid var(--border); }
         .stat-label { font-size: 0.5rem; color: var(--subtext); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 4px; }
         .stat-val { font-weight: 900; font-size: 0.8rem; display: block; }
-
         .progress-container { background: #161b22; height: 4px; border-radius: 2px; overflow: hidden; margin-top: 15px; }
         .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), #fbbf24); transition: width 0.8s ease; width: 0%; }
-
         .menu-toggle { text-align: center; padding: 14px; font-weight: 800; font-size: 0.7rem; color: var(--subtext); letter-spacing: 2px; cursor: pointer; text-transform: uppercase; border-bottom: 1px solid var(--border); background: #0d1117; }
         .controls { display: none; background: #010409; padding: 20px; border-bottom: 1px solid var(--border); max-height: 80vh; overflow-y: auto; }
         .controls.active { display: block; }
-
         .btn-act { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 16px; font-weight: 900; color: white; cursor: pointer; text-align: center; transition: 0.1s; font-size: 0.75rem; text-transform: uppercase; box-sizing: border-box; text-decoration: none; }
         .btn-act:active { transform: scale(0.95); opacity: 0.85; filter: brightness(1.2); }
         .btn-blue { background: var(--blue); } .btn-red { background: var(--red); } .btn-dark { background: #21262d; border: 1px solid var(--border); } .btn-purple { background: var(--purp); } .btn-green { background: var(--green); color: #fff; }
-
         .block-box { background: #0d1117; padding: 20px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; position: relative; overflow: hidden; }
         .block-title { font-weight: 900; font-size: 0.6rem; color: var(--subtext); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; }
         .std-input { width: 100%; padding: 14px; border: 1px solid var(--border); background: #010409; color: #fff; border-radius: 10px; font-size: 0.85rem; box-sizing: border-box; outline: none; margin-bottom: 10px; }
-
         .card { background: var(--card); border-radius: 24px; margin: 0 16px 20px 16px; border: 1px solid var(--border); overflow: hidden; transition: 0.4s ease; }
         .card.is-finished { opacity: 0.15; filter: grayscale(100%); pointer-events: none; background: #000; }
-        
         .card-head { padding: 20px; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); }
         .nav-btn { background: var(--blue); color: #fff; border: none; border-radius: 10px; padding: 10px 14px; font-size: 0.65rem; font-weight: 900; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(47, 129, 247, 0.3); }
         .nav-btn:active { transform: scale(0.9); background: #fff; color: var(--blue); }
-
         .cl-badges { padding: 10px 20px 0 20px; display: flex; flex-wrap: wrap; gap: 6px; }
         .cl-badge { background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; color: var(--subtext); border: 1px solid var(--border); }
-        
         .pods { padding: 16px 20px 25px 20px; display: flex; flex-wrap: wrap; gap: 14px; }
         .p-btn { width: 56px; height: 56px; background: #21262d; border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--subtext); font-size: 1.25rem; transition: 0.1s; cursor: pointer; }
         .p-btn:active { transform: scale(0.85); background: var(--accent); }
-        
         .p-btn.done-1 { background: var(--green) !important; color: #fff !important; border:none; }
         .p-btn.done-2 { background: var(--red) !important; color: #fff !important; border:none; }
         .p-btn.done-3 { background: var(--blue) !important; color: #fff !important; border:none; }
         .p-btn.done-4 { background: var(--purp) !important; color: #fff !important; border:none; }
-
         .modal-overlay { position: fixed; inset: 0; background: rgba(1, 4, 9, 0.98); backdrop-filter: blur(20px); z-index: 5000; display: none; justify-content: center; align-items: flex-end; }
         .modal { background: #0d1117; width: 100%; max-width: 500px; border-radius: 35px 35px 0 0; border: 1px solid var(--border); max-height: 98vh; display: flex; flex-direction: column; overflow: hidden; }
         .modal-head { padding: 25px; font-weight: 900; text-align: center; border-bottom: 1px solid var(--border); background: #161b22; color: var(--accent); }
-        
         .photo-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 20px; overflow-y: auto; flex: 1; }
         .photo-frame { background: #010409; border: 2px dashed var(--border); border-radius: 28px; width: 100%; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 260px; }
         .photo-preview { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 2; border-radius: 26px; }
-
         .bot-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(13, 17, 23, 0.92); backdrop-filter: blur(25px); padding: 12px 16px 42px 16px; border-top: 1px solid var(--border); display: flex; gap: 14px; z-index: 2000; box-sizing: border-box; }
         .bb-btn { flex: 1; padding: 24px 10px; border: none; border-radius: 22px; color: white; font-weight: 900; font-size: 1rem; text-transform: uppercase; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-
         #loader { position: fixed; inset: 0; background: #010409; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
         #licenseLock { position: fixed; inset: 0; background: #010409; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        
         .lic-progress { width: 100%; height: 4px; background: #161b22; border-radius: 2px; margin: 10px 0; overflow: hidden; display: none; }
         .lic-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; box-shadow: 0 0 10px var(--accent); }
-
         #toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 900; font-size: 0.8rem; z-index: 9999; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
         .btn-price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
         .price-btn-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
         .price-label { font-size: 0.52rem; font-weight: 800; color: var(--subtext); text-transform: uppercase; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
 </head>
 <body onclick="resumeAudio()">
-
-<div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
-
-<div id="licenseLock">
-    <div style="background: #0d1117; padding: 45px; border-radius: 45px; border: 1px solid var(--border); width: 100%; max-width: 420px; text-align: center;">
-        <div style="font-size: 5rem; margin-bottom: 25px;">🔒</div>
-        <h1 style="font-weight: 900; color: #fff; font-size: 1.6rem;">LOGIST_X SECURE</h1>
-        <div style="margin-top: 30px; text-align: left;">
-            <label class="stat-label" style="margin-left:10px">Введите ФИО:</label>
-            <input type="text" id="lockWorkerName" class="std-input" placeholder="Иванов Иван">
-            <label class="stat-label" style="margin-left:10px">Лицензионный Ключ:</label>
-            <input type="text" id="lockLicenseKey" class="std-input" style="color:var(--accent); font-weight:900;" placeholder="LX-XXXX-XXXX">
-            <div id="lockLicProgress" class="lic-progress"><div id="lockLicBar" class="lic-bar"></div></div>
-            <button id="lockBtn" class="btn-act btn-blue" style="margin-top:20px;" onclick="saveAndCheckLock()">АКТИВИРОВАТЬ</button>
-        </div>
-        <p style="font-size: 0.6rem; color: var(--subtext); margin-top: 20px;">Designed by NIKITIN EVGENY</p>
-    </div>
-</div>
-
-<div id="loader"><div style="font-weight: 900; color: var(--accent); letter-spacing: 10px; font-size: 1.8rem;">LOGIST_X</div><div class="lic-progress" style="display:block; width:150px; margin-top:15px;"><div class="lic-bar" style="width:100%"></div></div></div>
-
-<header>
-    <div class="top-row"><span class="app-name">LOGIST_X</span><button id="syncIndicator" onclick="showMonitor()">📦 <span id="queueCount">0</span></button><span id="cityBadge" style="background:rgba(245,158,11,0.1); color: var(--accent); padding: 8px 18px; border-radius: 12px; font-size: 0.7rem; font-weight: 900;">...</span></div>
-    <input type="text" id="search" class="search-box" placeholder="Поиск по адресу..." oninput="render()">
-    <div class="stats-dashboard">
-        <div class="stat-block"><span class="stat-label">Доход</span><span id="statMoney" class="stat-val" style="color:#3fb950">0 ₽</span></div>
-        <div class="stat-block"><span class="stat-label">Готово</span><span id="statProgress" class="stat-val">0/0</span></div>
-        <div class="stat-block"><span class="stat-label">Срывы</span><span id="statSryv" class="stat-val" style="color:#f85149">0</span></div>
-        <div class="stat-block"><span class="stat-label">Доступ</span><span id="statLicense" class="stat-val" style="color:var(--accent)">-</span></div>
-    </div>
-    <div class="progress-container"><div id="mainProgress" class="progress-bar"></div></div>
-</header>
-
-<div class="menu-toggle" onclick="toggleMenu()">⚙️ МЕНЮ И НАСТРОЙКИ</div>
-<div id="menu" class="controls">
-    <div class="block-box">
-        <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
-        <input type="text" id="workerName" class="std-input" placeholder="Твое ФИО" oninput="saveCfg()">
-        <input type="text" id="cityName" class="std-input" placeholder="Город (напр. Сочи)" oninput="saveCfg()">
-        <input type="text" id="licenseKey" class="std-input" placeholder="Ключ" oninput="saveCfg()">
-        <div id="menuLicProgress" class="lic-progress"><div id="menuLicBar" class="lic-bar"></div></div>
-        <button class="btn-act btn-blue" onclick="checkLicense()">ОБНОВИТЬ СТАТУС</button>
-    </div>
-
-    <div class="block-box">
-        <div class="block-title">🛠 ТАРИФЫ И ВИДЫ РАБОТ:</div>
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
-            <input type="text" id="t1_name" class="std-input" oninput="saveCfg()"><input type="number" id="p1" class="std-input" oninput="saveCfg()">
-        </div>
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
-            <input type="text" id="t3_name" class="std-input" oninput="saveCfg()"><input type="number" id="p3" class="std-input" oninput="saveCfg()">
-        </div>
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
-            <input type="text" id="t4_name" class="std-input" oninput="saveCfg()"><input type="number" id="p4" class="std-input" oninput="saveCfg()">
-        </div>
-    </div>
-
-    <div class="block-box">
-        <div class="block-title">📦 УПРАВЛЕНИЕ ДАННЫМИ:</div>
-        <button class="btn-act btn-purple" onclick="showArchive()">📁 АРХИВ РАБОТ</button>
-        <button class="btn-act btn-blue" onclick="createFullBackup()">💾 БЭКАП + ФОТО</button>
-        <label class="btn-act btn-dark">🔄 ВОССТАНОВИТЬ<input type="file" style="display:none;" onchange="restoreFullBackup(this)"></label>
-        <label class="btn-act btn-green" style="margin-top:10px">📊 ЗАГРУЗИТЬ EXCEL<input type="file" style="display:none;" onchange="handleExcel(this)"></label>
-    </div>
-
-    <button class="btn-act btn-red" onclick="if(confirm('Сбросить базу?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС СИСТЕМЫ</button>
-</div>
-
-<div id="content" style="padding-top:20px;"></div>
-
-<div id="reportModal" class="modal-overlay">
-    <div class="modal">
-        <div class="modal-head" id="modalTitle">ОТЧЕТ</div>
-        <div id="modalBody" class="photo-grid"></div>
-        <div id="reportFooter" style="padding:25px; background:#161b22; display:none;">
-            <div class="btn-price-grid">
-                <div class="price-btn-cell"><div id="lbl1" class="price-label">...</div><button id="bt1" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(1)">0</button></div>
-                <div class="price-btn-cell"><div id="lbl3" class="price-label">...</div><button id="bt3" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(3)">0</button></div>
-                <div class="price-btn-cell"><div id="lbl4" class="price-label">...</div><button id="bt4" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(4)">0</button></div>
-                <div class="price-btn-cell"><div class="price-label">СРЫВ</div><button id="bt2" class="p-btn" style="font-size:0.7rem; width:100%; background:var(--red); color:#fff; border:none;" onclick="setType(2)">0 ₽</button></div>
+    <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
+    <div id="licenseLock">
+        <div style="background: #0d1117; padding: 45px; border-radius: 45px; border: 1px solid var(--border); width: 100%; max-width: 420px; text-align: center;">
+            <div style="font-size: 5rem; margin-bottom: 25px;">🔒</div>
+            <h1 style="font-weight: 900; color: #fff; font-size: 1.6rem;">LOGIST_X SECURE</h1>
+            <div style="margin-top: 30px; text-align: left;">
+                <label class="stat-label" style="margin-left:10px">Введите ФИО:</label>
+                <input type="text" id="lockWorkerName" class="std-input" placeholder="Иванов Иван">
+                <label class="stat-label" style="margin-left:10px">Лицензионный Ключ:</label>
+                <input type="text" id="lockLicenseKey" class="std-input" style="color:var(--accent); font-weight:900;" placeholder="LX-XXXX-XXXX">
+                <div id="lockLicProgress" class="lic-progress"><div id="lockLicBar" class="lic-bar"></div></div>
+                <button id="lockBtn" class="btn-act btn-blue" style="margin-top:20px;" onclick="saveAndCheckLock()">АКТИВИРОВАТЬ</button>
             </div>
-            <button class="btn-act btn-green" id="confirmBtn" onclick="confirmReport()">ОТПРАВИТЬ ОТЧЕТ</button>
+            <p style="font-size: 0.6rem; color: var(--subtext); margin-top: 20px;">Designed by NIKITIN EVGENY</p>
         </div>
-        <div style="padding:15px;"><button class="btn-act btn-dark" onclick="closeModal()">ЗАКРЫТЬ</button></div>
     </div>
-</div>
-
-<div class="bot-bar">
-    <button class="bb-btn" style="background: linear-gradient(135deg, #f59e0b, #b45309); color: #000;" onclick="showWallet()">💰 КОШЕЛЕК</button>
-    <button class="bb-btn" style="background: linear-gradient(135deg, #ef4444, #991b1b); color: #fff;" onclick="showSryvy()">⚠️ СРЫВЫ</button>
-</div>
+    <div id="loader"><div style="font-weight: 900; color: var(--accent); letter-spacing: 10px; font-size: 1.8rem;">LOGIST_X</div><div class="lic-progress" style="display:block; width:150px; margin-top:15px;"><div class="lic-bar" style="width:100%"></div></div></div>
+    <header>
+        <div class="top-row"><span class="app-name">LOGIST_X</span><button id="syncIndicator" onclick="showMonitor()">📦 <span id="queueCount">0</span></button><span id="cityBadge" style="background:rgba(245,158,11,0.1); color: var(--accent); padding: 8px 18px; border-radius: 12px; font-size: 0.7rem; font-weight: 900;">...</span></div>
+        <input type="text" id="search" class="search-box" placeholder="Поиск по адресу..." oninput="render()">
+        <div class="stats-dashboard">
+            <div class="stat-block"><span class="stat-label">Доход</span><span id="statMoney" class="stat-val" style="color:#3fb950">0 ₽</span></div>
+            <div class="stat-block"><span class="stat-label">Готово</span><span id="statProgress" class="stat-val">0/0</span></div>
+            <div class="stat-block"><span class="stat-label">Срывы</span><span id="statSryv" class="stat-val" style="color:#f85149">0</span></div>
+            <div class="stat-block"><span class="stat-label">Доступ</span><span id="statLicense" class="stat-val" style="color:var(--accent)">-</span></div>
+        </div>
+        <div class="progress-container"><div id="mainProgress" class="progress-bar"></div></div>
+    </header>
+    <div class="menu-toggle" onclick="toggleMenu()">⚙️ МЕНЮ И НАСТРОЙКИ</div>
+    <div id="menu" class="controls">
+        <div class="block-box">
+            <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
+            <input type="text" id="workerName" class="std-input" placeholder="Твое ФИО" oninput="saveCfg()">
+            <input type="text" id="cityName" class="std-input" placeholder="Город (напр. Сочи)" oninput="saveCfg()">
+            <input type="text" id="licenseKey" class="std-input" placeholder="Ключ" oninput="saveCfg()">
+            <div id="menuLicProgress" class="lic-progress"><div id="menuLicBar" class="lic-bar"></div></div>
+            <button class="btn-act btn-blue" onclick="checkLicense()">ОБНОВИТЬ СТАТУС</button>
+        </div>
+        <div class="block-box">
+            <div class="block-title">🛠 ТАРИФЫ И ВИДЫ РАБОТ:</div>
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
+                <input type="text" id="t1_name" class="std-input" oninput="saveCfg()"><input type="number" id="p1" class="std-input" oninput="saveCfg()">
+            </div>
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
+                <input type="text" id="t3_name" class="std-input" oninput="saveCfg()"><input type="number" id="p3" class="std-input" oninput="saveCfg()">
+            </div>
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
+                <input type="text" id="t4_name" class="std-input" oninput="saveCfg()"><input type="number" id="p4" class="std-input" oninput="saveCfg()">
+            </div>
+        </div>
+        <div class="block-box">
+            <div class="block-title">📦 УПРАВЛЕНИЕ ДАННЫМИ:</div>
+            <button class="btn-act btn-purple" onclick="showArchive()">📁 АРХИВ РАБОТ</button>
+            <button class="btn-act btn-blue" onclick="createFullBackup()">💾 БЭКАП + ФОТО</button>
+            <label class="btn-act btn-dark">🔄 ВОССТАНОВИТЬ<input type="file" style="display:none;" onchange="restoreFullBackup(this)"></label>
+            <label class="btn-act btn-green" style="margin-top:10px">📊 ЗАГРУЗИТЬ EXCEL<input type="file" style="display:none;" onchange="handleExcel(this)"></label>
+        </div>
+        <button class="btn-act btn-red" onclick="if(confirm('Сбросить базу?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС СИСТЕМЫ</button>
+    </div>
+    <div id="content" style="padding-top:20px;"></div>
+    <div id="reportModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-head" id="modalTitle">ОТЧЕТ</div>
+            <div id="modalBody" class="photo-grid"></div>
+            <div id="reportFooter" style="padding:25px; background:#161b22; display:none;">
+                <div class="btn-price-grid">
+                    <div class="price-btn-cell"><div id="lbl1" class="price-label">...</div><button id="bt1" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(1)">0</button></div>
+                    <div class="price-btn-cell"><div id="lbl3" class="price-label">...</div><button id="bt3" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(3)">0</button></div>
+                    <div class="price-btn-cell"><div id="lbl4" class="price-label">...</div><button id="bt4" class="p-btn" style="font-size:0.7rem; width:100%;" onclick="setType(4)">0</button></div>
+                    <div class="price-btn-cell"><div class="price-label">СРЫВ</div><button id="bt2" class="p-btn" style="font-size:0.7rem; width:100%; background:var(--red); color:#fff; border:none;" onclick="setType(2)">0 ₽</button></div>
+                </div>
+                <button class="btn-act btn-green" id="confirmBtn" onclick="confirmReport()">ОТПРАВИТЬ ОТЧЕТ</button>
+            </div>
+            <div style="padding:15px;"><button class="btn-act btn-dark" onclick="closeModal()">ЗАКРЫТЬ</button></div>
+        </div>
+    </div>
+    <div class="bot-bar">
+        <button class="bb-btn" style="background: linear-gradient(135deg, #f59e0b, #b45309); color: #000;" onclick="showWallet()">💰 КОШЕЛЕК</button>
+        <button class="bb-btn" style="background: linear-gradient(135deg, #ef4444, #991b1b); color: #fff;" onclick="showSryvy()">⚠️ СРЫВЫ</button>
+    </div>
 
 <script>
+    /* JS ЛОГИКА - ВСЁ ТВОЁ + ЗАЩИТА ОТ ДУБЛЕЙ */
     const BOT_SERVER_URL = 'https://logist-x-server-production.up.railway.app';
     const MASTER_KEY = "DEV-MASTER-999";
-    
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
     const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
 
-    function getDeviceId() {
-        let id = localStorage.getItem('logist_device_id');
-        if (!id) { id = 'D-' + Math.random().toString(36).substr(2, 9).toUpperCase(); localStorage.setItem('logist_device_id', id); }
-        return id;
-    }
-
+    function getDeviceId() { let id = localStorage.getItem('logist_device_id'); if (!id) { id = 'D-' + Math.random().toString(36).substr(2, 9).toUpperCase(); localStorage.setItem('logist_device_id', id); } return id; }
     function haptic() { if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(35); }
     function toast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
     function resumeAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -351,6 +314,7 @@
         });
     }
 
+    /* ИСПРАВЛЕННАЯ ФУНКЦИЯ - ДОБАВЛЕН REPORT_UUID ДЛЯ ЗАЩИТЫ ОТ ДУБЛЕЙ */
     async function confirmReport() {
         if(isSavingReport) return;
         const it = DATA.list.find(x => x.id === curId);
@@ -370,9 +334,12 @@
         const tx = db.transaction("sync_queue", "readwrite"); 
         const store = tx.objectStore("sync_queue");
         
+        const baseUUID = 'REP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+
         for (let client of cls) {
             const entry = { 
                 action: "save_report", 
+                report_uuid: baseUUID + '-' + client, // Уникальный ключ отчета
                 worker: DATA.workerName, 
                 city: DATA.city, 
                 image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, 
@@ -419,80 +386,19 @@
         } finally { syncing = false; if(document.getElementById('syncIndicator')) document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
     }
 
-    async function showMonitor() {
-        monitorOpen = true; haptic();
-        const upd = async () => {
-            if(!monitorOpen) return;
-            const tx = db.transaction("sync_queue", "readonly");
-            const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
-            document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ";
-            document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Доставлено!</p>" : 
-            `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.entrance})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`;
-            document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
-        }; upd();
-    }
-
+    /* Остальные функции (Монитор, Архив, Бэкап) сохранены полностью */
+    async function showMonitor() { monitorOpen = true; haptic(); const upd = async () => { if(!monitorOpen) return; const tx = db.transaction("sync_queue", "readonly"); const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result)); document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ"; document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Доставлено!</p>" : `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.entrance})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }; upd(); }
     function createFullBackup() { const blob = new Blob([JSON.stringify({ appData: DATA })], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click(); }
     function restoreFullBackup(inp) { let f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { DATA = JSON.parse(e.target.result).appData; saveCfg(); location.reload(); } catch(err) { alert("Ошибка!"); } }; r.readAsText(f); }
-
-    function showSryvy() {
-        haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ";
-        let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } }
-        let h = "<div style='padding:15px'>";
-        for(let id in gr){ const it=DATA.list.find(x=>x.id===id); if(it) h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; }
-        document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>";
-        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
-    }
-
-    function showArchive() {
-        haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; 
-        DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.entrance})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; });
-        document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; 
-        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
-    }
-
+    function showSryvy() { haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ"; let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } } let h = "<div style='padding:15px'>"; for(let id in gr){ const it=DATA.list.find(x=>x.id===id); if(it) h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; } document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
+    function showArchive() { haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.entrance})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; }); document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
     function showArchivePhoto(idx) { const it = DATA.history[idx]; if(!it || !it.full) return; document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; }
-
     function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; if(document.getElementById('syncIndicator')) document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing && document.getElementById('queueCount')) document.getElementById('queueCount').innerText = c; }; }
-    
-    function updateStats() {
-        let tot = 0; DATA.list.forEach(i => tot += i.p); 
-        let dn = 0, mon = 0;
-        for(let id in DATA.done) { 
-            const it = DATA.list.find(x => x.id === id); 
-            if(!it) continue; 
-            for(let p in DATA.done[id]) { 
-                const t = DATA.done[id][p]; 
-                dn++; 
-                if(t !== 2) {
-                    let p_val = [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t];
-                    mon += (p_val * (it.clients.length || 1));
-                }
-            } 
-        }
-        if(document.getElementById('statMoney')) document.getElementById('statMoney').innerText = mon + " ₽"; 
-        if(document.getElementById('statProgress')) document.getElementById('statProgress').innerText = `${dn}/${tot}`; 
-        if(document.getElementById('mainProgress')) document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%";
-    }
-
+    function updateStats() { let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0; for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { const t = DATA.done[id][p]; dn++; if(t !== 2) { let p_val = [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t]; mon += (p_val * (it.clients.length || 1)); } } } if(document.getElementById('statMoney')) document.getElementById('statMoney').innerText = mon + " ₽"; if(document.getElementById('statProgress')) document.getElementById('statProgress').innerText = `${dn}/${tot}`; if(document.getElementById('mainProgress')) document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%"; }
     function toggleMenu() { haptic(); Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
     function closeModal() { haptic(); document.getElementById('reportModal').style.display = 'none'; monitorOpen = false; }
     function setLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
-    
-    function showWallet() { 
-        Sfx.click(); haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
-        let counts = {1:0, 3:0, 4:0}; 
-        for(let id in DATA.done) { 
-            const it = DATA.list.find(x => x.id === id); 
-            if(!it) continue; 
-            for(let p in DATA.done[id]) { 
-                let t = DATA.done[id][p]; 
-                if(counts[t]!==undefined) counts[t] += (it.clients.length || 1); 
-            } 
-        }
-        document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`;
-        document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex';
-    }
+    function showWallet() { Sfx.click(); haptic(); document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; let counts = {1:0, 3:0, 4:0}; for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { let t = DATA.done[id][p]; if(counts[t]!==undefined) counts[t] += (it.clients.length || 1); } } document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts[1]}</p><p>${DATA.names.t3}: ${counts[3]}</p><p>${DATA.names.t4}: ${counts[4]}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
 
     window.onload = () => {
         const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
