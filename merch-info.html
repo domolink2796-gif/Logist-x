@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MERCH_X | Контроль</title>
+    <title>MERCH_X | О системе</title>
     
     <link rel="apple-touch-icon" href="app/icon-1024.png">
     <link rel="manifest" href="merch/manifest.json">
@@ -17,7 +17,7 @@
         .gold-text { color: #f59e0b; }
         .report-preview { background: #fff; color: #000; border-radius: 12px; padding: 15px; font-family: sans-serif; font-size: 10px; }
         .btn-gold { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #000; font-weight: 900; border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; width: 100%; border: none; }
-        .badge-red { background: #ef4444; color: #fff; font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .feature-dot { width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -26,25 +26,37 @@
             <a href="index.html" class="text-white/40"><i data-lucide="arrow-left"></i></a>
             <div class="text-right">
                 <h1 class="text-3xl font-black italic gold-text leading-none">MERCH_X</h1>
-                <p class="opacity-40 text-[10px] uppercase tracking-[3px]">Security & Audit</p>
+                <p class="opacity-40 text-[10px] uppercase tracking-[3px]">Business Solution</p>
             </div>
         </div>
 
-        <div class="card border-red-500/30 bg-red-500/5 mb-6">
-            <div class="flex items-start gap-4">
-                <div class="text-red-500 mt-1"><i data-lucide="shield-check" size="24"></i></div>
-                <div>
-                    <h3 class="font-black text-sm uppercase flex items-center gap-2">
-                        Строгий GPS-контроль
-                        <span class="badge-red">Anti-Fake</span>
-                    </h3>
-                    <p class="opacity-60 text-[11px] italic leading-tight mt-1">Система блокирует создание отчета вне торговой точки. Визит из дома или другого места технически невозможен.</p>
+        <div class="card bg-amber-500/5 border-amber-500/20 mb-6">
+            <h2 class="text-lg font-black uppercase mb-4 italic">Что такое MERCH_X?</h2>
+            <div class="space-y-4 text-[13px] opacity-80 leading-relaxed italic">
+                <div class="flex gap-3">
+                    <div class="feature-dot"></div>
+                    <p>Это комплексная система для **автоматизации ритейл-аудита**. Она заменяет десятки чатов в мессенджерах и горы ручных отчетов одним профессиональным приложением.</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="feature-dot"></div>
+                    <p>Программа сама фиксирует время захода мерчандайзера в магазин, его перемещения и реальный результат работы на полке.</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="feature-dot"></div>
+                    <p>Для заказчика это **"прозрачное окно"** в торговые точки: вы видите реальную ситуацию с остатками и ценами без приукрашивания.</p>
                 </div>
             </div>
         </div>
 
-        <p class="text-[10px] uppercase font-bold opacity-30 mb-2 ml-2 tracking-widest">Вид отчета для клиента:</p>
-        <div class="card bg-white/5 border-white/10 p-4">
+        <div class="card border-red-500/30 bg-red-500/5 mb-6 py-3">
+            <div class="flex items-center gap-3">
+                <i data-lucide="shield-check" class="text-red-500" size="20"></i>
+                <span class="text-[11px] font-black uppercase">Защита от фейковых визитов (Strict GPS)</span>
+            </div>
+        </div>
+
+        <p class="text-[10px] uppercase font-bold opacity-30 mb-2 ml-2 tracking-widest text-white">Вид итогового отчета:</p>
+        <div class="card bg-white/5 border-white/10 p-4 mb-6">
             <div class="report-preview">
                 <div class="flex justify-between items-start border-b-2 border-black pb-2 mb-2">
                     <span class="font-bold text-lg italic">LOGIST_X <span class="text-amber-600 font-black">MERCH</span></span>
@@ -52,46 +64,45 @@
                 </div>
                 <div class="mb-2">
                     <div class="text-amber-600 font-bold uppercase text-[8px]">МАГНИТ</div>
-                    <div class="font-bold text-xs">ул. 60-летия Октября, 15</div>
+                    <div class="font-bold text-[10px]">ул. 60-летия Октября, 15</div>
                     <div class="flex justify-between items-center mt-1">
                         <span class="opacity-60">Мерчандайзер: Яна</span>
-                        <span class="text-[7px] font-bold text-green-600 uppercase">● GPS Подтвержден</span>
+                        <span class="text-[7px] font-bold text-green-600 uppercase">● GPS OK</span>
                     </div>
                 </div>
-                <div class="bg-black text-white font-black p-1 inline-block rounded text-[7px] mb-3 uppercase tracking-tighter">
-                    ВРЕМЯ НА ОБЪЕКТЕ: 1 МИН
+                <div class="bg-black text-white font-black p-1 inline-block rounded text-[7px] mb-3 uppercase">
+                    ВРЕМЯ В МАГАЗИНЕ: 1 МИН
                 </div>
                 <div class="grid grid-cols-2 gap-2 mb-3">
-                    <div class="bg-gray-100 p-2 rounded">
-                        <div class="opacity-50 text-[7px] uppercase font-bold">Фейсинг</div>
-                        <div class="font-bold text-sm">30 / 5</div>
+                    <div class="bg-gray-100 p-2 rounded text-center">
+                        <div class="opacity-50 text-[7px] uppercase font-bold">Остаток / Фейсинг</div>
+                        <div class="font-bold text-xs">30 / 5</div>
                     </div>
-                    <div class="bg-gray-100 p-2 rounded">
-                        <div class="opacity-50 text-[7px] uppercase font-bold">Цены (Акция)</div>
-                        <div class="font-bold text-sm">150 / 149.8</div>
+                    <div class="bg-gray-100 p-2 rounded text-center">
+                        <div class="opacity-50 text-[7px] uppercase font-bold">Цена (Акция)</div>
+                        <div class="font-bold text-xs">150 / 149.8</div>
                     </div>
                 </div>
                 <div class="grid grid-cols-3 gap-1">
-                    <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[6px] font-bold text-black/30 uppercase text-center p-1">Фото<br>До</div>
-                    <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[6px] font-bold text-black/30 uppercase text-center p-1">Фото<br>После</div>
-                    <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[6px] font-bold text-black/30 uppercase text-center p-1">Фото<br>Ценника</div>
+                    <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[6px] font-bold text-black/30 uppercase text-center p-1">Фото До</div>
+                    <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[6px] font-bold text-black/30 uppercase text-center p-1">Фото После</div>
+                    <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[6px] font-bold text-black/30 uppercase text-center p-1">Ценник</div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-8">
+        <div class="mt-8 pb-10">
             <button onclick="handleInstall()" class="btn-gold shadow-2xl">
                 <i data-lucide="download" size="20"></i>
-                Установить App
+                Установить MERCH_X
             </button>
-            <p class="text-center text-[9px] opacity-30 mt-4 uppercase tracking-widest">Гарантия точности данных 100%</p>
         </div>
     </div>
 
     <script>
         lucide.createIcons();
         function handleInstall() {
-            alert('Для работы с системой:\n1. Нажмите "Поделиться"\n2. Выберите "На экран Домой"');
+            alert('Для доступа к отчетам:\n1. Нажмите "Поделиться"\n2. Выберите "На экран Домой"');
         }
     </script>
 </body>
