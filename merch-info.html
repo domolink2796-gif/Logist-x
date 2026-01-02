@@ -3,36 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MERCH_X | Analytics</title>
-    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AECAxkDAAAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUOdfkz0AAALRSURBVHja7Z0xclNAEETfIkhIkSAnQIRUfAn9CfoTfAnfAnIDfAnfAnIDfIn4E8AnQEiRICFAIvE8mRUEi9WutDva2Z0mX6m6pZ3p7Z3p6VURAAAAAAAAAAAAAAAAAAAAAAD/m97vK/A8H78LMAUfX+D536N6P/rYI9I/335804vC8/H7/vj9X8o+f0f6RzY6e79+O9PnyfT58/HnB6R/pGN68v76+R7S55Xp8678/XLSf8u9P9/L9PllpX+H/lsW+XfXf8si/+76b1nk313/LYv8u+u/ZZF/d/23LPLv7v9eK758Tfq8N31eK7586/Svc/7n68o+973Xz6/f+X68n+lzU/n7/LzS/+71z98X+/Xv+vN29uun18/u03Oln/vS+6H3w+i/m84/pffp+T7S59Xp87Z8v2f6vDL9uU3lb6N/nv79Wfr7P6Xv19P367n695n6f7P+fX79fK70+1z9u0399879u939527n/t3u/nO3c/9ud/+527l/t7v/3O3cv9vd/+527l/t7v/35P69vL8zfb5S/379PPrvpfPn58p/v5/081j6fP3e6+9z6ee+9H7YVf6ee9/sKu9z962uvM97n/Xz6/f+X68n+lzU/n7/LzS/+71z98X+/Xv+vN29uun18/u03Oln/vS+6H3w+i/m84/pffp+T7S59Xp87Z8v2f6vDL9uU3lb6N/nv79Wfr7P6Xv19P367n695n6f7P+fX79fK70+1z9u0399879u939527n/t3u/nO3c/9ud/+527l/t7v/3O3cv9vd/+527l/t7v/35P69vL8zfb5S/379PPrvpfPn58p/v5/081j6fP3e6+9z6ee+9H7YVf6ee9/sKu9z962uvM97n/Xz6/f+X68n+lzU/n7/LzS/+71z98X+/v+A3/h/d/131393/XfXf3f9d9f//f4DAAAAAAAAAAAAAAAAAAAAAPAH8AsWvN2OqgOaCgAAAABJRU5ErkJggg==">
+    <title>MERCH_X | Возможности системы</title>
+    
+    <link rel="apple-touch-icon" href="app/icon-1024.png">
     <link rel="manifest" href="merch/manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
-        body { background: #010409; color: #fff; font-family: sans-serif; margin: 0; padding: 20px; }
-        .card { background: #0d1117; border: 1px solid #30363d; border-radius: 16px; padding: 20px; margin-bottom: 15px; }
-        .btn-gold { background: #f59e0b; color: #000; font-weight: 900; border-radius: 12px; padding: 18px; display: block; text-align: center; text-decoration: none; text-transform: uppercase; width: 100%; border: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { background: #010409; color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        .card { background: rgba(13, 17, 23, 0.8); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 20px; padding: 24px; margin-bottom: 16px; }
         .gold-text { color: #f59e0b; }
+        .btn-gold { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #000; font-weight: 900; border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; text-transform: uppercase; width: 100%; border: none; }
     </style>
 </head>
 <body>
-    <div class="max-w-md mx-auto pt-10">
-        <h1 class="text-3xl font-black italic gold-text mb-2">MERCH X</h1>
-        <p class="opacity-50 mb-8 italic text-sm">Unified Merchandising Platform</p>
-        
-        <div class="card">
-            <h3 class="font-bold uppercase text-xs opacity-40 mb-3 tracking-widest">Текущие задачи</h3>
-            <p class="text-lg">Аналитика стоков и фейсингов</p>
+    <div class="max-w-md mx-auto pt-8">
+        <div class="flex items-center justify-between mb-8">
+            <a href="index.html" class="text-white/40"><i data-lucide="arrow-left"></i></a>
+            <div class="text-right">
+                <h1 class="text-3xl font-black italic gold-text leading-none">MERCH_X</h1>
+                <p class="opacity-40 text-[10px] uppercase tracking-widest">Digital Analytics 2026</p>
+            </div>
         </div>
 
-        <div class="mt-10">
-            <p class="text-center text-xs opacity-30 mb-4">Нажмите кнопку ниже, затем "Поделиться" и "На экран Домой" для установки</p>
-            <button onclick="alert('Используйте меню браузера: На экран Домой')" class="btn-gold">Установить App</button>
+        <div class="card bg-amber-500/5">
+            <h2 class="text-xl font-black uppercase mb-3 italic">Ваш мерчандайзинг под контролем</h2>
+            <p class="opacity-60 text-sm leading-relaxed italic">Профессиональный инструмент для управления полкой и анализа работы полевого персонала в режиме реального времени.</p>
+        </div>
+
+        <div class="space-y-4 mb-10">
+            <div class="flex items-start gap-4 p-4 border-b border-white/5">
+                <div class="text-amber-500"><i data-lucide="layout-dashboard"></i></div>
+                <div>
+                    <h3 class="font-bold text-sm uppercase">Персональный доступ</h3>
+                    <p class="opacity-40 text-xs italic">Каждый клиент получает индивидуальную панель с аналитикой только по своим объектам.</p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-4 p-4 border-b border-white/5">
+                <div class="text-amber-500"><i data-lucide="pie-chart"></i></div>
+                <div>
+                    <h3 class="font-bold text-sm uppercase">Анализ доли полки</h3>
+                    <p class="opacity-40 text-xs italic">Точные данные о присутствии вашего бренда и расчет фейсинга в торговых точках.</p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-4 p-4 border-b border-white/5">
+                <div class="text-amber-500"><i data-lucide="check-square"></i></div>
+                <div>
+                    <h3 class="font-bold text-sm uppercase">Контроль стандартов</h3>
+                    <p class="opacity-40 text-xs italic">Проверка наличия ценников, актуальности акций и соблюдения планограмм.</p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-4 p-4">
+                <div class="text-amber-500"><i data-lucide="smartphone"></i></div>
+                <div>
+                    <h3 class="font-bold text-sm uppercase">Мобильная отчетность</h3>
+                    <p class="opacity-40 text-xs italic">Мгновенные фотоотчеты с подтвержденной геолокацией прямо с телефона мерчандайзера.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="sticky bottom-6">
+            <button onclick="handleInstall()" class="btn-gold shadow-2xl">
+                <i data-lucide="download"></i>
+                Установить MERCH_X
+            </button>
+            <p class="text-center text-[9px] opacity-30 mt-3 uppercase tracking-tighter">Нажмите "Поделиться" -> "На экран Домой"</p>
         </div>
     </div>
 
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('merch/sw.js');
+        lucide.createIcons();
+        function handleInstall() {
+            alert('Для доступа к системе:\n1. Нажмите "Поделиться" в браузере\n2. Выберите "На экран Домой"\n3. Используйте ваш логин для входа');
         }
     </script>
 </body>
