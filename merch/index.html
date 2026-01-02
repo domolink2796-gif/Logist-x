@@ -135,13 +135,14 @@
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, lastError = "Ожидание...";
 
     function openDB() {
-        const req = indexedDB.open("MerchX_Final_Sync", 2);
+        const req = indexedDB.open("MerchX_Final_Sync", 4);
         req.onupgradeneeded = (e) => {
-            if(!e.target.result.objectStoreNames.contains("reports")) {
-                e.target.result.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
+            const dbRef = e.target.result;
+            if(!dbRef.objectStoreNames.contains("reports")) {
+                dbRef.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
             }
         };
-        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 10000); };
+        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 8000); };
     }
 
     window.onload = () => {
@@ -154,11 +155,7 @@
         const n = document.getElementById('work-name').value.trim(), k = document.getElementById('lic-key').value.trim().toUpperCase();
         if(!n || !k) return alert("Введите данные");
         try {
-            const res = await fetch(`${API}/check-license`, { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ licenseKey: k, workerName: n }) 
-            });
+            const res = await fetch(`${API}/check-license`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ licenseKey: k, workerName: n }) });
             const d = await res.json();
             if(d.status === 'active') { DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); document.getElementById('auth-screen').style.display='none'; } else alert(d.message);
         } catch(e) { alert("Сервер недоступен"); }
@@ -193,7 +190,7 @@
 
     async function saveToQueue() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужно 3 фото");
-        const btn = document.getElementById('finish-btn'); btn.innerText = "ГЕНЕРАЦИЯ PDF..."; btn.disabled = true;
+        const btn = document.getElementById('finish-btn'); btn.innerText = "ГЕНЕРАЦИЯ..."; btn.disabled = true;
         
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const dur = Math.round((Date.now() - cur.start) / 60000) + " мин";
@@ -208,91 +205,61 @@
             document.getElementById('p-exp-val').innerText = "СРОК: " + (document.getElementById('i-exp').value || "-");
             document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
             
-            const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1 });
-            const pdfFull = canvas.toDataURL('image/jpeg', 0.7);
+            setTimeout(async () => {
+                const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1, useCORS: true });
+                const pdfFull = canvas.toDataURL('image/jpeg', 0.5);
 
-            const report = {
-                worker: DATA.name, net: cur.net, city: cur.city || "Орёл", address: cur.addr,
-                stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value,
-                share: document.getElementById('share-val').innerText, priceMy: document.getElementById('i-p1').value, priceComp: document.getElementById('i-p2').value,
-                expDate: document.getElementById('i-exp').value, duration: dur, pdf: pdfFull,
-                lat: pos.coords.latitude, lon: pos.coords.longitude, targetLat: cur.lat || 0, targetLon: cur.lon || 0,
-                sending: false
-            };
+                const report = {
+                    worker: DATA.name, net: cur.net, city: cur.city || "Орёл", address: cur.addr,
+                    stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value,
+                    share: document.getElementById('share-val').innerText, priceMy: document.getElementById('i-p1').value, priceComp: document.getElementById('i-p2').value,
+                    expDate: document.getElementById('i-exp').value, duration: dur, pdf: pdfFull,
+                    lat: pos.coords.latitude, lon: pos.coords.longitude, sending: 0
+                };
 
-            const tx = db.transaction("reports", "readwrite");
-            const store = tx.objectStore("reports");
-            store.add(report);
-            tx.oncomplete = () => {
-                cur.done = true;
-                localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
-                closeModal(); render(); updateQueueUI(); sync();
-            };
-            btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
+                const tx = db.transaction("reports", "readwrite");
+                tx.objectStore("reports").add(report);
+                tx.oncomplete = () => {
+                    cur.done = true;
+                    localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+                    closeModal(); render(); updateQueueUI(); sync();
+                };
+                btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
+            }, 500);
         }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true, timeout: 10000 });
     }
 
     async function sync() {
-        if(syncing || !navigator.onLine || !db) return; 
-        syncing = true;
-        updateQueueUI();
-
-        const tx = db.transaction("reports", "readonly");
-        const store = tx.objectStore("reports");
-        const req = store.openCursor();
-
+        if(syncing || !navigator.onLine || !db) return; syncing = true;
+        const tx = db.transaction("reports", "readwrite"), store = tx.objectStore("reports"), req = store.openCursor();
         req.onsuccess = async (e) => {
             const cursor = e.target.result;
-            if (cursor) {
-                const report = cursor.value;
-                if (report.sending) { cursor.continue(); return; }
-
-                const reportId = cursor.key;
-                
-                // Помечаем как отправляемый
-                const upTx = db.transaction("reports", "readwrite");
-                const upStore = upTx.objectStore("reports");
-                report.sending = true;
-                upStore.put(report, reportId);
-
+            if(cursor) {
+                const report = cursor.value; if(report.sending === 1) { cursor.continue(); return; }
+                const rid = cursor.key; report.sending = 1; cursor.update(report);
                 try {
-                    const res = await fetch(`${API}/merch-upload`, { 
-                        method: 'POST', 
-                        headers: {'Content-Type': 'application/json'}, 
-                        body: JSON.stringify(report) 
-                    });
+                    const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(report) });
                     const d = await res.json();
-                    
-                    if (d.success) {
+                    if(d.success) {
                         const delTx = db.transaction("reports", "readwrite");
-                        delTx.objectStore("reports").delete(reportId);
-                        lastError = "Успешно!";
-                    } else {
-                        throw new Error(d.error || "Ошибка сервера");
-                    }
-                } catch (err) {
-                    console.error(err);
-                    lastError = "Ошибка: " + err.message;
-                    // Возвращаем флаг готовности к повторной отправке
-                    const backTx = db.transaction("reports", "readwrite");
-                    report.sending = false;
-                    backTx.objectStore("reports").put(report, reportId);
+                        delTx.objectStore("reports").delete(rid);
+                        lastError = "ОК";
+                    } else { throw new Error(d.error); }
+                } catch(err) {
+                    lastError = err.message; report.sending = 0;
+                    const errTx = db.transaction("reports", "readwrite");
+                    errTx.objectStore("reports").put(report, rid);
                 }
-                updateQueueUI();
-                cursor.continue();
-            } else {
-                syncing = false;
-                updateQueueUI();
-            }
+                syncing = false; updateQueueUI();
+            } else { syncing = false; updateQueueUI(); }
         };
+        req.onerror = () => { syncing = false; };
     }
 
     function updateQueueUI() {
-        if (!db) return;
-        const tx = db.transaction("reports", "readonly");
+        if(!db) return; const tx = db.transaction("reports", "readonly");
         tx.objectStore("reports").count().onsuccess = (e) => {
-            const count = e.target.result;
-            const ind = document.getElementById('syncIndicator');
+            const count = e.target.result; const ind = document.getElementById('syncIndicator');
             ind.style.display = count > 0 ? 'block' : 'none';
             document.getElementById('qCount').innerText = count;
             if(syncing && count > 0) ind.classList.add('sync-active'); else ind.classList.remove('sync-active');
@@ -301,11 +268,8 @@
 
     function checkQueue() {
         const tx = db.transaction("reports", "readonly");
-        const store = tx.objectStore("reports");
-        store.count().onsuccess = (e) => {
-            const count = e.target.result;
-            if(count === 0) return alert("Все отчеты отправлены!");
-            alert(`В очереди: ${count} шт.\nПоследний статус: ${lastError}`);
+        tx.objectStore("reports").count().onsuccess = (e) => {
+            alert(`ОЧЕРЕДЬ: ${e.target.result}\nСТАТУС: ${lastError}`);
         };
     }
 
@@ -314,10 +278,10 @@
         r.onload = (e) => {
             const img = new Image(); img.src = e.target.result;
             img.onload = () => {
-                const c = document.createElement('canvas'); let w = img.width, h = img.height, m = 1000;
+                const c = document.createElement('canvas'); let w = img.width, h = img.height, m = 800;
                 if(w > h) { if(w > m) { h *= m/w; w = m; } } else { if(h > m) { w *= m/h; h = m; } }
                 c.width = w; c.height = h; c.getContext('2d').drawImage(img, 0, 0, w, h);
-                IMGS[t] = c.toDataURL('image/jpeg', 0.7);
+                IMGS[t] = c.toDataURL('image/jpeg', 0.5);
                 document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok');
             };
         }; r.readAsDataURL(i.files[0]);
@@ -327,16 +291,7 @@
         const r = new FileReader(); r.onload = (e) => {
             const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            DATA.shops = rows.map((r, i) => ({ 
-                id: i, 
-                net: r['Сеть'] || 'МАРКЕТ', 
-                city: r['Город'] || 'Орёл', 
-                addr: r['Адрес'] || '?', 
-                lat: parseFloat(r['Широта']) || 0, 
-                lon: parseFloat(r['Долгота']) || 0, 
-                done: false, 
-                start: null 
-            }));
+            DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', city: r['Город'] || 'Орёл', addr: r['Адрес'] || '?', lat: parseFloat(r['Широта']) || 0, lon: parseFloat(r['Долгота']) || 0, done: false, start: null }));
             localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render();
         }; r.readAsArrayBuffer(inp.files[0]);
     }
