@@ -14,9 +14,16 @@
         body { background: #010409; color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
         .card { background: rgba(13, 17, 23, 0.8); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 20px; padding: 20px; margin-bottom: 12px; }
         .gold-text { color: #f59e0b; }
-        .report-preview { background: #fff; color: #000; border-radius: 12px; padding: 15px; font-family: sans-serif; font-size: 10px; }
+        .report-preview { background: #fff; color: #000; border-radius: 12px; padding: 15px; font-family: sans-serif; }
         .btn-gold { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #000; font-weight: 900; border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; width: 100%; border: none; }
         .feature-dot { width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+        
+        /* Стили для визуализации папок */
+        .folder-tree { font-family: monospace; font-size: 11px; color: #8b949e; }
+        .folder-item { display: flex; items-center; gap: 8px; margin-bottom: 4px; }
+        .folder-name { color: #e6edf3; font-weight: bold; }
+        .file-name { color: #7d8590; }
+        .tree-line { border-left: 1px solid #30363d; margin-left: 7px; padding-left: 15px; }
     </style>
 </head>
 <body>
@@ -34,17 +41,48 @@
             <div class="space-y-4 text-[13px] opacity-80 leading-relaxed italic">
                 <div class="flex gap-3">
                     <div class="feature-dot"></div>
-                    <p>Это комплексная система для **автоматизации ритейл-аудита**. Она заменяет десятки чатов в мессенджерах и горы ручных отчетов одним профессиональным приложением.</p>
+                    <p>Это комплексная система для **автоматизации ритейл-аудита**, заменяющая рутину профессиональным софтом.</p>
                 </div>
                 <div class="flex gap-3">
                     <div class="feature-dot"></div>
-                    <p>Программа сама фиксирует время захода мерчандайзера в магазин, его перемещения и реальный результат работы на полке.</p>
-                </div>
-                <div class="flex gap-3">
-                    <div class="feature-dot"></div>
-                    <p>Для заказчика это **"прозрачное окно"** в торговые точки: вы видите реальную ситуацию с остатками и ценами без приукрашивания.</p>
+                    <p>Программа фиксирует точное время визита, координаты мерчандайзера и реальную ситуацию на полках.</p>
                 </div>
             </div>
+        </div>
+
+        <div class="card bg-blue-500/5 border-blue-500/20 mb-6">
+            <h2 class="text-xs font-black uppercase mb-4 gold-text flex items-center gap-2">
+                <i data-lucide="folder-tree" size="14"></i> Иерархия отчетов (Google Drive)
+            </h2>
+            <div class="folder-tree bg-black/40 p-3 rounded-lg border border-white/5">
+                <div class="folder-item">
+                    <i data-lucide="folder" size="12" class="text-amber-500"></i>
+                    <span class="folder-name">Merch_Reports</span>
+                </div>
+                <div class="tree-line">
+                    <div class="folder-item">
+                        <i data-lucide="folder" size="12" class="text-amber-500"></i>
+                        <span class="folder-name">Яна (Сотрудник)</span>
+                    </div>
+                    <div class="tree-line">
+                        <div class="folder-item">
+                            <i data-lucide="folder" size="12" class="text-amber-500"></i>
+                            <span class="folder-name">2026-01-02 (Дата)</span>
+                        </div>
+                        <div class="tree-line">
+                            <div class="folder-item">
+                                <i data-lucide="file-text" size="12" class="text-blue-400"></i>
+                                <span class="file-name">Магнит_Саханская_3.pdf</span>
+                            </div>
+                            <div class="folder-item">
+                                <i data-lucide="file-text" size="12" class="text-blue-400"></i>
+                                <span class="file-name">Пятерочка_Мира_10.pdf</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-[10px] opacity-50 mt-3 italic italic">Все отчеты строго сортируются по сотрудникам и датам автоматически. Полный контроль архива.</p>
         </div>
 
         <div class="card border-red-500/30 bg-red-500/5 mb-6 py-3">
@@ -55,39 +93,50 @@
         </div>
 
         <p class="text-[10px] uppercase font-bold opacity-30 mb-2 ml-2 tracking-widest text-white">Вид итогового отчета:</p>
-        <div class="card bg-white/5 border-white/10 p-4 mb-6">
-            <div class="report-preview">
+        <div class="card bg-white/5 border-white/10 p-2 mb-6">
+            <div class="report-preview scale-[0.95]">
                 <div class="flex justify-between items-start border-b-2 border-black pb-2 mb-2">
-                    <span class="font-bold text-lg italic">LOGIST_X <span class="text-amber-600 font-black">MERCH</span></span>
-                    <span class="text-[7px] opacity-60">02.01.2026, 09:32:20</span>
+                    <span class="font-black text-xl tracking-tighter italic leading-none">LOGIST_X <span class="text-amber-600">MERCH</span></span>
+                    <span class="text-[8px] font-bold opacity-60">02.01.2026, 10:11:17</span>
                 </div>
-                <div class="mb-2">
-                    <div class="text-amber-600 font-bold uppercase text-[8px]">МАГНИТ</div>
-                    <div class="font-bold text-[10px]">ул. Саханская, 3</div>
-                    <div class="flex justify-between items-center mt-1">
-                        <span class="opacity-60">Мерчендайзер: Ксения</span>
-                        <span class="text-[7px] font-bold text-green-600 uppercase">● GPS OK</span>
+                
+                <div class="mb-3">
+                    <div class="text-amber-600 font-black uppercase text-[10px] leading-tight">МАГНИТ</div>
+                    <div class="font-black text-[18px] leading-tight">ул. Саханская, 3</div>
+                    <div class="text-[9px] font-bold opacity-60 mt-1">Мерчендайзер: Ксения</div>
+                    <div class="text-[8px] font-black mt-1 uppercase tracking-tighter">
+                        Начало: 10:10 | Конец: 10:11
                     </div>
                 </div>
-                <div class="bg-amber-500 text-black font-black p-1 px-2 inline-block rounded text-[7px] mb-3 uppercase">
+
+                <div class="bg-amber-500 text-black font-black p-1.5 px-3 inline-block rounded-md text-[9px] mb-4 uppercase shadow-sm">
                     ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ: 1 МИН
                 </div>
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <div class="bg-gray-100 p-2 rounded text-center border border-black/5">
-                        <div class="opacity-50 text-[6px] uppercase font-bold">Остаток / Фейсинг</div>
-                        <div class="font-bold text-sm">25 / 5</div>
-                        <div class="text-amber-600 font-bold text-[6px] uppercase mt-1">Доля на полке: 22%</div>
+
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-gray-50 p-3 rounded-xl border border-black/5 text-center">
+                        <div class="opacity-40 text-[7px] uppercase font-black mb-1">Остаток / Фейсинг</div>
+                        <div class="font-black text-2xl">25 / 5</div>
+                        <div class="text-amber-600 font-black text-[9px] uppercase mt-1">Доля на полке: 29%</div>
                     </div>
-                    <div class="bg-gray-100 p-2 rounded text-center border border-black/5">
-                        <div class="opacity-50 text-[6px] uppercase font-bold">Цены (Мы / Конкурент)</div>
-                        <div class="font-bold text-sm">125 / 124.8 ₽</div>
-                        <div class="text-red-500 font-bold text-[6px] uppercase mt-1">Срок: 2026-01-22</div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-black/5 text-center">
+                        <div class="opacity-40 text-[7px] uppercase font-black mb-1">Цены (Мы / Конкурент)</div>
+                        <div class="font-black text-[16px]">125 / 123.8 ₽</div>
+                        <div class="opacity-40 text-[7px] uppercase font-black mt-2">Срок годности</div>
+                        <div class="text-red-500 font-black text-[10px]">2026-01-22</div>
                     </div>
                 </div>
-                <div class="grid grid-cols-3 gap-1">
-                    <div class="aspect-[3/4] bg-black rounded flex items-center justify-center text-[6px] font-bold text-white/20 uppercase text-center p-1">Фото До</div>
-                    <div class="aspect-[3/4] bg-black rounded flex items-center justify-center text-[6px] font-bold text-white/20 uppercase text-center p-1">Фото После</div>
-                    <div class="aspect-[3/4] bg-black rounded flex items-center justify-center text-[6px] font-bold text-white/20 uppercase text-center p-1">Ценник</div>
+
+                <div class="grid grid-cols-3 gap-1.5">
+                    <div class="aspect-[3/4] bg-black rounded-lg flex flex-col items-center justify-center text-[7px] font-black text-white/30 uppercase p-1">
+                         <span>До</span>
+                    </div>
+                    <div class="aspect-[3/4] bg-black rounded-lg flex flex-col items-center justify-center text-[7px] font-black text-white/30 uppercase p-1">
+                         <span>После</span>
+                    </div>
+                    <div class="aspect-[3/4] bg-black rounded-lg flex flex-col items-center justify-center text-[7px] font-black text-white/30 uppercase p-1">
+                         <span>Ценник</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -103,7 +152,7 @@
     <script>
         lucide.createIcons();
         function handleInstall() {
-            alert('Для доступа к отчетам:\n1. Нажмите "Поделиться"\n2. Выберите "На экран Домой"');
+            alert('Для установки:\n1. Нажмите кнопку "Поделиться" (квадрат со стрелкой)\n2. Выберите "На экран Домой"');
         }
     </script>
 </body>
