@@ -141,7 +141,7 @@
                 e.target.result.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
             }
         };
-        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 8000); };
+        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 10000); };
     }
 
     window.onload = () => {
@@ -154,7 +154,11 @@
         const n = document.getElementById('work-name').value.trim(), k = document.getElementById('lic-key').value.trim().toUpperCase();
         if(!n || !k) return alert("Введите данные");
         try {
-            const res = await fetch(`${API}/check-license`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ licenseKey: k, workerName: n }) });
+            const res = await fetch(`${API}/check-license`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ licenseKey: k, workerName: n }) 
+            });
             const d = await res.json();
             if(d.status === 'active') { DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); document.getElementById('auth-screen').style.display='none'; } else alert(d.message);
         } catch(e) { alert("Сервер недоступен"); }
@@ -217,53 +221,81 @@
             };
 
             const tx = db.transaction("reports", "readwrite");
-            tx.objectStore("reports").add(report);
+            const store = tx.objectStore("reports");
+            store.add(report);
             tx.oncomplete = () => {
                 cur.done = true;
                 localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
                 closeModal(); render(); updateQueueUI(); sync();
             };
             btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
-        }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true });
+        }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true, timeout: 10000 });
     }
 
     async function sync() {
-        if(syncing || !navigator.onLine || !db) return; syncing = true;
-        const tx = db.transaction("reports", "readwrite"), store = tx.objectStore("reports"), req = store.openCursor();
+        if(syncing || !navigator.onLine || !db) return; 
+        syncing = true;
+        updateQueueUI();
+
+        const tx = db.transaction("reports", "readonly");
+        const store = tx.objectStore("reports");
+        const req = store.openCursor();
+
         req.onsuccess = async (e) => {
             const cursor = e.target.result;
-            if(cursor) {
-                if(cursor.value.sending) { cursor.continue(); return; }
-                const rid = cursor.key; const obj = cursor.value; obj.sending = true;
-                const upTx = db.transaction("reports", "readwrite"); upTx.objectStore("reports").put(obj);
+            if (cursor) {
+                const report = cursor.value;
+                if (report.sending) { cursor.continue(); return; }
+
+                const reportId = cursor.key;
+                
+                // Помечаем как отправляемый
+                const upTx = db.transaction("reports", "readwrite");
+                const upStore = upTx.objectStore("reports");
+                report.sending = true;
+                upStore.put(report, reportId);
+
                 try {
-                    const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(obj) });
+                    const res = await fetch(`${API}/merch-upload`, { 
+                        method: 'POST', 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify(report) 
+                    });
                     const d = await res.json();
-                    if(d.success) {
-                        const delTx = db.transaction("reports", "readwrite"); delTx.objectStore("reports").delete(rid);
-                        lastError = "Отправлено!"; updateQueueUI(); cursor.continue();
+                    
+                    if (d.success) {
+                        const delTx = db.transaction("reports", "readwrite");
+                        delTx.objectStore("reports").delete(reportId);
+                        lastError = "Успешно!";
                     } else {
-                        lastError = d.error || "Ошибка"; obj.sending = false;
-                        const reTx = db.transaction("reports", "readwrite"); reTx.objectStore("reports").put(obj);
-                        syncing = false; updateQueueUI();
+                        throw new Error(d.error || "Ошибка сервера");
                     }
-                } catch(err) {
-                    lastError = "Нет связи"; obj.sending = false;
-                    const reTx = db.transaction("reports", "readwrite"); reTx.objectStore("reports").put(obj);
-                    syncing = false; updateQueueUI();
+                } catch (err) {
+                    console.error(err);
+                    lastError = "Ошибка: " + err.message;
+                    // Возвращаем флаг готовности к повторной отправке
+                    const backTx = db.transaction("reports", "readwrite");
+                    report.sending = false;
+                    backTx.objectStore("reports").put(report, reportId);
                 }
-            } else { syncing = false; updateQueueUI(); }
+                updateQueueUI();
+                cursor.continue();
+            } else {
+                syncing = false;
+                updateQueueUI();
+            }
         };
     }
 
     function updateQueueUI() {
+        if (!db) return;
         const tx = db.transaction("reports", "readonly");
         tx.objectStore("reports").count().onsuccess = (e) => {
             const count = e.target.result;
             const ind = document.getElementById('syncIndicator');
             ind.style.display = count > 0 ? 'block' : 'none';
             document.getElementById('qCount').innerText = count;
-            if(syncing) ind.classList.add('sync-active'); else ind.classList.remove('sync-active');
+            if(syncing && count > 0) ind.classList.add('sync-active'); else ind.classList.remove('sync-active');
         };
     }
 
@@ -273,10 +305,7 @@
         store.count().onsuccess = (e) => {
             const count = e.target.result;
             if(count === 0) return alert("Все отчеты отправлены!");
-            store.openCursor().onsuccess = (ev) => {
-                const c = ev.target.result;
-                if(c) alert(`В ОЧЕРЕДИ: ${count}\nТЕКУЩИЙ: ${c.value.address}\nСТАТУС: ${lastError}`);
-            };
+            alert(`В очереди: ${count} шт.\nПоследний статус: ${lastError}`);
         };
     }
 
@@ -285,10 +314,10 @@
         r.onload = (e) => {
             const img = new Image(); img.src = e.target.result;
             img.onload = () => {
-                const c = document.createElement('canvas'); let w = img.width, h = img.height, m = 800;
+                const c = document.createElement('canvas'); let w = img.width, h = img.height, m = 1000;
                 if(w > h) { if(w > m) { h *= m/w; w = m; } } else { if(h > m) { w *= m/h; h = m; } }
                 c.width = w; c.height = h; c.getContext('2d').drawImage(img, 0, 0, w, h);
-                IMGS[t] = c.toDataURL('image/jpeg', 0.6);
+                IMGS[t] = c.toDataURL('image/jpeg', 0.7);
                 document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok');
             };
         }; r.readAsDataURL(i.files[0]);
@@ -298,7 +327,16 @@
         const r = new FileReader(); r.onload = (e) => {
             const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', city: r['Город'] || 'Орёл', addr: r['Адрес'] || '?', lat: parseFloat(r['Широта']) || 0, lon: parseFloat(r['Долгота']) || 0, done: false, start: null }));
+            DATA.shops = rows.map((r, i) => ({ 
+                id: i, 
+                net: r['Сеть'] || 'МАРКЕТ', 
+                city: r['Город'] || 'Орёл', 
+                addr: r['Адрес'] || '?', 
+                lat: parseFloat(r['Широта']) || 0, 
+                lon: parseFloat(r['Долгота']) || 0, 
+                done: false, 
+                start: null 
+            }));
             localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render();
         }; r.readAsArrayBuffer(inp.files[0]);
     }
