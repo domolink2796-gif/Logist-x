@@ -52,7 +52,7 @@
 <div class="header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="logo">LOGIST_X <span>MERCH</span></div>
-        <button id="syncIndicator">📦 <span id="qCount">0</span></button>
+        <button id="syncIndicator" onclick="alert('Очередь отчетов: ' + queueCount)">📦 <span id="qCount">0</span></button>
     </div>
     <div class="stats-main">
         <div class="s-box"><span class="s-v" id="st-total">0</span><span class="s-t">Точек</span></div>
@@ -150,7 +150,7 @@
         DATA.key = localStorage.getItem('m_key') || "";
         if(DATA.key && DATA.name) document.getElementById('auth-screen').style.display='none';
         DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]");
-        openDB(); render(); setInterval(sync, 8000);
+        openDB(); render(); setInterval(sync, 10000);
     };
 
     async function saveAuth() {
@@ -247,7 +247,7 @@
             const report = {
                 worker: DATA.name,
                 net: cur.net,
-                city: cur.city || "Орёл", // Передаем город!
+                city: cur.city || "Орёл",
                 address: cur.addr,
                 stock: document.getElementById('i-stock').value,
                 faces: document.getElementById('i-faces').value,
@@ -272,7 +272,7 @@
                 closeModal(); render(); updateQueueUI(); sync();
             };
         }, (err) => {
-            alert("Включите GPS на телефоне!");
+            alert("Ошибка GPS: разрешите доступ к местоположению!");
             btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
         }, { enableHighAccuracy: true });
     }
@@ -303,7 +303,11 @@
                         updateQueueUI();
                         cursor.continue();
                     } else {
-                        throw new Error(d.error);
+                        // Если ошибка от сервера (например, GPS)
+                        alert("Сервер отклонил отчет: " + (d.error || "Неизвестная ошибка"));
+                        cursor.delete(); // Удаляем плохой отчет, чтобы не вешал очередь
+                        updateQueueUI();
+                        cursor.continue();
                     }
                 } catch(err) { 
                     ind.classList.add('sync-error');
@@ -318,6 +322,7 @@
     }
 
     function updateQueueUI() {
+        if(!db) return;
         const tx = db.transaction("reports", "readonly");
         tx.objectStore("reports").count().onsuccess = (e) => {
             queueCount = e.target.result;
@@ -327,6 +332,7 @@
     }
 
     function cam(input, type) {
+        if(!input.files[0]) return;
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image(); img.src = e.target.result;
@@ -352,7 +358,7 @@
             DATA.shops = rows.map((r, i) => ({ 
                 id: i, 
                 net: r['Сеть'] || 'МАРКЕТ', 
-                city: r['Город'] || 'Орёл', // Забираем город из Excel
+                city: r['Город'] || 'Орёл', 
                 addr: r['Адрес'] || 'Адрес?', 
                 lat: parseFloat(r['Широта']) || 0,
                 lon: parseFloat(r['Долгота']) || 0,
@@ -370,7 +376,7 @@
         document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok'));
     }
 
-    function clearData() { if(confirm("Очистить всё?")) { localStorage.clear(); location.reload(); } }
+    function clearData() { if(confirm("Очистить все данные?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
