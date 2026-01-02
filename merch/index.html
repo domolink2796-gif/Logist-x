@@ -112,7 +112,7 @@
         <div id="p-addr-val" style="font-size:28px; font-weight:900; margin-bottom:5px;"></div>
         <div style="font-size:14px; opacity:0.6;">Мерчендайзер: <span id="p-worker"></span></div>
         <div style="font-size:12px; font-weight:700; margin-top:10px;">НАЧАЛО: <span id="p-start-t"></span> | КОНЕЦ: <span id="p-end-t"></span></div>
-        <div style="background:#f59e0b; color:#000; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:900; font-size:14px; margin-top:10px; text-transform:uppercase;">ВРЕМЯ В МАГАЗИНЕ: <span id="p-dur"></span></div>
+        <div style="background:#f59e0b; color:#000; padding:8px 15px; border-radius:6px; display:inline-block; font-weight:900; font-size:14px; margin-top:10px; text-transform:uppercase;">ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ: <span id="p-dur"></span></div>
     </div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:25px;">
         <div style="background:#f8f8f8; padding:20px; border-radius:20px;">
@@ -208,7 +208,7 @@
             setTimeout(async () => {
                 const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1, useCORS: true });
                 const pdfFull = canvas.toDataURL('image/jpeg', 0.5);
-                const pdfName = (cur.net + "_" + cur.addr).replace(/[^а-яёa-z0-9]/gi, '_');
+                const pdfName = (cur.net + "_" + cur.addr).replace(/[\s\/]/g, '_').replace(/[^а-яёa-z0-9_]/gi, '');
 
                 const report = {
                     worker: DATA.name, net: cur.net, city: cur.city || "Орёл", address: cur.addr,
@@ -223,7 +223,13 @@
                 tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
                 btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
             }, 500);
-        }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true, timeout: 10000 });
+        }, (err) => { 
+            let msg = "Ошибка GPS: "; 
+            if(err.code == 1) msg += "Доступ запрещен. Включите в настройках браузера.";
+            else if(err.code == 2) msg += "Местоположение недоступно.";
+            else msg += "Таймаут ожидания.";
+            alert(msg); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; 
+        }, { enableHighAccuracy: true, timeout: 10000 });
     }
 
     async function sync() {
