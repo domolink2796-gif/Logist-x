@@ -49,7 +49,7 @@
 <div class="header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="logo">LOGIST_X <span>MERCH</span></div>
-        <button id="syncIndicator" onclick="alert('Очередь: ' + queueCount)">📦 <span id="qCount">0</span></button>
+        <button id="syncIndicator">📦 <span id="qCount">0</span></button>
     </div>
     <div class="stats-main">
         <div class="s-box"><span class="s-v" id="st-total">0</span><span class="s-t">Точек</span></div>
@@ -130,9 +130,9 @@
 </div>
 <script>
     const API = 'https://logist-x-server-production.up.railway.app';
-    let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, queueCount = 0;
+    let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false;
     function openDB() {
-        const req = indexedDB.open("MerchX_DB_FINAL", 1);
+        const req = indexedDB.open("MerchX_DB_V2", 1);
         req.onupgradeneeded = (e) => e.target.result.createObjectStore("reports", { autoIncrement: true });
         req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 10000); };
     }
@@ -211,7 +211,8 @@
                 try {
                     const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(cursor.value) });
                     const d = await res.json();
-                    if(d.success) { cursor.delete(); updateQueueUI(); cursor.continue(); } else { cursor.continue(); }
+                    if(d.success) { cursor.delete(); updateQueueUI(); cursor.continue(); } 
+                    else { if(d.error.includes("Далеко")) alert("ОШИБКА: " + d.error); cursor.continue(); }
                 } catch(err) { syncing = false; }
             } else { syncing = false; ind.classList.remove('sync-active'); updateQueueUI(); }
         };
@@ -219,9 +220,9 @@
     function updateQueueUI() {
         const tx = db.transaction("reports", "readonly");
         tx.objectStore("reports").count().onsuccess = (e) => {
-            queueCount = e.target.result;
-            document.getElementById('syncIndicator').style.display = queueCount > 0 ? 'block' : 'none';
-            document.getElementById('qCount').innerText = queueCount;
+            const count = e.target.result;
+            document.getElementById('syncIndicator').style.display = count > 0 ? 'block' : 'none';
+            document.getElementById('qCount').innerText = count;
         };
     }
     function cam(i, t) {
