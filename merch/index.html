@@ -41,7 +41,7 @@
         <center><div class="logo">LOGIST_X <span>MERCH</span></div></center>
         <input type="text" id="lic-key" placeholder="Ключ" style="text-align:center; margin-bottom:10px;">
         <input type="text" id="work-name" placeholder="Твое Имя" style="text-align:center; margin-bottom:15px;">
-        <div class="btn-blue" onclick="saveAuth()">АКТИВИРОВАТЬ</div>
+        <div id="auth-btn" class="btn-blue" onclick="saveAuth()">АКТИВИРОВАТЬ</div>
     </div>
 </div>
 <div class="header">
@@ -143,13 +143,26 @@
         DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]");
         openDB(); render(); setInterval(sync, 15000);
     };
-    function saveAuth() {
+    async function saveAuth() {
         const n = document.getElementById('work-name').value.trim();
         const k = document.getElementById('lic-key').value.trim().toUpperCase();
         if(!n || !k) return alert("Введите имя и ключ!");
-        DATA.name = n; DATA.key = k;
-        localStorage.setItem('m_name', n); localStorage.setItem('m_key', k);
-        document.getElementById('auth-screen').style.display='none';
+        const btn = document.getElementById('auth-btn');
+        btn.innerText = "ПРОВЕРКА..."; btn.style.opacity = "0.5";
+        try {
+            const res = await fetch(`${API}/check-license`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ licenseKey: k, workerName: n })
+            });
+            const data = await res.json();
+            if(data.status === 'active') {
+                DATA.name = n; DATA.key = k;
+                localStorage.setItem('m_name', n); localStorage.setItem('m_key', k);
+                document.getElementById('auth-screen').style.display='none';
+            } else { alert(data.message || "Ошибка лицензии"); }
+        } catch(e) { alert("Ошибка связи с сервером"); }
+        btn.innerText = "АКТИВИРОВАТЬ"; btn.style.opacity = "1";
     }
     function calcShare() {
         const mine = parseFloat(document.getElementById('i-shelf').value) || 0;
@@ -244,4 +257,63 @@
             const cursor = e.target.result;
             if (cursor) {
                 try {
-                    const res = await fetch(`${API
+                    const res = await fetch(`${API}/merch-upload`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(cursor.value)
+                    });
+                    const resJ = await res.json();
+                    if(resJ.success) { cursor.delete(); updateQueueUI(); }
+                } catch(err) { console.log("Sync error"); }
+                cursor.continue();
+            } else { syncing = false; updateQueueUI(); }
+        };
+    }
+    function updateQueueUI() {
+        const tx = db.transaction("reports", "readonly");
+        tx.objectStore("reports").count().onsuccess = (e) => {
+            queueCount = e.target.result;
+            document.getElementById('syncIndicator').style.display = queueCount > 0 ? 'block' : 'none';
+            document.getElementById('qCount').innerText = queueCount;
+        };
+    }
+    function cam(input, type) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image(); img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let w = img.width, h = img.height, max = 800;
+                if(w > h) { if(w > max) { h *= max/w; w = max; } } else { if(h > max) { w *= max/h; h = max; } }
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                IMGS[type] = canvas.toDataURL('image/jpeg', 0.6);
+                document.getElementById('l-p' + (type==='pre'?1:type==='post'?2:3)).classList.add('ok');
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+    function handleFile(inp) {
+        const f = inp.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, {type:'array'});
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+            DATA.shops = rows.map((r, idx) => ({ id: idx, net: r['Сеть'] || 'МАРКЕТ', addr: r['Адрес'] || 'Адрес не указан', done: false, start: null }));
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render();
+        };
+        reader.readAsArrayBuffer(f);
+    }
+    function closeModal() {
+        document.getElementById('task-modal').style.display='none';
+        IMGS = { pre:null, post:null, price:null };
+        document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok'));
+        document.getElementById('i-exp').value = ""; document.getElementById('i-total-faces').value = 0;
+        document.getElementById('share-val').innerText = "0";
+    }
+    function clearData() { if(confirm("Удалить всё?")) { localStorage.clear(); location.reload(); } }
+</script>
+</body>
+</html>
