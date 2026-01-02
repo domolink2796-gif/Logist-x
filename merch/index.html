@@ -18,9 +18,9 @@
         .s-v { display: block; font-size: 1.1rem; font-weight: 800; }
         .s-t { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; margin-top: 4px; font-weight: 700; }
         
-        /* Анимация мигания как в Логисте */
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         .sync-active { animation: blink 1s infinite; background: var(--green) !important; color: #000 !important; }
+        .sync-error { background: var(--red) !important; animation: none !important; color: white !important; }
         
         #syncIndicator { background: var(--accent); color: #000; padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.7rem; border: none; cursor: pointer; display: none; margin-left: auto; }
         .btn-blue { background: var(--blue); color: white; padding: 16px; border-radius: 14px; text-align: center; font-weight: 700; cursor: pointer; border: none; width: 100%; display: block; box-sizing: border-box; margin-bottom: 10px; text-decoration: none; }
@@ -140,7 +140,7 @@
     let cur = null, db, syncing = false, queueCount = 0;
 
     function openDB() {
-        const req = indexedDB.open("MerchX_DB_V4", 1);
+        const req = indexedDB.open("MerchX_DB_V5", 1);
         req.onupgradeneeded = (e) => e.target.result.createObjectStore("reports", { autoIncrement: true });
         req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); sync(); };
     }
@@ -219,58 +219,69 @@
     async function saveToQueue() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Загрузите 3 фото");
         const btn = document.getElementById('finish-btn');
-        btn.innerText = "СБОРКА ОТЧЕТА..."; btn.disabled = true;
-        
-        const dur = Math.round((Date.now() - cur.start) / 60000) + " мин";
-        const share = document.getElementById('share-val').innerText;
+        btn.innerText = "ПОЛУЧЕНИЕ GPS..."; btn.disabled = true;
 
-        document.getElementById('p-date').innerText = new Date().toLocaleString();
-        document.getElementById('p-net').innerText = cur.net;
-        document.getElementById('p-addr-val').innerText = cur.addr;
-        document.getElementById('p-worker').innerText = DATA.name;
-        document.getElementById('p-dur').innerText = dur;
-        document.getElementById('p-stock').innerText = document.getElementById('i-stock').value;
-        document.getElementById('p-faces').innerText = document.getElementById('i-faces').value;
-        document.getElementById('p-share').innerText = share;
-        document.getElementById('p-p1').innerText = document.getElementById('i-p1').value;
-        document.getElementById('p-p2').innerText = document.getElementById('i-p2').value;
-        document.getElementById('p-exp-val').innerText = "СРОК: " + (document.getElementById('i-exp').value || "-");
-        document.getElementById('p-i1').src = IMGS.pre;
-        document.getElementById('p-i2').src = IMGS.post;
-        document.getElementById('p-i3').src = IMGS.price;
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            btn.innerText = "СБОРКА ОТЧЕТА...";
+            const dur = Math.round((Date.now() - cur.start) / 60000) + " мин";
+            const share = document.getElementById('share-val').innerText;
 
-        const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1 });
-        const pdfBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById('p-date').innerText = new Date().toLocaleString();
+            document.getElementById('p-net').innerText = cur.net;
+            document.getElementById('p-addr-val').innerText = cur.addr;
+            document.getElementById('p-worker').innerText = DATA.name;
+            document.getElementById('p-dur').innerText = dur;
+            document.getElementById('p-stock').innerText = document.getElementById('i-stock').value;
+            document.getElementById('p-faces').innerText = document.getElementById('i-faces').value;
+            document.getElementById('p-share').innerText = share;
+            document.getElementById('p-p1').innerText = document.getElementById('i-p1').value;
+            document.getElementById('p-p2').innerText = document.getElementById('i-p2').value;
+            document.getElementById('p-exp-val').innerText = "СРОК: " + (document.getElementById('i-exp').value || "-");
+            document.getElementById('p-i1').src = IMGS.pre;
+            document.getElementById('p-i2').src = IMGS.post;
+            document.getElementById('p-i3').src = IMGS.price;
 
-        const report = {
-            worker: DATA.name,
-            net: cur.net,
-            address: cur.addr,
-            stock: document.getElementById('i-stock').value,
-            faces: document.getElementById('i-faces').value,
-            share: share,
-            priceMy: document.getElementById('i-p1').value,
-            priceComp: document.getElementById('i-p2').value,
-            expDate: document.getElementById('i-exp').value,
-            duration: dur,
-            pdf: pdfBase64,
-            lat: 0, lon: 0, targetLat: 0, targetLon: 0 // Заглушки для сервера
-        };
+            const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1 });
+            const pdfBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
-        const tx = db.transaction("reports", "readwrite");
-        tx.objectStore("reports").add(report);
-        tx.oncomplete = () => {
-            cur.done = true;
-            localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+            const report = {
+                worker: DATA.name,
+                net: cur.net,
+                city: cur.city || "Орёл", // Передаем город!
+                address: cur.addr,
+                stock: document.getElementById('i-stock').value,
+                faces: document.getElementById('i-faces').value,
+                share: share,
+                priceMy: document.getElementById('i-p1').value,
+                priceComp: document.getElementById('i-p2').value,
+                expDate: document.getElementById('i-exp').value,
+                duration: dur,
+                pdf: pdfBase64,
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude,
+                targetLat: cur.lat || 0,
+                targetLon: cur.lon || 0
+            };
+
+            const tx = db.transaction("reports", "readwrite");
+            tx.objectStore("reports").add(report);
+            tx.oncomplete = () => {
+                cur.done = true;
+                localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+                btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
+                closeModal(); render(); updateQueueUI(); sync();
+            };
+        }, (err) => {
+            alert("Включите GPS на телефоне!");
             btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
-            closeModal(); render(); updateQueueUI(); sync();
-        };
+        }, { enableHighAccuracy: true });
     }
 
     async function sync() {
         if(syncing || !navigator.onLine || !db) return;
         syncing = true;
         const ind = document.getElementById('syncIndicator');
+        ind.classList.remove('sync-error');
         ind.classList.add('sync-active');
 
         const tx = db.transaction("reports", "readwrite");
@@ -290,18 +301,14 @@
                     if(d.success) {
                         cursor.delete();
                         updateQueueUI();
+                        cursor.continue();
                     } else {
-                        console.error("Server Error:", d.error);
-                        // Если ошибка от сервера, не удаляем из очереди, но и не вешаем процесс
-                        syncing = false;
-                        ind.classList.remove('sync-active');
+                        throw new Error(d.error);
                     }
                 } catch(err) { 
-                    console.log("Network error");
+                    ind.classList.add('sync-error');
                     syncing = false;
-                    ind.classList.remove('sync-active');
                 }
-                cursor.continue();
             } else {
                 syncing = false;
                 ind.classList.remove('sync-active');
@@ -342,7 +349,16 @@
         reader.onload = (e) => {
             const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', addr: r['Адрес'] || 'Адрес?', done: false, start: null }));
+            DATA.shops = rows.map((r, i) => ({ 
+                id: i, 
+                net: r['Сеть'] || 'МАРКЕТ', 
+                city: r['Город'] || 'Орёл', // Забираем город из Excel
+                addr: r['Адрес'] || 'Адрес?', 
+                lat: parseFloat(r['Широта']) || 0,
+                lon: parseFloat(r['Долгота']) || 0,
+                done: false, 
+                start: null 
+            }));
             localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render();
         };
         reader.readAsArrayBuffer(inp.files[0]);
