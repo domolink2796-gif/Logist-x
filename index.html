@@ -6,8 +6,8 @@
     
     <meta name="yandex-verification" content="888cbf1c9d567f69" />
 
-    <title>LOGIST_X | Контроль монтажников, фотоотчеты расклейки и автоматизация работ</title>
-    <meta name="description" content="LOGIST_X — ERP-система контроля полевого персонала. Автоматические фотоотчеты в Google Таблицы, GPS-привязка и идеальный порядок на Google Диске для рекламы и логистики.">
+    <title>LOGIST_X | Контроль персонала и Аналитика MERCH_X</title>
+    <meta name="description" content="LOGIST_X — ERP-система контроля полевого персонала. Автоматические отчеты и аналитика ритейла.">
     <meta name="keywords" content="контроль монтажников, фотоотчет расклейка, программа для мерчандайзеров, контроль полевого персонала, автоматизация фотоотчетов, GPS контроль сотрудников, отчеты в google таблицы">
     
     <link rel="manifest" href="app/manifest.json">
@@ -45,11 +45,8 @@
         .folder-node { border-left: 2px solid rgba(245, 158, 11, 0.2); margin-left: 1rem; padding-left: 1.5rem; position: relative; margin-bottom: 0.75rem; }
         .folder-node::before { content: ''; position: absolute; left: 0; top: 0.75rem; width: 1rem; border-top: 2px solid rgba(245, 158, 11, 0.2); }
         .dot-matrix { background-image: radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); background-size: 30px 30px; }
-        .benefit-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; padding: 2rem; transition: 0.3s; }
+        .benefit-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; padding: 2rem; transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
         .benefit-card:hover { border-color: var(--accent); background: rgba(245, 158, 11, 0.05); }
-        @media (max-width: 640px) { .title-hero { font-size: 2.6rem !important; } }
-        
-        /* Modal Styles for Legal */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-blur: 10px; overflow-y: auto; }
         .modal-content { background: #0d1117; margin: 5% auto; padding: 40px; border: 1px solid #30363d; width: 90%; max-width: 800px; border-radius: 24px; color: #8b949e; font-size: 14px; line-height: 1.6; }
         .modal-header { color: #f59e0b; font-weight: 900; font-size: 24px; margin-bottom: 20px; text-transform: uppercase; }
@@ -59,77 +56,83 @@
 <body class="dot-matrix">
 
     <nav class="fixed top-0 w-full z-[1000] bg-black/80 backdrop-blur-xl border-b border-white/5 px-6 py-4">
-        <div class="max-w-77xl mx-auto flex justify-between items-center">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <div class="bg-amber-500 p-1.5 rounded-xl"><i data-lucide="shield-check" class="text-black" size="20"></i></div>
-                <span class="text-2xl font-black italic tracking-tighter uppercase">LOGIST<span class="text-amber-500">_X</span></span>
+                <span class="text-2xl font-black italic tracking-tighter uppercase text-white">LOGIST<span class="text-amber-500">_X</span></span>
             </div>
             <div class="flex gap-2">
                 <button onclick="goToBot()" class="btn-bot-outline px-4 py-2 text-[9px] hidden sm:flex">Открыть Бот</button>
-                <button onclick="handleInstallClick()" class="btn-install-gold px-5 py-2.5 text-[9px] hidden xs:flex tracking-tighter uppercase">Установить</button>
+                <button onclick="handleInstallClick()" class="btn-install-gold px-5 py-2.5 text-[9px] hidden xs:flex">Установить App</button>
             </div>
         </div>
     </nav>
 
     <header class="relative pt-48 pb-24 text-center px-4">
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-5xl mx-auto">
             <h1 class="text-5xl md:text-8xl font-black mb-10 uppercase tracking-tighter animate__animated animate__fadeInUp">
-                КОНТРОЛЬ <br><span class="text-amber-500 italic underline decoration-amber-500/20">МОНТАЖНИКОВ</span>
-                <br><span class="text-white text-2xl md:text-4xl block mt-4 opacity-90">И ФОТООТЧЕТОВ БЕЗ ОБМАНА</span>
+                КОНТРОЛЬ <br><span class="text-amber-500 italic underline decoration-amber-500/20 text-4xl md:text-7xl">БЕЗ ОБМАНА</span>
             </h1>
-            <p class="text-lg md:text-2xl opacity-40 mb-14 max-w-2xl mx-auto leading-relaxed animate__animated animate__fadeInUp italic">
-                Выберите инструмент для автоматизации отчетности в LOGIST_X:
+            <p class="text-lg md:text-2xl opacity-40 mb-14 max-w-2xl mx-auto leading-relaxed animate__animated animate__fadeInUp italic text-white">
+                Выберите инструмент для начала работы в системе:
             </p>
-            <div class="flex flex-col md:flex-row gap-4 justify-center items-center">
-                <button onclick="handleInstallClick()" class="btn-install-gold w-full md:w-auto px-10 py-6 text-sm gap-3 shadow-2xl">
-                   <i data-lucide="download-cloud" size="22"></i> УСТАНОВИТЬ ПРИЛОЖЕНИЕ
+            <div class="flex flex-col lg:flex-row gap-4 justify-center items-stretch">
+                <button onclick="handleInstallClick()" class="btn-install-gold px-8 py-6 text-sm gap-3 shadow-2xl flex-1">
+                   <i data-lucide="download-cloud" size="22"></i> УСТАНОВИТЬ LOGIST_X
                 </button>
-                <button onclick="goToBot()" class="btn-bot-outline w-full md:w-auto px-10 py-6 text-sm gap-3">
-                   <i data-lucide="message-circle" size="22"></i> НАЧАТЬ РАБОТУ В BOT
+                <button onclick="window.location.href='merch-info.html'" class="btn-bot-outline px-8 py-6 text-sm gap-3 flex-1 border-amber-500/50">
+                   <i data-lucide="bar-chart-3" size="22"></i> АНАЛИТИКА MERCH_X
+                </button>
+                <button onclick="goToBot()" class="btn-bot-outline px-8 py-6 text-sm gap-3 flex-1">
+                   <i data-lucide="message-circle" size="22"></i> НАЧАТЬ В TELEGRAM
                 </button>
             </div>
         </div>
     </header>
 
-    <section class="py-24 px-6 border-t border-white/5 text-center">
-        <div class="max-w-6xl mx-auto text-center">
-            <h2 class="text-3xl md:text-6xl font-black mb-16 italic uppercase text-white">Почему выбирают <span class="text-amber-500">LOGIST_X?</span></h2>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
-                <div class="benefit-card">
-                    <div class="text-amber-500 mb-6"><i data-lucide="layout-grid" size="40"></i></div>
+    <section class="py-24 px-6 border-t border-white/5">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-3xl md:text-6xl font-black mb-16 italic uppercase text-white text-center">Наши <span class="text-amber-500">Технологии</span></h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-left text-white">
+                <div class="benefit-card text-center sm:text-left">
+                    <div class="text-amber-500 mb-6 mx-auto sm:mx-0"><i data-lucide="layout-grid" size="40"></i></div>
                     <h3 class="text-xl font-black mb-4 uppercase italic">Авто-Иерархия</h3>
-                    <p class="opacity-40 text-sm leading-relaxed italic">Система сама создает папки на Drive: <strong>Монтажник → Объект → Город → Дата.</strong></p>
+                    <p class="opacity-40 text-xs leading-relaxed italic">Автоматическое создание папок: <strong>Монтажник → Объект → Дата.</strong></p>
                 </div>
-                <div class="benefit-card">
-                    <div class="text-amber-500 mb-6"><i data-lucide="table-2" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase italic">Листы по Именам</h3>
-                    <p class="opacity-40 text-sm leading-relaxed italic">У каждого сотрудника своя вкладка. Порядок в фотоотчетах для наружной рекламы и логистики.</p>
+                <div class="benefit-card text-center sm:text-left">
+                    <div class="text-amber-500 mb-6 mx-auto sm:mx-0"><i data-lucide="table-2" size="40"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase italic">Листы Google</h3>
+                    <p class="opacity-40 text-xs leading-relaxed italic">Персональные вкладки для каждого сотрудника с итоговыми суммами.</p>
                 </div>
-                <div class="benefit-card">
-                    <div class="text-amber-500 mb-6"><i data-lucide="map-pin" size="40"></i></div>
+                <div class="benefit-card text-center sm:text-left">
+                    <div class="text-amber-500 mb-6 mx-auto sm:mx-0"><i data-lucide="map-pin" size="40"></i></div>
                     <h3 class="text-xl font-black mb-4 uppercase italic">GPS-Контроль</h3>
-                    <p class="opacity-40 text-sm leading-relaxed italic">Каждое фото привязано к координатам. Полная прозрачность работы полевого персонала.</p>
+                    <p class="opacity-40 text-xs leading-relaxed italic">Фотофиксация с защитой от подмены координат и времени.</p>
                 </div>
+                <a href="merch-info.html" class="benefit-card border-amber-500/30 bg-amber-500/5 group cursor-pointer text-center sm:text-left">
+                    <div class="text-amber-500 mb-6 mx-auto sm:mx-0 animate-pulse"><i data-lucide="bar-chart-3" size="40"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase italic group-hover:text-amber-500 transition-colors">Система MERCH_X</h3>
+                    <p class="opacity-60 text-xs leading-relaxed mb-6 italic text-amber-500/80">Аналитика полок, остатки товара и расчет доли фейсинга.</p>
+                    <div class="mt-auto text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center justify-center sm:justify-start gap-2">ПОДРОБНЕЕ <i data-lucide="arrow-right" size="14"></i></div>
+                </a>
             </div>
         </div>
     </section>
 
-    <section class="py-24 px-6 bg-black/40">
+    <section class="py-24 px-6 border-t border-white/5 bg-black/40">
         <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
-            <div class="bg-[#05070a] p-8 md:p-12 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden">
-                <div class="text-amber-500/40 mb-10 font-black text-xs tracking-[8px] uppercase border-b border-white/5 pb-6">ERP_Drive_Structure</div>
+            <div class="bg-[#05070a] p-8 md:p-12 rounded-[3rem] border border-white/5 shadow-2xl">
+                <div class="text-amber-500/40 mb-10 font-black text-xs tracking-[8px] uppercase border-b border-white/5 pb-6 text-white">ERP_Drive_Structure</div>
                 <div class="folder-node">
                     <div class="flex items-center gap-3 text-blue-400 font-black uppercase tracking-widest text-sm"><i data-lucide="user" size="18"></i> Костик_Монтажник</div>
                     <div class="folder-node">
                         <div class="flex items-center gap-3 text-green-500 font-black uppercase tracking-widest text-sm"><i data-lucide="building" size="18"></i> Магнит_Объект</div>
-                        <div class="folder-node italic text-amber-500/60 text-sm space-y-4">
-                            <div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Монтаж_Завершен.jpg</span></div>
-                        </div>
+                        <div class="folder-node italic text-amber-500/60 text-sm"><div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Монтаж_Завершен.jpg</span></div></div>
                     </div>
                 </div>
             </div>
-            <div class="text-center lg:text-left">
-                <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase text-amber-500 leading-none">УМНЫЙ <br>АРХИВ</h2>
+            <div class="text-center lg:text-left text-white">
+                <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase text-amber-500 leading-none">УМНЫЙ АРХИВ</h2>
                 <p class="opacity-40 text-xl italic leading-relaxed">Система сама распределяет фото по адресам. Вы получаете чистую аналитику без ручного труда.</p>
             </div>
         </div>
@@ -137,106 +140,72 @@
 
     <section class="py-24 px-6 border-t border-white/5">
         <div class="max-w-6xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-                <div>
-                    <h2 class="text-3xl md:text-6xl font-black italic uppercase">Наш <span class="text-amber-500">Блог</span></h2>
-                    <p class="opacity-40 text-sm mt-4 uppercase tracking-widest italic">Технологии и стандарты LOGIST_X</p>
-                </div>
-            </div>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <a href="blog-1.html" class="benefit-card flex flex-col justify-between group cursor-pointer text-left">
-                    <div>
-                        <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">30.12.2025</div>
-                        <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 transition-colors italic">Как исключить обман при расклейке</h3>
-                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Разбираем методы GPS-контроля для полной прозрачности работы...</p>
-                    </div>
-                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
+            <h2 class="text-3xl md:text-6xl font-black italic uppercase text-white mb-16 text-center">Наш <span class="text-amber-500">Блог</span></h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 text-white">
+                <a href="blog-1.html" class="benefit-card flex flex-col justify-between group cursor-pointer">
+                    <div><div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">МЕТОДОЛОГИЯ</div>
+                    <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic">Исключаем обман</h3>
+                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Разбираем методы GPS-контроля для полной прозрачности работы полевого персонала...</p></div>
+                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать <i data-lucide="arrow-right" size="14"></i></div>
                 </a>
-                <a href="blog-2.html" class="benefit-card flex flex-col justify-between group cursor-pointer text-left">
-                    <div>
-                        <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">28.12.2025</div>
-                        <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 transition-colors italic">Порядок на сетевых объектах</h3>
-                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Как организовать контроль на десятках точек одновременно...</p>
-                    </div>
-                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
+                <a href="blog-2.html" class="benefit-card flex flex-col justify-between group cursor-pointer">
+                    <div><div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">МЕНЕДЖМЕНТ</div>
+                    <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic">Порядок в сетях</h3>
+                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Как организовать контроль на десятках точек одновременно...</p></div>
+                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать <i data-lucide="arrow-right" size="14"></i></div>
                 </a>
-                <a href="blog-3.html" class="benefit-card flex flex-col justify-between group cursor-pointer text-left">
-                    <div>
-                        <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">25.12.2025</div>
-                        <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 transition-colors italic">Новые функции LOGIST_X 2026</h3>
-                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic tracking-wide">Анонсируем Telegram-панель управления и новые отчеты...</p>
-                    </div>
-                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
+                <a href="blog-3.html" class="benefit-card flex flex-col justify-between group cursor-pointer">
+                    <div><div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">ОБНОВЛЕНИЯ</div>
+                    <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic">Функции 2026</h3>
+                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Анонсируем Telegram-панель управления и новые автоматические отчеты...</p></div>
+                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать <i data-lucide="arrow-right" size="14"></i></div>
                 </a>
             </div>
         </div>
     </section>
 
-    <section id="pricing" class="py-32 px-6">
+    <section id="pricing" class="py-32 px-6 border-t border-white/5">
         <div class="max-w-3xl mx-auto">
-            <div class="price-card border-amber-500/40 bg-amber-500/5 shadow-3xl text-center">
-                <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-60 italic text-amber-500">Единый тариф</h3>
-                <div class="text-7xl md:text-8xl font-black mb-4 italic tracking-tighter text-amber-500">1 500 <span class="text-2xl not-italic opacity-40">₽</span></div>
-                <p class="opacity-60 text-white font-bold text-sm uppercase tracking-widest mb-10 italic">В месяц за сотрудника</p>
-                <div class="space-y-4 max-w-sm mx-auto text-left mb-12 opacity-80 italic text-sm">
-                    <div class="flex items-center gap-3"><i data-lucide="check-circle-2" class="text-amber-500" size="18"></i> Подключение сервера и Google Drive</div>
-                    <div class="flex items-center gap-3"><i data-lucide="check-circle-2" class="text-amber-500" size="18"></i> Приложение для персонала (PWA)</div>
-                </div>
-                <button onclick="goToBot()" class="btn-install-gold w-full py-7 text-sm tracking-widest uppercase italic">Запустить через BOT</button>
+            <div class="price-card border-amber-500/40 bg-amber-500/5 text-center">
+                <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-60 text-amber-500">Единый тариф</h3>
+                <div class="text-7xl md:text-8xl font-black mb-4 italic text-amber-500">1 500 <span class="text-2xl not-italic opacity-40 text-white">₽</span></div>
+                <p class="opacity-60 text-white font-bold text-sm uppercase tracking-widest mb-10">В месяц за сотрудника</p>
+                <button onclick="goToBot()" class="btn-install-gold w-full py-7 text-sm tracking-widest uppercase italic text-black">Запустить через BOT</button>
             </div>
         </div>
     </section>
 
-    <section class="py-10 px-6 opacity-10 text-[10px] text-center max-w-4xl mx-auto">
+    <section class="py-10 px-6 opacity-10 text-[10px] text-center max-w-4xl mx-auto text-white">
         <p>Автоматизация контроля монтажников, расклейщиков объявлений и мерчандайзеров. Приложение LOGIST_X позволяет организовать сбор фотоотчетов с GPS-подтверждением прямо в Google Таблицы. Идеально для рекламных агентств, клининга и логистики. Забудьте про отчеты в WhatsApp — используйте профессиональный софт.</p>
     </section>
 
     <footer class="py-24 text-center border-t border-white/5 bg-[#05070a]">
-        <p class="text-[10px] font-black uppercase tracking-[15px] opacity-40">LOGIST_X 2025-2026</p>
+        <p class="text-[10px] font-black uppercase tracking-[15px] opacity-40 text-white">LOGIST_X & MERCH_X 2026</p>
         <div class="mt-8 text-[11px] text-amber-500/80 space-y-2 uppercase tracking-widest italic">
-            <p>Никитин Евгений Анатольевич</p>
-            <p>ИНН: 575405332940</p>
+            <p>Никитин Евгений Анатольевич | ИНН: 575405332940</p>
             <p>Email: evgeny_orel@mail.ru | Тел: +7 995 447-01-30</p>
         </div>
-        <div class="mt-6 flex justify-center gap-6 text-[10px] uppercase font-bold tracking-tighter">
-            <a href="javascript:void(0)" onclick="openModal('modalPrivacy')" class="text-white/40 hover:text-amber-500 transition-colors">Политика конфиденциальности</a>
-            <a href="javascript:void(0)" onclick="openModal('modalTerms')" class="text-white/40 hover:text-amber-500 transition-colors">Публичная оферта</a>
+        <div class="mt-6 flex justify-center gap-6 text-[10px] uppercase font-bold text-white/40">
+            <a href="javascript:void(0)" onclick="openModal('modalPrivacy')" class="hover:text-amber-500">Политика конфиденциальности</a>
+            <a href="javascript:void(0)" onclick="openModal('modalTerms')" class="hover:text-amber-500">Публичная оферта</a>
         </div>
     </footer>
 
-    <div id="modalPrivacy" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span>
-            <div class="modal-header">Политика конфиденциальности</div>
-            <p>Настоящая политика действует в отношении всей информации, которую сервис LOGIST_X может получить о пользователе во время использования приложения. Мы собираем только необходимые данные для работы сервиса: GPS-координаты фотографий и идентификаторы устройств. Данные хранятся на вашем личном аккаунте Google Drive и не передаются третьим лицам.</p>
-        </div>
-    </div>
-
-    <div id="modalTerms" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal('modalTerms')">&times;</span>
-            <div class="modal-header">Публичная оферта</div>
-            <p>Сервис LOGIST_X (ИП Никитин Е.А.) предоставляет доступ к программному обеспечению для контроля полевого персонала на условиях подписки. Стоимость доступа составляет 1500 рублей в месяц за одного сотрудника. Оплата производится через платежный шлюз. Доступ предоставляется моментально после подтверждения оплаты.</p>
-        </div>
-    </div>
+    <div id="modalPrivacy" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span><div class="modal-header">Политика конфиденциальности</div><p>Настоящая политика действует в отношении всей информации, которую сервис LOGIST_X может получить о пользователе...</p></div></div>
+    <div id="modalTerms" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalTerms')">&times;</span><div class="modal-header">Публичная оферта</div><p>Сервис LOGIST_X (ИП Никитин Е.А.) предоставляет доступ к ПО на условиях подписки 1500 руб/мес...</p></div></div>
 
     <script>
         lucide.createIcons();
         const BOT_URL = 'https://t.me/LogistX_Robot_Bot';
         let deferredPrompt;
-        function goToBot() { window.location.href = BOT_URL; }
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
         async function handleInstallClick() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
-                deferredPrompt = null;
-            } else { alert('Используйте меню браузера "На экран Домой" для установки приложения.'); }
+            if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
+            else { alert('Меню браузера -> На экран Домой'); }
         }
-
+        function goToBot() { window.location.href = BOT_URL; }
         function openModal(id) { document.getElementById(id).style.display = "block"; }
         function closeModal(id) { document.getElementById(id).style.display = "none"; }
-        window.onclick = function(event) { if (event.target.className === 'modal') { event.target.style.display = "none"; } }
     </script>
 </body>
 </html>
