@@ -17,6 +17,8 @@
         .s-box { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; }
         .s-v { display: block; font-size: 1.1rem; font-weight: 800; }
         .s-t { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; margin-top: 4px; font-weight: 700; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .sync-active { animation: blink 1s infinite; background: var(--green) !important; color: #000 !important; }
         #syncIndicator { background: var(--accent); color: #000; padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.7rem; border: none; cursor: pointer; display: none; margin-left: auto; }
         .btn-blue { background: var(--blue); color: white; padding: 16px; border-radius: 14px; text-align: center; font-weight: 700; cursor: pointer; border: none; width: 100%; display: block; box-sizing: border-box; margin-bottom: 10px; text-decoration: none; }
         #srch { width: calc(100% - 30px); margin: 10px 15px; padding: 14px; background: var(--card); border: 1px solid var(--border); color: white; border-radius: 12px; box-sizing: border-box; }
@@ -47,7 +49,7 @@
 <div class="header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="logo">LOGIST_X <span>MERCH</span></div>
-        <button id="syncIndicator">🌐 ONLINE</button>
+        <button id="syncIndicator" onclick="alert('Очередь: ' + queueCount)">📦 <span id="qCount">0</span></button>
     </div>
     <div class="stats-main">
         <div class="s-box"><span class="s-v" id="st-total">0</span><span class="s-t">Точек</span></div>
@@ -94,7 +96,7 @@
                 <label class="cam-btn" id="l-p3" for="c-p3">📸<br>ЦЕННИК</label>
                 <input type="file" id="c-p3" accept="image/*" capture="camera" class="hidden" onchange="cam(this, 'price')">
             </div>
-            <button class="btn-blue" id="finish-btn" style="background:var(--green); color:black; margin-top:20px;" onclick="saveAndSend()">ЗАВЕРШИТЬ</button>
+            <button class="btn-blue" id="finish-btn" style="background:var(--green); color:black; margin-top:20px;" onclick="saveToQueue()">ЗАВЕРШИТЬ</button>
         </div>
         <button class="btn-blue" style="background:none; color:#555;" onclick="closeModal()">ОТМЕНА</button>
     </div>
@@ -128,41 +130,32 @@
 </div>
 <script>
     const API = 'https://logist-x-server-production.up.railway.app';
-    let DATA = { shops: [], name: "", key: "" };
-    let IMGS = { pre: null, post: null, price: null };
-    let cur = null;
+    let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, queueCount = 0;
+    function openDB() {
+        const req = indexedDB.open("MerchX_DB_FINAL", 1);
+        req.onupgradeneeded = (e) => e.target.result.createObjectStore("reports", { autoIncrement: true });
+        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 10000); };
+    }
     window.onload = () => {
-        DATA.name = localStorage.getItem('m_name') || "";
-        DATA.key = localStorage.getItem('m_key') || "";
+        DATA.name = localStorage.getItem('m_name') || ""; DATA.key = localStorage.getItem('m_key') || "";
         if(DATA.key && DATA.name) document.getElementById('auth-screen').style.display='none';
-        DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]");
-        render();
+        DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]"); openDB(); render();
     };
     async function saveAuth() {
-        const n = document.getElementById('work-name').value.trim();
-        const k = document.getElementById('lic-key').value.trim().toUpperCase();
+        const n = document.getElementById('work-name').value.trim(), k = document.getElementById('lic-key').value.trim().toUpperCase();
         if(!n || !k) return alert("Введите данные");
         try {
-            const res = await fetch(`${API}/check-license`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ licenseKey: k, workerName: n })
-            });
+            const res = await fetch(`${API}/check-license`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ licenseKey: k, workerName: n }) });
             const d = await res.json();
-            if(d.status === 'active') {
-                DATA.name = n; DATA.key = k;
-                localStorage.setItem('m_name', n); localStorage.setItem('m_key', k);
-                document.getElementById('auth-screen').style.display='none';
-            } else alert(d.message);
-        } catch(e) { alert("Ошибка сервера лицензий"); }
+            if(d.status === 'active') { DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); document.getElementById('auth-screen').style.display='none'; } else alert(d.message);
+        } catch(e) { alert("Ошибка сервера"); }
     }
     function calcShare() {
-        const mine = parseFloat(document.getElementById('i-faces').value) || 0;
-        const total = parseFloat(document.getElementById('i-total-faces').value) || 0;
+        const mine = parseFloat(document.getElementById('i-faces').value) || 0, total = parseFloat(document.getElementById('i-total-faces').value) || 0;
         document.getElementById('share-val').innerText = total > 0 ? Math.round((mine / total) * 100) : 0;
     }
     function render() {
-        const list = document.getElementById('list');
-        const s = document.getElementById('srch').value.toLowerCase();
+        const list = document.getElementById('list'), s = document.getElementById('srch').value.toLowerCase();
         document.getElementById('st-total').innerText = DATA.shops.length;
         document.getElementById('st-done').innerText = DATA.shops.filter(x => x.done).length;
         list.innerHTML = DATA.shops.filter(x => x.addr.toLowerCase().includes(s)).map(x => `
@@ -174,24 +167,20 @@
     }
     function openModal(id) {
         cur = DATA.shops.find(x => x.id === id); if(cur.done) return;
-        document.getElementById('disp-addr').innerText = cur.addr;
-        document.getElementById('inp-addr').value = cur.addr;
-        document.getElementById('m-net').innerText = cur.net;
+        document.getElementById('disp-addr').innerText = cur.addr; document.getElementById('inp-addr').value = cur.addr; document.getElementById('m-net').innerText = cur.net;
         document.getElementById('task-modal').style.display = 'flex';
-        const sb = document.getElementById('start-block'), rb = document.getElementById('report-block');
-        if(cur.start) { sb.classList.add('hidden'); rb.classList.remove('hidden'); } else { sb.classList.remove('hidden'); rb.classList.add('hidden'); }
+        if(cur.start) { document.getElementById('start-block').classList.add('hidden'); document.getElementById('report-block').classList.remove('hidden'); }
+        else { document.getElementById('start-block').classList.remove('hidden'); document.getElementById('report-block').classList.add('hidden'); }
     }
     function begin() { cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); openModal(cur.id); }
-    async function saveAndSend() {
+    async function saveToQueue() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Загрузите 3 фото");
-        const btn = document.getElementById('finish-btn'); btn.disabled = true; btn.innerText = "ОБРАБОТКА...";
+        const btn = document.getElementById('finish-btn'); btn.innerText = "GPS..."; btn.disabled = true;
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const dur = Math.round((Date.now() - cur.start) / 60000) + " мин";
             document.getElementById('p-date').innerText = new Date().toLocaleString();
-            document.getElementById('p-net').innerText = cur.net;
-            document.getElementById('p-addr-val').innerText = cur.addr;
-            document.getElementById('p-worker').innerText = DATA.name;
-            document.getElementById('p-dur').innerText = dur;
+            document.getElementById('p-net').innerText = cur.net; document.getElementById('p-addr-val').innerText = cur.addr;
+            document.getElementById('p-worker').innerText = DATA.name; document.getElementById('p-dur').innerText = dur;
             document.getElementById('p-stock').innerText = document.getElementById('i-stock').value;
             document.getElementById('p-faces').innerText = document.getElementById('i-faces').value;
             document.getElementById('p-share').innerText = document.getElementById('share-val').innerText;
@@ -200,51 +189,61 @@
             document.getElementById('p-exp-val').innerText = "СРОК: " + (document.getElementById('i-exp').value || "-");
             document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
             const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1 });
-            canvas.toBlob(async (blob) => {
-                const fd = new FormData();
-                fd.append('pdf', blob, 'ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ.jpg');
-                fd.append('worker', DATA.name); fd.append('net', cur.net); fd.append('address', cur.addr);
-                fd.append('lat', pos.coords.latitude); fd.append('lon', pos.coords.longitude);
-                fd.append('targetLat', cur.lat || 0); fd.append('targetLon', cur.lon || 0);
-                try {
-                    const res = await fetch(`${API}/merch-upload`, { method: 'POST', body: fd });
-                    const d = await res.json();
-                    if(d.success) { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); alert("ОТЧЕТ ПРИНЯТ!"); closeModal(); render(); }
-                    else { alert("СЕРВЕР: " + d.error); }
-                } catch(e) { alert("ОШИБКА СЕТИ"); }
-                btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
-            }, 'image/jpeg', 0.8);
-        }, (err) => { alert("ВКЛЮЧИТЕ GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true });
+            const report = {
+                worker: DATA.name, net: cur.net, city: cur.city || "Орёл", address: cur.addr,
+                stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value,
+                share: document.getElementById('share-val').innerText, priceMy: document.getElementById('i-p1').value, priceComp: document.getElementById('i-p2').value,
+                expDate: document.getElementById('i-exp').value, duration: dur, pdf: canvas.toDataURL('image/jpeg', 0.8),
+                lat: pos.coords.latitude, lon: pos.coords.longitude, targetLat: cur.lat || 0, targetLon: cur.lon || 0
+            };
+            const tx = db.transaction("reports", "readwrite"); tx.objectStore("reports").add(report);
+            tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
+            btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
+        }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true });
     }
-    function cam(input, type) {
-        if(!input.files[0]) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
+    async function sync() {
+        if(syncing || !navigator.onLine || !db) return; syncing = true;
+        const ind = document.getElementById('syncIndicator'); ind.classList.add('sync-active');
+        const tx = db.transaction("reports", "readwrite"), store = tx.objectStore("reports"), req = store.openCursor();
+        req.onsuccess = async (e) => {
+            const cursor = e.target.result;
+            if(cursor) {
+                try {
+                    const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(cursor.value) });
+                    const d = await res.json();
+                    if(d.success) { cursor.delete(); updateQueueUI(); cursor.continue(); } else { cursor.continue(); }
+                } catch(err) { syncing = false; }
+            } else { syncing = false; ind.classList.remove('sync-active'); updateQueueUI(); }
+        };
+    }
+    function updateQueueUI() {
+        const tx = db.transaction("reports", "readonly");
+        tx.objectStore("reports").count().onsuccess = (e) => {
+            queueCount = e.target.result;
+            document.getElementById('syncIndicator').style.display = queueCount > 0 ? 'block' : 'none';
+            document.getElementById('qCount').innerText = queueCount;
+        };
+    }
+    function cam(i, t) {
+        if(!i.files[0]) return; const r = new FileReader();
+        r.onload = (e) => {
             const img = new Image(); img.src = e.target.result;
             img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let w = img.width, h = img.height, max = 800;
-                if(w > h) { if(w > max) { h *= max/w; w = max; } } else { if(h > max) { w *= max/h; h = max; } }
-                canvas.width = w; canvas.height = h;
-                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                IMGS[type] = canvas.toDataURL('image/jpeg', 0.6);
-                document.getElementById(type==='pre'?'l-p1':(type==='post'?'l-p2':'l-p3')).classList.add('ok');
+                const c = document.createElement('canvas'); let w = img.width, h = img.height, m = 800;
+                if(w > h) { if(w > m) { h *= m/w; w = m; } } else { if(h > m) { w *= m/h; h = m; } }
+                c.width = w; c.height = h; c.getContext('2d').drawImage(img, 0, 0, w, h);
+                IMGS[t] = c.toDataURL('image/jpeg', 0.6);
+                document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok');
             };
-        };
-        reader.readAsDataURL(input.files[0]);
+        }; r.readAsDataURL(i.files[0]);
     }
     function handleFile(inp) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
+        const r = new FileReader(); r.onload = (e) => {
             const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            DATA.shops = rows.map((r, i) => ({ 
-                id: i, net: r['Сеть'] || 'МАРКЕТ', addr: r['Адрес'] || '?', 
-                lat: parseFloat(r['Широта']) || 0, lon: parseFloat(r['Долгота']) || 0, done: false, start: null 
-            }));
+            DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', city: r['Город'] || 'Орёл', addr: r['Адрес'] || '?', lat: parseFloat(r['Широта']) || 0, lon: parseFloat(r['Долгота']) || 0, done: false, start: null }));
             localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render();
-        };
-        reader.readAsArrayBuffer(inp.files[0]);
+        }; r.readAsArrayBuffer(inp.files[0]);
     }
     function closeModal() { document.getElementById('task-modal').style.display='none'; IMGS = { pre:null, post:null, price:null }; document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); }
     function clearData() { if(confirm("Очистить все?")) { localStorage.clear(); location.reload(); } }
