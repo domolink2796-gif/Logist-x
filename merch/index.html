@@ -131,11 +131,11 @@
 <script>
     const API = 'https://logist-x-server-production.up.railway.app';
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, lastError = "Ожидание...";
-    
+
     function openDB() {
-        const req = indexedDB.open("MerchX_Final_DB", 1);
-        req.onupgradeneeded = (e) => e.target.result.createObjectStore("reports", { autoIncrement: true });
-        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 8000); };
+        const req = indexedDB.open("MerchX_Ultra_V1", 1);
+        req.onupgradeneeded = (e) => e.target.result.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
+        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 10000); };
     }
     window.onload = () => {
         DATA.name = localStorage.getItem('m_name') || ""; DATA.key = localStorage.getItem('m_key') || "";
@@ -190,69 +190,60 @@
             document.getElementById('p-exp-val').innerText = "СРОК: " + (document.getElementById('i-exp').value || "-");
             document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
             const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1 });
+            const pdfBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
             const report = {
                 worker: DATA.name, net: cur.net, city: cur.city || "Орёл", address: cur.addr,
                 stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value,
                 share: document.getElementById('share-val').innerText, priceMy: document.getElementById('i-p1').value, priceComp: document.getElementById('i-p2').value,
-                expDate: document.getElementById('i-exp').value, duration: dur, pdf: canvas.toDataURL('image/jpeg', 0.8),
-                lat: pos.coords.latitude, lon: pos.coords.longitude, targetLat: cur.lat || 0, targetLon: cur.lon || 0
+                expDate: document.getElementById('i-exp').value, duration: dur, pdf: pdfBase64,
+                lat: pos.coords.latitude, lon: pos.coords.longitude, targetLat: cur.lat || 0, targetLon: cur.lon || 0,
+                isSending: false 
             };
-            const tx = db.transaction("reports", "readwrite"); 
-            const request = tx.objectStore("reports").add(report);
-            request.onsuccess = () => { 
-                cur.done = true; 
-                localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
-                closeModal(); render(); updateQueueUI(); sync(); 
-            };
+            const tx = db.transaction("reports", "readwrite"); tx.objectStore("reports").add(report);
+            tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
             btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
         }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true });
     }
     async function sync() {
         if(syncing || !navigator.onLine || !db) return; syncing = true;
-        const ind = document.getElementById('syncIndicator'); ind.classList.add('sync-active');
         const tx = db.transaction("reports", "readwrite"), store = tx.objectStore("reports"), req = store.openCursor();
         req.onsuccess = async (e) => {
             const cursor = e.target.result;
             if(cursor) {
+                if (cursor.value.isSending) { cursor.continue(); return; }
+                const reportId = cursor.key;
+                const updateTx = db.transaction("reports", "readwrite");
+                const obj = cursor.value; obj.isSending = true; updateTx.objectStore("reports").put(obj, reportId);
                 try {
-                    const res = await fetch(`${API}/merch-upload`, { 
-                        method: 'POST', 
-                        headers: {'Content-Type': 'application/json'}, 
-                        body: JSON.stringify(cursor.value) 
-                    });
+                    const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(cursor.value) });
                     const d = await res.json();
                     if(d.success) { 
-                        cursor.delete(); 
-                        lastError = "Успешно отправлено!";
-                        updateQueueUI(); 
-                        cursor.continue(); 
+                        const delTx = db.transaction("reports", "readwrite"); delTx.objectStore("reports").delete(reportId);
+                        lastError = "Успешно!"; updateQueueUI(); cursor.continue(); 
                     } else { 
-                        lastError = d.error || "Ошибка сервера";
-                        syncing = false;
-                        ind.classList.remove('sync-active');
+                        const resetTx = db.transaction("reports", "readwrite"); obj.isSending = false; resetTx.objectStore("reports").put(obj, reportId);
+                        lastError = d.error || "Ошибка"; syncing = false; updateQueueUI();
                     }
                 } catch(err) { 
-                    lastError = "Нет связи с сервером";
-                    syncing = false; 
-                    ind.classList.remove('sync-active');
+                    const resetTx = db.transaction("reports", "readwrite"); obj.isSending = false; resetTx.objectStore("reports").put(obj, reportId);
+                    lastError = "Сервер недоступен"; syncing = false; updateQueueUI();
                 }
-            } else { syncing = false; ind.classList.remove('sync-active'); updateQueueUI(); }
+            } else { syncing = false; updateQueueUI(); }
         };
     }
     function updateQueueUI() {
         const tx = db.transaction("reports", "readonly");
         tx.objectStore("reports").count().onsuccess = (e) => {
             const count = e.target.result;
-            document.getElementById('syncIndicator').style.display = count > 0 ? 'block' : 'none';
+            const ind = document.getElementById('syncIndicator');
+            ind.style.display = count > 0 ? 'block' : 'none';
             document.getElementById('qCount').innerText = count;
+            if(syncing) ind.classList.add('sync-active'); else ind.classList.remove('sync-active');
         };
     }
     function checkQueue() {
         const tx = db.transaction("reports", "readonly");
-        tx.objectStore("reports").count().onsuccess = (e) => {
-            alert(`В очереди: ${e.target.result} отчетов.\nСтатус: ${lastError}`);
-            sync();
-        };
+        tx.objectStore("reports").count().onsuccess = (e) => alert(`В очереди: ${e.target.result} отчетов.\nСтатус: ${lastError}`);
     }
     function cam(i, t) {
         if(!i.files[0]) return; const r = new FileReader();
