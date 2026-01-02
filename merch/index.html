@@ -17,9 +17,9 @@
         .s-box { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; }
         .s-v { display: block; font-size: 1.1rem; font-weight: 800; }
         .s-t { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; margin-top: 4px; font-weight: 700; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        .sync-active { animation: blink 1s infinite; background: var(--green) !important; color: #000 !important; }
-        #syncIndicator { background: var(--accent); color: #000; padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.7rem; border: none; cursor: pointer; display: none; margin-left: auto; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .sync-active { animation: blink 1.5s infinite; background: var(--green) !important; color: #000 !important; }
+        #syncIndicator { background: var(--accent); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: 900; font-size: 0.75rem; border: none; cursor: pointer; display: none; margin-left: auto; }
         .btn-blue { background: var(--blue); color: white; padding: 16px; border-radius: 14px; text-align: center; font-weight: 700; cursor: pointer; border: none; width: 100%; display: block; box-sizing: border-box; margin-bottom: 10px; text-decoration: none; }
         #srch { width: calc(100% - 30px); margin: 10px 15px; padding: 14px; background: var(--card); border: 1px solid var(--border); color: white; border-radius: 12px; box-sizing: border-box; }
         .card { background: var(--card); border: 1px solid var(--border); margin: 10px 15px; padding: 18px; border-radius: 16px; position: relative; }
@@ -49,7 +49,7 @@
 <div class="header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="logo">LOGIST_X <span>MERCH</span></div>
-        <button id="syncIndicator">📦 <span id="qCount">0</span></button>
+        <button id="syncIndicator" onclick="checkQueue()">📦 <span id="qCount">0</span></button>
     </div>
     <div class="stats-main">
         <div class="s-box"><span class="s-v" id="st-total">0</span><span class="s-t">Точек</span></div>
@@ -130,11 +130,12 @@
 </div>
 <script>
     const API = 'https://logist-x-server-production.up.railway.app';
-    let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false;
+    let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, lastError = "Ожидание...";
+    
     function openDB() {
-        const req = indexedDB.open("MerchX_DB_V2", 1);
+        const req = indexedDB.open("MerchX_Final_DB", 1);
         req.onupgradeneeded = (e) => e.target.result.createObjectStore("reports", { autoIncrement: true });
-        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 10000); };
+        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 8000); };
     }
     window.onload = () => {
         DATA.name = localStorage.getItem('m_name') || ""; DATA.key = localStorage.getItem('m_key') || "";
@@ -175,7 +176,7 @@
     function begin() { cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); openModal(cur.id); }
     async function saveToQueue() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Загрузите 3 фото");
-        const btn = document.getElementById('finish-btn'); btn.innerText = "GPS..."; btn.disabled = true;
+        const btn = document.getElementById('finish-btn'); btn.innerText = "ПОДОЖДИТЕ..."; btn.disabled = true;
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const dur = Math.round((Date.now() - cur.start) / 60000) + " мин";
             document.getElementById('p-date').innerText = new Date().toLocaleString();
@@ -196,8 +197,13 @@
                 expDate: document.getElementById('i-exp').value, duration: dur, pdf: canvas.toDataURL('image/jpeg', 0.8),
                 lat: pos.coords.latitude, lon: pos.coords.longitude, targetLat: cur.lat || 0, targetLon: cur.lon || 0
             };
-            const tx = db.transaction("reports", "readwrite"); tx.objectStore("reports").add(report);
-            tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
+            const tx = db.transaction("reports", "readwrite"); 
+            const request = tx.objectStore("reports").add(report);
+            request.onsuccess = () => { 
+                cur.done = true; 
+                localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
+                closeModal(); render(); updateQueueUI(); sync(); 
+            };
             btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
         }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true });
     }
@@ -209,11 +215,27 @@
             const cursor = e.target.result;
             if(cursor) {
                 try {
-                    const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(cursor.value) });
+                    const res = await fetch(`${API}/merch-upload`, { 
+                        method: 'POST', 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify(cursor.value) 
+                    });
                     const d = await res.json();
-                    if(d.success) { cursor.delete(); updateQueueUI(); cursor.continue(); } 
-                    else { if(d.error.includes("Далеко")) alert("ОШИБКА: " + d.error); cursor.continue(); }
-                } catch(err) { syncing = false; }
+                    if(d.success) { 
+                        cursor.delete(); 
+                        lastError = "Успешно отправлено!";
+                        updateQueueUI(); 
+                        cursor.continue(); 
+                    } else { 
+                        lastError = d.error || "Ошибка сервера";
+                        syncing = false;
+                        ind.classList.remove('sync-active');
+                    }
+                } catch(err) { 
+                    lastError = "Нет связи с сервером";
+                    syncing = false; 
+                    ind.classList.remove('sync-active');
+                }
             } else { syncing = false; ind.classList.remove('sync-active'); updateQueueUI(); }
         };
     }
@@ -223,6 +245,13 @@
             const count = e.target.result;
             document.getElementById('syncIndicator').style.display = count > 0 ? 'block' : 'none';
             document.getElementById('qCount').innerText = count;
+        };
+    }
+    function checkQueue() {
+        const tx = db.transaction("reports", "readonly");
+        tx.objectStore("reports").count().onsuccess = (e) => {
+            alert(`В очереди: ${e.target.result} отчетов.\nСтатус: ${lastError}`);
+            sync();
         };
     }
     function cam(i, t) {
