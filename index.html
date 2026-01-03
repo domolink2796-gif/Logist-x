@@ -47,10 +47,17 @@
         .dot-matrix { background-image: radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); background-size: 30px 30px; }
         .benefit-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; padding: 2rem; transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
         .benefit-card:hover { border-color: var(--accent); background: rgba(245, 158, 11, 0.05); }
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-blur: 10px; overflow-y: auto; }
-        .modal-content { background: #0d1117; margin: 5% auto; padding: 40px; border: 1px solid #30363d; width: 90%; max-width: 800px; border-radius: 24px; color: #8b949e; font-size: 14px; line-height: 1.6; }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); overflow-y: auto; }
+        .modal-content { background: #0d1117; margin: 5% auto; padding: 40px; border: 1px solid #30363d; width: 95%; max-width: 600px; border-radius: 24px; color: #8b949e; font-size: 14px; line-height: 1.6; position: relative; }
         .modal-header { color: #f59e0b; font-weight: 900; font-size: 24px; margin-bottom: 20px; text-transform: uppercase; }
         .close-modal { color: #fff; float: right; font-size: 28px; cursor: pointer; }
+        /* Стили для входа в кабинет */
+        .login-input { width: 100%; background: #010409; border: 1px solid #30363d; padding: 15px; border-radius: 12px; color: #fff; font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 15px; letter-spacing: 2px; }
+        .login-input:focus { border-color: var(--accent); outline: none; }
+        #cabinetFrame { width: 100%; height: 80vh; border: none; border-radius: 12px; }
+        /* Стили вкладок */
+        .tab-btn { font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; padding-bottom: 8px; border-bottom: 2px solid transparent; opacity: 0.4; transition: 0.3s; }
+        .tab-btn.active { opacity: 1; color: var(--accent); border-bottom-color: var(--accent); }
     </style>
 </head>
 <body class="dot-matrix">
@@ -62,7 +69,7 @@
                 <span class="text-2xl font-black italic tracking-tighter uppercase text-white">LOGIST<span class="text-amber-500">_X</span></span>
             </div>
             <div class="flex gap-2">
-                <button onclick="goToBot()" class="btn-bot-outline px-4 py-2 text-[9px] hidden sm:flex">Открыть Бот</button>
+                <button onclick="openModal('modalCabinet')" class="btn-bot-outline px-4 py-2 text-[9px]">Личный Кабинет</button>
                 <button onclick="handleInstallClick()" class="btn-install-gold px-5 py-2.5 text-[9px] hidden xs:flex">Установить App</button>
             </div>
         </div>
@@ -185,11 +192,54 @@
             <p>Никитин Евгений Анатольевич | ИНН: 575405332940</p>
             <p>Email: evgeny_orel@mail.ru | Тел: +7 995 447-01-30</p>
         </div>
-        <div class="mt-6 flex justify-center gap-6 text-[10px] uppercase font-bold text-white/40">
-            <a href="javascript:void(0)" onclick="openModal('modalPrivacy')" class="hover:text-amber-500">Политика конфиденциальности</a>
-            <a href="javascript:void(0)" onclick="openModal('modalTerms')" class="hover:text-amber-500">Публичная оферта</a>
+        <div class="mt-6 flex flex-wrap justify-center gap-6 text-[10px] uppercase font-bold text-white/40">
+            <a href="https://t.me/gena_krokodi" target="_blank" class="text-amber-500 border border-amber-500/30 px-4 py-2 rounded-full hover:bg-amber-500 hover:text-black transition-all flex items-center gap-2"><i data-lucide="send" size="12"></i> СВЯЗАТЬСЯ С НАМИ</a>
+            <a href="javascript:void(0)" onclick="openModal('modalPrivacy')" class="hover:text-amber-500 self-center">Политика конфиденциальности</a>
+            <a href="javascript:void(0)" onclick="openModal('modalTerms')" class="hover:text-amber-500 self-center">Публичная оферта</a>
         </div>
     </footer>
+
+    <div id="modalCabinet" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modalCabinet')">&times;</span>
+            
+            <div id="auth-ui">
+                <div class="flex gap-6 mb-8 border-b border-white/10">
+                    <button onclick="switchTab('login')" id="btn-tab-login" class="tab-btn active">Вход по ключу</button>
+                    <button onclick="switchTab('buy')" id="btn-tab-buy" class="tab-btn">Купить лицензию</button>
+                </div>
+
+                <div id="login-section">
+                    <div class="modal-header">Вход в кабинет</div>
+                    <p class="mb-6">Введите 8-значный ключ вашего объекта для доступа к отчетам и статистике:</p>
+                    <input type="text" id="userKey" class="login-input" placeholder="XXXX-XXXX" maxlength="9">
+                    <button onclick="loginToCabinet()" class="btn-install-gold w-full py-4 text-sm tracking-widest uppercase italic text-black">ОТКРЫТЬ ДАННЫЕ</button>
+                </div>
+
+                <div id="buy-section" style="display: none;">
+                    <div class="modal-header">Новая лицензия</div>
+                    <p class="mb-6 text-xs italic">Заполните данные для формирования счета в Робокассе:</p>
+                    <div class="space-y-4">
+                        <input type="text" id="buyName" class="login-input !text-left !text-sm !mb-0" placeholder="Название объекта (н-р: Склад-1)">
+                        <div class="flex gap-2">
+                            <input type="number" id="buyLimit" class="login-input !text-left !text-sm !mb-0" value="5" min="1" title="Количество сотрудников">
+                            <select id="buyType" class="login-input !text-left !text-sm !mb-0 !bg-black">
+                                <option value="logist">LOGIST_X</option>
+                                <option value="merch">MERCH_X</option>
+                            </select>
+                        </div>
+                        <button onclick="buyLicenseOnSite()" class="btn-install-gold w-full py-4 text-sm tracking-widest uppercase italic text-black">Оплатить доступ</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="iframe-section" style="display: none;">
+                <div class="modal-header" id="cabinetTitle">Ваш Кабинет</div>
+                <iframe id="cabinetFrame" src=""></iframe>
+                <button onclick="location.reload()" class="mt-4 text-[10px] uppercase opacity-50 hover:opacity-100">← Выйти из кабинета</button>
+            </div>
+        </div>
+    </div>
 
     <div id="modalPrivacy" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span><div class="modal-header">Политика конфиденциальности</div><p>Настоящая политика действует в отношении всей информации, которую сервис LOGIST_X может получить о пользователе...</p></div></div>
     <div id="modalTerms" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalTerms')">&times;</span><div class="modal-header">Публичная оферта</div><p>Сервис LOGIST_X (ИП Никитин Е.А.) предоставляет доступ к ПО на условиях подписки 1500 руб/мес...</p></div></div>
@@ -197,6 +247,7 @@
     <script>
         lucide.createIcons();
         const BOT_URL = 'https://t.me/LogistX_Robot_Bot';
+        const SERVER_URL = 'https://logist-x-server-production.up.railway.app';
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
         async function handleInstallClick() {
@@ -206,6 +257,49 @@
         function goToBot() { window.location.href = BOT_URL; }
         function openModal(id) { document.getElementById(id).style.display = "block"; }
         function closeModal(id) { document.getElementById(id).style.display = "none"; }
+
+        function switchTab(tab) {
+            const isLogin = tab === 'login';
+            document.getElementById('login-section').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('buy-section').style.display = isLogin ? 'none' : 'block';
+            document.getElementById('btn-tab-login').classList.toggle('active', isLogin);
+            document.getElementById('btn-tab-buy').classList.toggle('active', !isLogin);
+        }
+
+        async function loginToCabinet() {
+            const keyInput = document.getElementById('userKey').value.trim().toUpperCase();
+            if(!keyInput) return alert('Введите ключ!');
+            try {
+                const response = await fetch(`${SERVER_URL}/api/keys`);
+                const keys = await response.json();
+                const found = keys.find(k => k.key === keyInput);
+                if (found && found.ownerChatId) {
+                    document.getElementById('auth-ui').style.display = 'none';
+                    document.getElementById('iframe-section').style.display = 'block';
+                    document.getElementById('cabinetTitle').innerText = found.name;
+                    document.getElementById('cabinetFrame').src = `${SERVER_URL}/client-dashboard?chatId=${found.ownerChatId}`;
+                } else {
+                    alert('Ключ не найден или еще не активирован в Telegram боте!');
+                }
+            } catch (e) { alert('Ошибка связи с сервером.'); }
+        }
+
+        async function buyLicenseOnSite() {
+            const name = document.getElementById('buyName').value.trim();
+            const limit = document.getElementById('buyLimit').value;
+            const type = document.getElementById('buyType').value;
+            if(!name) return alert('Введите название объекта!');
+            try {
+                const r = await fetch(`${SERVER_URL}/api/notify-admin`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ key: "NEW_USER", name: name, days: 30, limit: parseInt(limit), chatId: "WEBSITE_SALE", type: type })
+                });
+                const res = await r.json();
+                if(res.success && res.payUrl) window.location.href = res.payUrl;
+                else alert('Ошибка при создании счета');
+            } catch (e) { alert('Ошибка сети при попытке оплаты'); }
+        }
     </script>
 </body>
 </html>
