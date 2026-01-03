@@ -51,11 +51,9 @@
         .modal-content { background: #0d1117; margin: 5% auto; padding: 40px; border: 1px solid #30363d; width: 95%; max-width: 600px; border-radius: 24px; color: #8b949e; font-size: 14px; line-height: 1.6; position: relative; }
         .modal-header { color: #f59e0b; font-weight: 900; font-size: 24px; margin-bottom: 20px; text-transform: uppercase; }
         .close-modal { color: #fff; float: right; font-size: 28px; cursor: pointer; }
-        /* Стили для входа в кабинет */
         .login-input { width: 100%; background: #010409; border: 1px solid #30363d; padding: 15px; border-radius: 12px; color: #fff; font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 15px; letter-spacing: 2px; }
         .login-input:focus { border-color: var(--accent); outline: none; }
         #cabinetFrame { width: 100%; height: 80vh; border: none; border-radius: 12px; }
-        /* Стили вкладок */
         .tab-btn { font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; padding-bottom: 8px; border-bottom: 2px solid transparent; opacity: 0.4; transition: 0.3s; }
         .tab-btn.active { opacity: 1; color: var(--accent); border-bottom-color: var(--accent); }
     </style>
@@ -103,7 +101,7 @@
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-left text-white">
                 <div class="benefit-card text-center sm:text-left">
                     <div class="text-amber-500 mb-6 mx-auto sm:mx-0"><i data-lucide="layout-grid" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase italic">Авто-Иерархия</h3>
+                    <h3 class="text-xl font-black mb-4 uppercase italic">Авто-ИерарHierarchy</h3>
                     <p class="opacity-40 text-xs leading-relaxed italic">Автоматическое создание папок: <strong>Монтажник → Объект → Дата.</strong></p>
                 </div>
                 <div class="benefit-card text-center sm:text-left">
@@ -211,24 +209,49 @@
 
                 <div id="login-section">
                     <div class="modal-header">Вход в кабинет</div>
-                    <p class="mb-6">Введите 8-значный ключ вашего объекта для доступа к отчетам и статистике:</p>
+                    <p class="mb-6">Введите 8-значный ключ вашего объекта:</p>
                     <input type="text" id="userKey" class="login-input" placeholder="XXXX-XXXX" maxlength="9">
                     <button onclick="loginToCabinet()" class="btn-install-gold w-full py-4 text-sm tracking-widest uppercase italic text-black">ОТКРЫТЬ ДАННЫЕ</button>
                 </div>
 
                 <div id="buy-section" style="display: none;">
                     <div class="modal-header">Новая лицензия</div>
-                    <p class="mb-6 text-xs italic">Заполните данные для формирования счета в Робокассе:</p>
                     <div class="space-y-4">
-                        <input type="text" id="buyName" class="login-input !text-left !text-sm !mb-0" placeholder="Название объекта (н-р: Склад-1)">
-                        <div class="flex gap-2">
-                            <input type="number" id="buyLimit" class="login-input !text-left !text-sm !mb-0" value="5" min="1" title="Количество сотрудников">
+                        <div>
+                            <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Название объекта</label>
+                            <input type="text" id="buyName" class="login-input !text-left !text-sm !mb-0" placeholder="Например: Склад-1">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Сотрудников</label>
+                                <input type="number" id="buyLimit" class="login-input !text-left !text-sm !mb-0" value="5" min="1" oninput="calculatePrice()">
+                            </div>
+                            <div>
+                                <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Период</label>
+                                <select id="buyMonths" class="login-input !text-left !text-sm !mb-0 !bg-black" onchange="calculatePrice()">
+                                    <option value="30">1 месяц</option>
+                                    <option value="90">3 месяца (-10%)</option>
+                                    <option value="180">6 месяцев (-15%)</option>
+                                    <option value="365">1 год (ВЫГОДНО)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Тип проекта</label>
                             <select id="buyType" class="login-input !text-left !text-sm !mb-0 !bg-black">
-                                <option value="logist">LOGIST_X</option>
-                                <option value="merch">MERCH_X</option>
+                                <option value="logist">ВЫЕЗДНЫЕ (Расклейка / Монтаж)</option>
+                                <option value="merch">МЕРЧЕНДАЙЗЕР (Аналитика / PDF)</option>
                             </select>
                         </div>
-                        <button onclick="buyLicenseOnSite()" class="btn-install-gold w-full py-4 text-sm tracking-widest uppercase italic text-black">Оплатить доступ</button>
+
+                        <div class="bg-white/5 p-4 rounded-xl border border-white/10 text-center">
+                            <div class="text-[10px] uppercase opacity-50 mb-1">Итого к оплате:</div>
+                            <div id="totalPriceDisplay" class="text-2xl font-black text-amber-500">7 500 ₽</div>
+                        </div>
+                        
+                        <button onclick="buyLicenseOnSite()" class="btn-install-gold w-full py-4 text-sm tracking-widest uppercase italic text-black">ОПЛАТИТЬ ДОСТУП</button>
                     </div>
                 </div>
             </div>
@@ -249,11 +272,14 @@
         const BOT_URL = 'https://t.me/LogistX_Robot_Bot';
         const SERVER_URL = 'https://logist-x-server-production.up.railway.app';
         let deferredPrompt;
+        
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+        
         async function handleInstallClick() {
             if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
             else { alert('Меню браузера -> На экран Домой'); }
         }
+
         function goToBot() { window.location.href = BOT_URL; }
         function openModal(id) { document.getElementById(id).style.display = "block"; }
         function closeModal(id) { document.getElementById(id).style.display = "none"; }
@@ -264,6 +290,19 @@
             document.getElementById('buy-section').style.display = isLogin ? 'none' : 'block';
             document.getElementById('btn-tab-login').classList.toggle('active', isLogin);
             document.getElementById('btn-tab-buy').classList.toggle('active', !isLogin);
+        }
+
+        function calculatePrice() {
+            const limit = parseInt(document.getElementById('buyLimit').value) || 0;
+            const days = parseInt(document.getElementById('buyMonths').value);
+            let pricePerWorker = 0;
+            if (days == 30) pricePerWorker = 1500;
+            else if (days == 90) pricePerWorker = 1350; // (4050/3)
+            else if (days == 180) pricePerWorker = 1275; // (7650/6)
+            else if (days == 365) pricePerWorker = 1250; // (15000/12)
+            
+            const total = limit * (pricePerWorker * (days / 30));
+            document.getElementById('totalPriceDisplay').innerText = Math.round(total).toLocaleString() + ' ₽';
         }
 
         async function loginToCabinet() {
@@ -287,19 +326,22 @@
         async function buyLicenseOnSite() {
             const name = document.getElementById('buyName').value.trim();
             const limit = document.getElementById('buyLimit').value;
+            const days = document.getElementById('buyMonths').value;
             const type = document.getElementById('buyType').value;
             if(!name) return alert('Введите название объекта!');
             try {
                 const r = await fetch(`${SERVER_URL}/api/notify-admin`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ key: "NEW_USER", name: name, days: 30, limit: parseInt(limit), chatId: "WEBSITE_SALE", type: type })
+                    body: JSON.stringify({ key: "NEW_USER", name: name, days: parseInt(days), limit: parseInt(limit), chatId: "WEBSITE_SALE", type: type })
                 });
                 const res = await r.json();
                 if(res.success && res.payUrl) window.location.href = res.payUrl;
                 else alert('Ошибка при создании счета');
-            } catch (e) { alert('Ошибка сети при попытке оплаты'); }
+            } catch (e) { alert('Ошибка сети'); }
         }
+        
+        calculatePrice();
     </script>
 </body>
 </html>
