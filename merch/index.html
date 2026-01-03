@@ -35,6 +35,7 @@
         .cam-btn.ok { border-color: var(--green); color: var(--green); background: rgba(0,255,0,0.05); }
         #pdf-render { position: absolute; left: -9999px; width: 600px; background: #fff; color: #000; padding: 40px; box-sizing: border-box; }
         .hidden { display: none; }
+        .arch-img { width: 100%; border-radius: 8px; margin-top: 5px; border: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -94,7 +95,14 @@
             </div>
             <button class="btn-blue" id="finish-btn" style="background:var(--green); color:black; margin-top:20px;" onclick="saveToQueue()">ЗАВЕРШИТЬ</button>
         </div>
-        <button class="btn-blue" style="background:none; color:#555;" onclick="closeModal()">ОТМЕНА</button>
+        <div id="archive-block" class="hidden">
+            <div style="background:var(--card); padding:15px; border-radius:15px; border:1px solid var(--border);">
+                <div style="color:var(--green); font-weight:800; margin-bottom:10px;">ОТЧЕТ СОХРАНЕН</div>
+                <div id="arch-data" style="font-size:0.8rem; line-height:1.6;"></div>
+                <div class="photo-grid" id="arch-photos"></div>
+            </div>
+        </div>
+        <button class="btn-blue" style="background:none; color:#555;" onclick="closeModal()">ЗАКРЫТЬ</button>
     </div>
 </div>
 
@@ -143,8 +151,12 @@
     }
 
     function openDB() {
-        const req = indexedDB.open("MerchX_Final_Sync", 4);
-        req.onupgradeneeded = (e) => { const dbRef = e.target.result; if(!dbRef.objectStoreNames.contains("reports")) dbRef.createObjectStore("reports", { keyPath: "id", autoIncrement: true }); };
+        const req = indexedDB.open("MerchX_Final_Sync", 5);
+        req.onupgradeneeded = (e) => { 
+            const dbRef = e.target.result; 
+            if(!dbRef.objectStoreNames.contains("reports")) dbRef.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
+            if(!dbRef.objectStoreNames.contains("archive")) dbRef.createObjectStore("archive", { keyPath: "shop_id" });
+        };
         req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 8000); };
     }
 
@@ -176,11 +188,44 @@
     }
 
     function openModal(id) {
-        cur = DATA.shops.find(x => x.id === id); if(cur.done) return;
+        cur = DATA.shops.find(x => x.id === id); 
         document.getElementById('disp-addr').innerText = cur.addr; document.getElementById('inp-addr').value = cur.addr; document.getElementById('m-net').innerText = cur.net;
         document.getElementById('task-modal').style.display = 'flex';
-        if(cur.start) { document.getElementById('start-block').classList.add('hidden'); document.getElementById('report-block').classList.remove('hidden'); }
-        else { document.getElementById('start-block').classList.remove('hidden'); document.getElementById('report-block').classList.add('hidden'); }
+        
+        if(cur.done) {
+            document.getElementById('start-block').classList.add('hidden');
+            document.getElementById('report-block').classList.add('hidden');
+            document.getElementById('archive-block').classList.remove('hidden');
+            showArchive(cur.id);
+        } else if(cur.start) {
+            document.getElementById('start-block').classList.add('hidden');
+            document.getElementById('report-block').classList.remove('hidden');
+            document.getElementById('archive-block').classList.add('hidden');
+        } else {
+            document.getElementById('start-block').classList.remove('hidden');
+            document.getElementById('report-block').classList.add('hidden');
+            document.getElementById('archive-block').classList.add('hidden');
+        }
+    }
+
+    function showArchive(shopId) {
+        const tx = db.transaction("archive", "readonly");
+        const req = tx.objectStore("archive").get(shopId);
+        req.onsuccess = () => {
+            const d = req.result; if(!d) return;
+            document.getElementById('arch-data').innerHTML = `
+                <b>ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ:</b> ${d.duration}<br>
+                <b>ВИЗИТ:</b> ${d.startTime} - ${d.endTime}<br>
+                <b>ОСТАТОК:</b> ${d.stock} | <b>ФЕЙСИНГ:</b> ${d.faces}<br>
+                <b>ДОЛЯ:</b> ${d.share}% | <b>СРОК:</b> ${d.expDate || '-'}<br>
+                <b>ЦЕНЫ:</b> Наша ${d.ourPrice}₽ / Конкурент ${d.compPrice}₽
+            `;
+            document.getElementById('arch-photos').innerHTML = `
+                <div><center><span style="font-size:10px">ДО</span></center><img src="${d.img_pre}" class="arch-img"></div>
+                <div><center><span style="font-size:10px">ПОСЛЕ</span></center><img src="${d.img_post}" class="arch-img"></div>
+                <div><center><span style="font-size:10px">ЦЕННИК</span></center><img src="${d.img_price}" class="arch-img"></div>
+            `;
+        };
     }
 
     async function begin() {
@@ -230,7 +275,10 @@
                     startTime: startT, endTime: endT, duration: durMin + " МИН", 
                     pdf: pdfFull, pdfName: pdfName, lat: pos.coords.latitude, lon: pos.coords.longitude, sending: 0 
                 };
-                const tx = db.transaction("reports", "readwrite"); tx.objectStore("reports").add(report);
+                const arch = { shop_id: cur.id, ...report, img_pre: IMGS.pre, img_post: IMGS.post, img_price: IMGS.price };
+                const tx = db.transaction(["reports", "archive"], "readwrite"); 
+                tx.objectStore("reports").add(report);
+                tx.objectStore("archive").put(arch);
                 tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
                 btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
             }, 500);
@@ -289,7 +337,7 @@
     }
 
     function closeModal() { document.getElementById('task-modal').style.display='none'; IMGS = { pre:null, post:null, price:null }; document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); }
-    function clearData() { if(confirm("Очистить данные?")) { localStorage.clear(); location.reload(); } }
+    function clearData() { if(confirm("Очистить данные?")) { localStorage.clear(); indexedDB.deleteDatabase("MerchX_Final_Sync"); location.reload(); } }
 </script>
 </body>
 </html>
