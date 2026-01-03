@@ -38,6 +38,7 @@
         .hidden { display: none; }
         .arch-view { background: #0a0a0a; border-radius: 20px; padding: 5px; }
         .arch-img-item { width: 100%; border-radius: 12px; aspect-ratio: 3/4; object-fit: cover; border: 1px solid #333; }
+        .plan-box { margin: 15px 0; padding: 12px; border: 1px dashed var(--accent); border-radius: 14px; background: rgba(245, 158, 11, 0.03); text-align: center; }
     </style>
 </head>
 <body>
@@ -69,6 +70,9 @@
 <div id="task-modal" class="modal">
     <div class="m-form">
         <div id="m-net" style="color:var(--accent); font-weight:800; font-size:0.8rem; text-transform:uppercase;"></div>
+        <div id="planogram-section" class="plan-box">
+            <div id="plan-btn-box"><span style="font-size:10px; opacity:0.5;">Загрузка данных...</span></div>
+        </div>
         <div id="start-block">
             <div id="disp-addr" style="font-size: 1.2rem; font-weight: 700; margin: 15px 0;"></div>
             <button class="btn-blue" id="begin-btn" style="background:var(--green); color:black;" onclick="begin()">НАЧАТЬ ВИЗИТ</button>
@@ -108,7 +112,6 @@
         <button class="btn-blue" style="background:none; color:#555; margin-top:15px;" onclick="closeModal()">ЗАКРЫТЬ</button>
     </div>
 </div>
-
 <div id="pdf-render">
     <div style="display:flex; justify-content:space-between; border-bottom:4px solid #000; padding-bottom:10px;">
         <div style="font-size:32px; font-weight:900; letter-spacing:-1px;">LOGIST_X <span style="color:#f59e0b">MERCH</span></div>
@@ -141,10 +144,50 @@
         <div><div style="font-size:10px; font-weight:800; margin-bottom:5px;">ЦЕННИК</div><img id="p-i3" style="width:100%; border-radius:10px; aspect-ratio:3/4; object-fit:cover;"></div>
     </div>
 </div>
-
 <script>
     const API = 'https://logist-x-server-production.up.railway.app';
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, lastError = "...";
+
+    async function checkPlanogram(addr) {
+        const box = document.getElementById('plan-btn-box');
+        const url = `${API}/get-planogram?city=${encodeURIComponent(cur.city)}&addr=${encodeURIComponent(addr)}&key=${encodeURIComponent(DATA.key)}`;
+        try {
+            const res = await fetch(url);
+            const d = await res.json();
+            if(d.exists && d.url) {
+                box.innerHTML = `
+                    <div style="color:var(--accent); font-weight:800; font-size:11px; margin-bottom:8px;">✅ ПЛАНОГРАММА ДЛЯ ЭТОЙ ТОЧКИ</div>
+                    <button class="btn-blue" style="background:var(--accent); color:#000; padding:10px; font-size:12px;" onclick="window.open('${d.url}', '_blank')">ОТКРЫТЬ СХЕМУ</button>
+                    <label for="up-plan" style="font-size:9px; opacity:0.5; text-decoration:underline; display:block; margin-top:8px;">Обновить (фото листа)</label>
+                    <input type="file" id="up-plan" accept="image/*" capture="camera" class="hidden" onchange="uploadPlanogram(this)">
+                `;
+            } else {
+                box.innerHTML = `
+                    <div style="font-size:10px; opacity:0.8; margin-bottom:8px; line-height:1.2;">Возьмите лист планограммы у товароведа и сфотографируйте его для памяти</div>
+                    <label class="btn-blue" for="up-plan" style="background:#333; padding:10px; font-size:12px; border:1px solid #444;">📸 СОХРАНИТЬ ПЛАНОГРАММУ</label>
+                    <input type="file" id="up-plan" accept="image/*" capture="camera" class="hidden" onchange="uploadPlanogram(this)">
+                `;
+            }
+        } catch(e) { box.innerHTML = '<span style="color:red; font-size:10px;">Ошибка связи</span>'; }
+    }
+
+    async function uploadPlanogram(inp) {
+        if(!inp.files[0]) return;
+        const box = document.getElementById('plan-btn-box');
+        box.innerHTML = '<span style="font-size:10px; color:var(--accent);">СОХРАНЕНИЕ...</span>';
+        const r = new FileReader();
+        r.onload = async (e) => {
+            try {
+                const res = await fetch(`${API}/upload-planogram`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ city: cur.city, addr: cur.addr, key: DATA.key, image: e.target.result })
+                });
+                if(res.ok) { alert("Схема сохранена в приложении!"); checkPlanogram(cur.addr); }
+            } catch(err) { alert("Ошибка загрузки"); checkPlanogram(cur.addr); }
+        };
+        r.readAsDataURL(inp.files[0]);
+    }
 
     function getDist(lat1, lon1, lat2, lon2) {
         const R = 6371e3; const p1 = lat1 * Math.PI/180; const p2 = lat2 * Math.PI/180;
@@ -200,7 +243,7 @@
         cur = DATA.shops.find(x => x.id === id); 
         document.getElementById('m-net').innerText = cur.net;
         document.getElementById('task-modal').style.display = 'flex';
-        
+        checkPlanogram(cur.addr); 
         if(cur.done) {
             document.getElementById('start-block').classList.add('hidden');
             document.getElementById('report-block').classList.add('hidden');
@@ -221,22 +264,13 @@
 
     function startNewVisit() {
         if(confirm("Начать новый визит? Форма будет очищена, старый отчет останется на сервере и в архиве.")) {
-            cur.done = false;
-            cur.start = null;
-            IMGS = { pre: null, post: null, price: null };
+            cur.done = false; cur.start = null; IMGS = { pre: null, post: null, price: null };
             document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok'));
-            // Сброс полей ввода
-            document.getElementById('i-stock').value = 0;
-            document.getElementById('i-faces').value = 0;
-            document.getElementById('i-total-faces').value = 0;
-            document.getElementById('i-our-price').value = 0;
-            document.getElementById('i-comp-price').value = 0;
-            document.getElementById('share-val').innerText = 0;
-            document.getElementById('i-exp').value = "";
-            
-            localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
-            render();
-            openModal(cur.id);
+            document.getElementById('i-stock').value = 0; document.getElementById('i-faces').value = 0;
+            document.getElementById('i-total-faces').value = 0; document.getElementById('i-our-price').value = 0;
+            document.getElementById('i-comp-price').value = 0; document.getElementById('share-val').innerText = 0;
+            document.getElementById('i-exp').value = ""; localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+            render(); openModal(cur.id);
         }
     }
 
@@ -282,24 +316,20 @@
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const dist = getDist(pos.coords.latitude, pos.coords.longitude, cur.lat, cur.lon);
             if(dist > 600) { alert(`ВЫ СЛИШКОМ ДАЛЕКО!\nРасстояние: ${Math.round(dist)}м.\nНужно быть ближе 600м.`); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; return; }
-            
             const now = new Date();
             const startT = new Date(cur.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const endT = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const durMin = Math.max(1, Math.round((now - cur.start) / 60000));
             const durationTxt = durMin + " МИН";
-            
             document.getElementById('p-date').innerText = now.toLocaleDateString() + ", " + now.toLocaleTimeString(); 
-            document.getElementById('p-start-t').innerText = startT;
-            document.getElementById('p-end-t').innerText = endT;
-            document.getElementById('p-dur').innerText = durationTxt;
-            document.getElementById('p-net').innerText = cur.net; document.getElementById('p-addr-val').innerText = cur.addr;
-            document.getElementById('p-worker').innerText = DATA.name; document.getElementById('p-stock').innerText = document.getElementById('i-stock').value;
+            document.getElementById('p-start-t').innerText = startT; document.getElementById('p-end-t').innerText = endT;
+            document.getElementById('p-dur').innerText = durationTxt; document.getElementById('p-net').innerText = cur.net; 
+            document.getElementById('p-addr-val').innerText = cur.addr; document.getElementById('p-worker').innerText = DATA.name; 
+            document.getElementById('p-stock').innerText = document.getElementById('i-stock').value;
             document.getElementById('p-faces').innerText = document.getElementById('i-faces').value; document.getElementById('p-share').innerText = document.getElementById('share-val').innerText;
             document.getElementById('p-exp-val').innerText = document.getElementById('i-exp').value || "-";
             document.getElementById('p-our-price').innerText = document.getElementById('i-our-price').value;
             document.getElementById('p-comp-price').innerText = document.getElementById('i-comp-price').value;
-
             document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
             setTimeout(async () => {
                 const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1 });
@@ -313,11 +343,9 @@
                     startTime: startT, endTime: endT, duration: durationTxt, 
                     pdf: pdfFull, pdfName: pdfName, lat: pos.coords.latitude, lon: pos.coords.longitude, sending: 0 
                 };
-                
                 const arch = { shop_addr: cur.addr, ...report, img_pre: IMGS.pre, img_post: IMGS.post, img_price: IMGS.price };
                 const tx = db.transaction(["reports", "archive"], "readwrite"); 
-                tx.objectStore("reports").add(report);
-                tx.objectStore("archive").put(arch);
+                tx.objectStore("reports").add(report); tx.objectStore("archive").put(arch);
                 tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
                 btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
             }, 500);
@@ -334,10 +362,9 @@
                 const rid = cursor.key; report.sending = 1; cursor.update(report);
                 try {
                     const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(report) });
-                    if(res.ok) { // Коробочка уходит сразу, если сервер ответил OK
+                    if(res.ok) {
                         const delTx = db.transaction("reports", "readwrite");
-                        delTx.objectStore("reports").delete(rid);
-                        lastError = "ОК";
+                        delTx.objectStore("reports").delete(rid); lastError = "ОК";
                     } else throw new Error("Server busy");
                 } catch(err) { lastError = err.message; report.sending = 0; const errTx = db.transaction("reports", "readwrite"); errTx.objectStore("reports").put(report, rid); }
                 syncing = false; updateQueueUI();
