@@ -102,6 +102,7 @@
                 <div id="arch-addr-title" style="font-size:1.1rem; font-weight:800; margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:10px;"></div>
                 <div id="arch-details" style="font-size:0.85rem; line-height:1.6; color:#bbb;"></div>
                 <div class="photo-grid" id="arch-photos" style="margin-top:20px;"></div>
+                <button class="btn-blue" id="re-visit-btn" style="margin-top:20px; background:var(--blue);" onclick="startNewVisit()">🔄 НОВЫЙ ВИЗИТ (ПОВТОРНО)</button>
             </div>
         </div>
         <button class="btn-blue" style="background:none; color:#555; margin-top:15px;" onclick="closeModal()">ЗАКРЫТЬ</button>
@@ -218,6 +219,27 @@
         }
     }
 
+    function startNewVisit() {
+        if(confirm("Начать новый визит? Форма будет очищена, старый отчет останется на сервере и в архиве.")) {
+            cur.done = false;
+            cur.start = null;
+            IMGS = { pre: null, post: null, price: null };
+            document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok'));
+            // Сброс полей ввода
+            document.getElementById('i-stock').value = 0;
+            document.getElementById('i-faces').value = 0;
+            document.getElementById('i-total-faces').value = 0;
+            document.getElementById('i-our-price').value = 0;
+            document.getElementById('i-comp-price').value = 0;
+            document.getElementById('share-val').innerText = 0;
+            document.getElementById('i-exp').value = "";
+            
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+            render();
+            openModal(cur.id);
+        }
+    }
+
     function loadArchiveData(addr) {
         document.getElementById('arch-addr-title').innerText = addr;
         const tx = db.transaction("archive", "readonly");
@@ -312,7 +334,11 @@
                 const rid = cursor.key; report.sending = 1; cursor.update(report);
                 try {
                     const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(report) });
-                    const d = await res.json(); if(d.success) { const delTx = db.transaction("reports", "readwrite"); delTx.objectStore("reports").delete(rid); lastError = "ОК"; } else throw new Error(d.error);
+                    if(res.ok) { // Коробочка уходит сразу, если сервер ответил OK
+                        const delTx = db.transaction("reports", "readwrite");
+                        delTx.objectStore("reports").delete(rid);
+                        lastError = "ОК";
+                    } else throw new Error("Server busy");
                 } catch(err) { lastError = err.message; report.sending = 0; const errTx = db.transaction("reports", "readwrite"); errTx.objectStore("reports").put(report, rid); }
                 syncing = false; updateQueueUI();
             } else { syncing = false; updateQueueUI(); }
