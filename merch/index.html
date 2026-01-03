@@ -179,12 +179,12 @@
         r.onload = async (e) => {
             const img = new Image(); img.src = e.target.result;
             img.onload = async () => {
-                const c = document.createElement('canvas'); 
-                let w = img.width, h = img.height, m = 1280;
+                const c = document.createElement('canvas'); const ctx = c.getContext('2d', {alpha: false});
+                let w = img.width, h = img.height, m = 1024;
                 if(w > h) { if(w > m) { h *= m/w; w = m; } } else { if(h > m) { w *= m/h; h = m; } }
-                c.width = w; c.height = h; 
-                c.getContext('2d').drawImage(img, 0, 0, w, h);
-                const compressed = c.toDataURL('image/jpeg', 0.7);
+                c.width = w; c.height = h; ctx.imageSmoothingQuality = 'low';
+                ctx.drawImage(img, 0, 0, w, h);
+                const compressed = c.toDataURL('image/jpeg', 0.5);
                 try {
                     const res = await fetch(`${API}/upload-planogram`, {
                         method: 'POST',
@@ -193,6 +193,7 @@
                     });
                     if(res.ok) { alert("Схема сохранена!"); checkPlanogram(cur.addr); }
                 } catch(err) { alert("Ошибка загрузки"); checkPlanogram(cur.addr); }
+                c.remove();
             };
         };
         r.readAsDataURL(inp.files[0]);
@@ -398,10 +399,13 @@
         r.onload = (e) => {
             const img = new Image(); img.src = e.target.result;
             img.onload = () => {
-                const c = document.createElement('canvas'); let w = img.width, h = img.height, m = 1024;
+                const c = document.createElement('canvas'); const ctx = c.getContext('2d', {alpha: false});
+                let w = img.width, h = img.height, m = 1024;
                 if(w > h) { if(w > m) { h *= m/w; w = m; } } else { if(h > m) { w *= m/h; h = m; } }
-                c.width = w; c.height = h; c.getContext('2d').drawImage(img, 0, 0, w, h);
-                IMGS[t] = c.toDataURL('image/jpeg', 0.6); document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok');
+                c.width = w; c.height = h; ctx.imageSmoothingQuality = 'low';
+                ctx.drawImage(img, 0, 0, w, h);
+                IMGS[t] = c.toDataURL('image/jpeg', 0.5); document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok');
+                c.remove();
             };
         }; r.readAsDataURL(i.files[0]);
     }
