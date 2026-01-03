@@ -35,7 +35,8 @@
         .cam-btn.ok { border-color: var(--green); color: var(--green); background: rgba(0,255,0,0.05); }
         #pdf-render { position: absolute; left: -9999px; width: 600px; background: #fff; color: #000; padding: 40px; box-sizing: border-box; }
         .hidden { display: none; }
-        .arch-img { width: 100%; border-radius: 8px; margin-top: 5px; border: 1px solid #333; }
+        .arch-view { background: #111; padding: 15px; border-radius: 15px; border: 1px solid #333; margin-top: 10px; }
+        .arch-img-box { width: 100%; border-radius: 8px; aspect-ratio: 3/4; object-fit: cover; border: 1px solid #222; }
     </style>
 </head>
 <body>
@@ -96,10 +97,10 @@
             <button class="btn-blue" id="finish-btn" style="background:var(--green); color:black; margin-top:20px;" onclick="saveToQueue()">ЗАВЕРШИТЬ</button>
         </div>
         <div id="archive-block" class="hidden">
-            <div style="background:var(--card); padding:15px; border-radius:15px; border:1px solid var(--border);">
-                <div style="color:var(--green); font-weight:800; margin-bottom:10px;">ОТЧЕТ СОХРАНЕН</div>
-                <div id="arch-data" style="font-size:0.8rem; line-height:1.6;"></div>
-                <div class="photo-grid" id="arch-photos"></div>
+            <div class="arch-view">
+                <div style="color:var(--green); font-weight:900; font-size:0.7rem; text-transform:uppercase; margin-bottom:10px;">Архивный отчет</div>
+                <div id="arch-content" style="font-size:0.85rem; line-height:1.5;"></div>
+                <div class="photo-grid" id="arch-photos" style="margin-top:15px;"></div>
             </div>
         </div>
         <button class="btn-blue" style="background:none; color:#555;" onclick="closeModal()">ЗАКРЫТЬ</button>
@@ -151,11 +152,11 @@
     }
 
     function openDB() {
-        const req = indexedDB.open("MerchX_Final_Sync", 5);
+        const req = indexedDB.open("MerchX_Final_Sync", 6);
         req.onupgradeneeded = (e) => { 
             const dbRef = e.target.result; 
             if(!dbRef.objectStoreNames.contains("reports")) dbRef.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
-            if(!dbRef.objectStoreNames.contains("archive")) dbRef.createObjectStore("archive", { keyPath: "shop_id" });
+            if(!dbRef.objectStoreNames.contains("archive")) dbRef.createObjectStore("archive", { keyPath: "shop_addr" });
         };
         req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 8000); };
     }
@@ -196,7 +197,7 @@
             document.getElementById('start-block').classList.add('hidden');
             document.getElementById('report-block').classList.add('hidden');
             document.getElementById('archive-block').classList.remove('hidden');
-            showArchive(cur.id);
+            showArchive(cur.addr);
         } else if(cur.start) {
             document.getElementById('start-block').classList.add('hidden');
             document.getElementById('report-block').classList.remove('hidden');
@@ -208,22 +209,25 @@
         }
     }
 
-    function showArchive(shopId) {
+    function showArchive(addr) {
         const tx = db.transaction("archive", "readonly");
-        const req = tx.objectStore("archive").get(shopId);
+        const req = tx.objectStore("archive").get(addr);
         req.onsuccess = () => {
             const d = req.result; if(!d) return;
-            document.getElementById('arch-data').innerHTML = `
-                <b>ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ:</b> ${d.duration}<br>
-                <b>ВИЗИТ:</b> ${d.startTime} - ${d.endTime}<br>
-                <b>ОСТАТОК:</b> ${d.stock} | <b>ФЕЙСИНГ:</b> ${d.faces}<br>
-                <b>ДОЛЯ:</b> ${d.share}% | <b>СРОК:</b> ${d.expDate || '-'}<br>
-                <b>ЦЕНЫ:</b> Наша ${d.ourPrice}₽ / Конкурент ${d.compPrice}₽
+            document.getElementById('arch-content').innerHTML = `
+                <div style="margin-bottom:8px; border-bottom:1px solid #222; padding-bottom:5px;">
+                    <b style="color:var(--accent)">ВРЕМЯ В МАГАЗИНЕ:</b> ${d.duration}
+                </div>
+                <b>Начало:</b> ${d.startTime} | <b>Конец:</b> ${d.endTime}<br>
+                <b>Остаток:</b> ${d.stock} | <b>Фейсинг:</b> ${d.faces}<br>
+                <b>Доля полки:</b> ${d.share}%<br>
+                <b>Цены:</b> Наша ${d.ourPrice}₽ / Конкурент ${d.compPrice}₽<br>
+                <b>Срок годности:</b> ${d.expDate || 'не указан'}
             `;
             document.getElementById('arch-photos').innerHTML = `
-                <div><center><span style="font-size:10px">ДО</span></center><img src="${d.img_pre}" class="arch-img"></div>
-                <div><center><span style="font-size:10px">ПОСЛЕ</span></center><img src="${d.img_post}" class="arch-img"></div>
-                <div><center><span style="font-size:10px">ЦЕННИК</span></center><img src="${d.img_price}" class="arch-img"></div>
+                <div><center style="font-size:8px;opacity:0.5">ДО</center><img src="${d.img_pre}" class="arch-img-box"></div>
+                <div><center style="font-size:8px;opacity:0.5">ПОСЛЕ</center><img src="${d.img_post}" class="arch-img-box"></div>
+                <div><center style="font-size:8px;opacity:0.5">ЦЕННИК</center><img src="${d.img_price}" class="arch-img-box"></div>
             `;
         };
     }
@@ -250,11 +254,12 @@
             const startT = new Date(cur.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const endT = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const durMin = Math.max(1, Math.round((now - cur.start) / 60000));
+            const durationTxt = durMin + " МИН";
             
             document.getElementById('p-date').innerText = now.toLocaleDateString() + ", " + now.toLocaleTimeString(); 
             document.getElementById('p-start-t').innerText = startT;
             document.getElementById('p-end-t').innerText = endT;
-            document.getElementById('p-dur').innerText = durMin + " МИН";
+            document.getElementById('p-dur').innerText = durationTxt;
             document.getElementById('p-net').innerText = cur.net; document.getElementById('p-addr-val').innerText = cur.addr;
             document.getElementById('p-worker').innerText = DATA.name; document.getElementById('p-stock').innerText = document.getElementById('i-stock').value;
             document.getElementById('p-faces').innerText = document.getElementById('i-faces').value; document.getElementById('p-share').innerText = document.getElementById('share-val').innerText;
@@ -272,10 +277,15 @@
                     stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value, 
                     ourPrice: document.getElementById('i-our-price').value, compPrice: document.getElementById('i-comp-price').value,
                     share: document.getElementById('share-val').innerText, expDate: document.getElementById('i-exp').value, 
-                    startTime: startT, endTime: endT, duration: durMin + " МИН", 
+                    startTime: startT, endTime: endT, duration: durationTxt, 
                     pdf: pdfFull, pdfName: pdfName, lat: pos.coords.latitude, lon: pos.coords.longitude, sending: 0 
                 };
-                const arch = { shop_id: cur.id, ...report, img_pre: IMGS.pre, img_post: IMGS.post, img_price: IMGS.price };
+                
+                const arch = { 
+                    shop_addr: cur.addr, ...report, 
+                    img_pre: IMGS.pre, img_post: IMGS.post, img_price: IMGS.price 
+                };
+                
                 const tx = db.transaction(["reports", "archive"], "readwrite"); 
                 tx.objectStore("reports").add(report);
                 tx.objectStore("archive").put(arch);
