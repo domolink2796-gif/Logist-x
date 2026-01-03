@@ -174,17 +174,26 @@
     async function uploadPlanogram(inp) {
         if(!inp.files[0]) return;
         const box = document.getElementById('plan-btn-box');
-        box.innerHTML = '<span style="font-size:10px; color:var(--accent);">СОХРАНЕНИЕ...</span>';
+        box.innerHTML = '<span style="font-size:10px; color:var(--accent);">СЖАТИЕ И СОХРАНЕНИЕ...</span>';
         const r = new FileReader();
         r.onload = async (e) => {
-            try {
-                const res = await fetch(`${API}/upload-planogram`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ city: cur.city, addr: cur.addr, key: DATA.key, image: e.target.result })
-                });
-                if(res.ok) { alert("Схема сохранена в приложении!"); checkPlanogram(cur.addr); }
-            } catch(err) { alert("Ошибка загрузки"); checkPlanogram(cur.addr); }
+            const img = new Image(); img.src = e.target.result;
+            img.onload = async () => {
+                const c = document.createElement('canvas'); 
+                let w = img.width, h = img.height, m = 1280;
+                if(w > h) { if(w > m) { h *= m/w; w = m; } } else { if(h > m) { w *= m/h; h = m; } }
+                c.width = w; c.height = h; 
+                c.getContext('2d').drawImage(img, 0, 0, w, h);
+                const compressed = c.toDataURL('image/jpeg', 0.7);
+                try {
+                    const res = await fetch(`${API}/upload-planogram`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ city: cur.city, addr: cur.addr, key: DATA.key, image: compressed })
+                    });
+                    if(res.ok) { alert("Схема сохранена!"); checkPlanogram(cur.addr); }
+                } catch(err) { alert("Ошибка загрузки"); checkPlanogram(cur.addr); }
+            };
         };
         r.readAsDataURL(inp.files[0]);
     }
@@ -389,10 +398,10 @@
         r.onload = (e) => {
             const img = new Image(); img.src = e.target.result;
             img.onload = () => {
-                const c = document.createElement('canvas'); let w = img.width, h = img.height, m = 800;
+                const c = document.createElement('canvas'); let w = img.width, h = img.height, m = 1024;
                 if(w > h) { if(w > m) { h *= m/w; w = m; } } else { if(h > m) { w *= m/h; h = m; } }
                 c.width = w; c.height = h; c.getContext('2d').drawImage(img, 0, 0, w, h);
-                IMGS[t] = c.toDataURL('image/jpeg', 0.5); document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok');
+                IMGS[t] = c.toDataURL('image/jpeg', 0.6); document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok');
             };
         }; r.readAsDataURL(i.files[0]);
     }
