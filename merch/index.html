@@ -154,10 +154,11 @@
         try {
             const res = await fetch(url);
             const d = await res.json();
-            if(d.exists && d.url) {
+            if(d.exists && (d.url || d.webContentLink)) {
+                const finalUrl = d.url || d.webContentLink;
                 box.innerHTML = `
                     <div style="color:var(--accent); font-weight:800; font-size:11px; margin-bottom:8px;">✅ ПЛАНОГРАММА ДЛЯ ЭТОЙ ТОЧКИ</div>
-                    <button class="btn-blue" style="background:var(--accent); color:#000; padding:10px; font-size:12px;" onclick="window.open('${d.url}', '_blank')">ОТКРЫТЬ СХЕМУ</button>
+                    <button class="btn-blue" style="background:var(--accent); color:#000; padding:10px; font-size:12px;" onclick="window.open('${finalUrl}', '_blank')">ОТКРЫТЬ СХЕМУ</button>
                     <label for="up-plan" style="font-size:9px; opacity:0.5; text-decoration:underline; display:block; margin-top:8px;">Обновить (фото листа)</label>
                     <input type="file" id="up-plan" accept="image/*" capture="camera" class="hidden" onchange="uploadPlanogram(this)">
                 `;
@@ -174,6 +175,7 @@
     async function uploadPlanogram(inp) {
         if(!inp.files[0]) return;
         const box = document.getElementById('plan-btn-box');
+        const originalContent = box.innerHTML;
         box.innerHTML = '<span style="font-size:10px; color:var(--accent);">СЖАТИЕ И СОХРАНЕНИЕ...</span>';
         const r = new FileReader();
         r.onload = async (e) => {
@@ -191,8 +193,12 @@
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ city: cur.city, addr: cur.addr, key: DATA.key, image: compressed })
                     });
-                    if(res.ok) { alert("Схема сохранена!"); checkPlanogram(cur.addr); }
-                } catch(err) { alert("Ошибка загрузки"); checkPlanogram(cur.addr); }
+                    if(res.ok) { 
+                        setTimeout(() => { checkPlanogram(cur.addr); }, 1500);
+                    } else {
+                        alert("Ошибка сервера"); box.innerHTML = originalContent;
+                    }
+                } catch(err) { alert("Ошибка загрузки"); box.innerHTML = originalContent; }
                 c.remove();
             };
         };
