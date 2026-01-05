@@ -66,6 +66,14 @@
         /* Индикатор очереди */
         #syncIndicator { position: fixed; bottom: 20px; right: 20px; background: var(--red); color: #fff; padding: 10px 20px; border-radius: 30px; font-weight: 900; font-size: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); display: none; z-index: 500; }
         
+        /* Список сканирования */
+        .scanned-item { background: #222; border-bottom: 1px solid #333; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .scanned-item:first-child { border-top-left-radius: 10px; border-top-right-radius: 10px; }
+        .scanned-item:last-child { border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; border-bottom: none; }
+        
+        /* Попап количества */
+        #qty-popup { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; border: 2px solid var(--accent); padding: 20px; border-radius: 20px; width: 80%; z-index: 2500; display: none; box-shadow: 0 0 50px rgba(0,0,0,1); text-align: center; }
+
         /* PDF Генератор (скрытый) */
         #pdf-render { position: absolute; left: -9999px; width: 800px; background: #fff; color: #000; font-family: sans-serif; }
     </style>
@@ -77,7 +85,7 @@
     <input type="text" id="lic-key" placeholder="Лицензионный Ключ" style="text-align:center;">
     <input type="text" id="work-name" placeholder="Ваше Имя (Фамилия)" style="text-align:center;">
     <button class="btn-blue btn-gold" onclick="auth()">ВОЙТИ В СИСТЕМУ</button>
-    <div style="font-size:10px; opacity:0.3; margin-top:20px;">v 2.0.1 | Server Connected</div>
+    <div style="font-size:10px; opacity:0.3; margin-top:20px;">v 2.1.0 | Smart Scanner</div>
 </div>
 
 <div id="scan-overlay" class="scan-overlay">
@@ -85,18 +93,32 @@
         <div style="font-weight:900; font-size:18px;">SCANNER</div>
         <div onclick="closeScanner()" style="font-size:24px;">✕</div>
     </div>
+    
     <div class="scan-view">
         <div id="reader"></div>
         <div class="scan-frame"></div>
+        
+        <div id="qty-popup">
+            <div id="qty-title" style="color:var(--accent); font-weight:800; font-size:16px; margin-bottom:15px;">ТОВАР НАЙДЕН</div>
+            <div style="font-size:12px; margin-bottom:5px; opacity:0.7;">Введите количество:</div>
+            <input type="number" id="qty-input" value="1" style="font-size:24px; text-align:center; font-weight:bold; color:var(--green);">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-blue" onclick="confirmQty()" style="background:var(--green); color:#000;">ДОБАВИТЬ</button>
+                <button class="btn-blue" onclick="cancelQty()" style="background:#333;">ОТМЕНА</button>
+            </div>
+        </div>
     </div>
+
     <div class="scan-ui">
         <div id="scan-msg" style="color:var(--accent); font-weight:800; font-size:14px; margin-bottom:10px;">НАВЕДИТЕ КАМЕРУ НА КОД</div>
+        
         <div id="new-prod-block" style="display:none;">
-            <div style="color:#fff; margin-bottom:10px; font-size:12px;">ТОВАР НЕ НАЙДЕН. ВВЕДИТЕ НАЗВАНИЕ:</div>
-            <input type="text" id="new-prod-name" placeholder="Например: Coca-Cola 0.5">
-            <button class="btn-blue btn-gold" onclick="saveNewProduct()">СОХРАНИТЬ И ДОБАВИТЬ</button>
+            <div style="color:#fff; margin-bottom:10px; font-size:12px;">НОВЫЙ ТОВАР. ВВЕДИТЕ НАЗВАНИЕ:</div>
+            <input type="text" id="new-prod-name" placeholder="Например: Кофе Gold 100г">
+            <button class="btn-blue btn-gold" onclick="saveNewProductName()">ДАЛЕЕ: ВВОД КОЛИЧЕСТВА</button>
         </div>
-        <button id="scan-close-btn" class="btn-blue" style="background:#333; margin-top:10px;" onclick="closeScanner()">ЗАКРЫТЬ</button>
+        
+        <button id="scan-close-btn" class="btn-blue" style="background:#333; margin-top:10px;" onclick="closeScanner()">ЗАКОНЧИТЬ СКАНИРОВАНИЕ</button>
     </div>
 </div>
 
@@ -140,28 +162,19 @@
         <div id="work-block" style="display:none;">
             
             <div style="background:#1a1a1a; padding:15px; border-radius:16px; margin-bottom:15px; border:1px solid #333;">
-                <div style="font-size:12px; font-weight:800; color:var(--accent); margin-bottom:10px; text-transform:uppercase;">СКАНИРОВАНИЕ И ОСТАТКИ</div>
+                <div style="font-size:12px; font-weight:800; color:var(--accent); margin-bottom:10px; text-transform:uppercase;">СКАНИРОВАНИЕ ТОВАРОВ</div>
                 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div>
-                        <span class="f-label">ПОЛКА (ШТ)</span>
-                        <div style="display:flex; gap:5px;">
-                            <input type="number" id="stock-shelf" value="0" style="text-align:center; font-weight:bold; font-size:18px;" oninput="calcTotal()">
-                            <button onclick="openScanner('shelf')" style="width:50px; background:var(--accent); border:none; border-radius:12px; font-size:20px;">📷</button>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="f-label">СКЛАД (ШТ)</span>
-                        <div style="display:flex; gap:5px;">
-                            <input type="number" id="stock-wh" value="0" style="text-align:center; font-weight:bold; font-size:18px;" oninput="calcTotal()">
-                            <button onclick="openScanner('wh')" style="width:50px; background:var(--blue); border:none; border-radius:12px; font-size:20px; color:#fff;">📷</button>
-                        </div>
-                    </div>
+                    <button class="btn-blue" onclick="openScanner('shelf')" style="background:var(--accent); color:#000;">📷 НА ПОЛКУ</button>
+                    <button class="btn-blue" onclick="openScanner('wh')" style="background:var(--blue); color:#fff;">📷 НА СКЛАД</button>
                 </div>
                 
-                <div style="text-align:center; margin-top:10px; padding-top:10px; border-top:1px solid #333;">
-                    <span style="font-size:10px; opacity:0.5;">ОБЩИЙ ОСТАТОК</span>
-                    <div id="total-stock" style="font-size:24px; font-weight:900; color:#fff;">0</div>
+                <div id="scanned-list" style="margin-top:15px; background:#111; border-radius:10px; overflow:hidden;">
+                    </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px; border-top:1px solid #333; padding-top:10px;">
+                    <div><span class="f-label">ВСЕГО ПОЛКА</span><input type="number" id="stock-shelf" value="0" readonly style="color:var(--accent); font-weight:bold;"></div>
+                    <div><span class="f-label">ВСЕГО СКЛАД</span><input type="number" id="stock-wh" value="0" readonly style="color:var(--blue); font-weight:bold;"></div>
                 </div>
             </div>
 
@@ -241,17 +254,19 @@
 
 <script>
     // --- НАСТРОЙКИ ---
-    const API_URL = 'https://logist-x-server-production.up.railway.app'; // Убедись, что адрес верен
+    const API_URL = 'https://logist-x-server-production.up.railway.app';
     
     let DATA = { shops: [], user: "", key: "" };
-    let CUR = null; // Текущий магазин
+    let CUR = null; 
     let IMGS = { pre:null, post:null, price:null };
     let db;
+    let SCANNED_ITEMS = []; // Список сканированных товаров
     
     // Переменные сканера
     let html5QrCode;
-    let scanTarget = 'shelf'; // 'shelf' или 'wh'
+    let scanTarget = 'shelf'; 
     let lastCode = null;
+    let tempScanName = "";
 
     // --- ИНИЦИАЛИЗАЦИЯ ---
     window.onload = () => {
@@ -262,9 +277,8 @@
         if(!DATA.user || !DATA.key) document.getElementById('auth-screen').style.display = 'flex';
         else {
             document.getElementById('auth-screen').style.display = 'none';
-            checkLic(); // Фоновая проверка лицензии
+            checkLic();
         }
-        
         initDB();
         renderList();
     };
@@ -273,17 +287,14 @@
         const k = document.getElementById('lic-key').value.trim().toUpperCase();
         const n = document.getElementById('work-name').value.trim();
         if(!k || !n) return alert("Заполните все поля");
-        
         try {
             const r = await fetch(API_URL + '/check-license', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
+                method: 'POST', headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({ licenseKey: k, workerName: n })
             });
             const d = await r.json();
             if(d.status === 'active') {
-                localStorage.setItem('mx_user', n);
-                localStorage.setItem('mx_key', k);
+                localStorage.setItem('mx_user', n); localStorage.setItem('mx_key', k);
                 DATA.user = n; DATA.key = k;
                 document.getElementById('auth-screen').style.display = 'none';
                 alert(`Добро пожаловать, ${n}!`);
@@ -292,14 +303,7 @@
     }
     
     async function checkLic() {
-        // Просто проверка срока, чтобы обновить UI если истек
-        try {
-            await fetch(API_URL + '/check-license', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({ licenseKey: DATA.key, workerName: DATA.user })
-            });
-        } catch(e){}
+        try { await fetch(API_URL + '/check-license', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ licenseKey: DATA.key, workerName: DATA.user }) }); } catch(e){}
     }
 
     // --- СПИСОК МАГАЗИНОВ ---
@@ -309,17 +313,12 @@
             const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
             DATA.shops = rows.map((x, i) => ({
-                id: i,
-                net: x['Сеть'] || 'Магазин',
-                addr: x['Адрес'] || 'Без адреса',
-                city: x['Город'] || 'Город',
-                lat: x['Широта'], lon: x['Долгота'],
-                done: false, data: null
+                id: i, net: x['Сеть'] || 'Магазин', addr: x['Адрес'] || 'Без адреса', city: x['Город'] || 'Город',
+                lat: x['Широта'], lon: x['Долгота'], done: false, data: null
             }));
             localStorage.setItem('mx_shops', JSON.stringify(DATA.shops));
             renderList();
-        };
-        r.readAsArrayBuffer(inp.files[0]);
+        }; r.readAsArrayBuffer(inp.files[0]);
     }
 
     function renderList() {
@@ -339,10 +338,7 @@
     }
 
     function clearAll() {
-        if(confirm("Удалить все данные и выйти?")) {
-            localStorage.clear();
-            location.reload();
-        }
+        if(confirm("Удалить все данные и выйти?")) { localStorage.clear(); location.reload(); }
     }
 
     // --- ЛОГИКА ВИЗИТА ---
@@ -358,14 +354,11 @@
 
         if(CUR.done) {
             document.getElementById('arch-block').style.display = 'block';
-            document.getElementById('arch-info').innerHTML = `
-                Дата: ${CUR.data.date}<br>
-                Время в магазине: ${CUR.data.duration}<br>
-                Остаток: ${parseInt(CUR.data.s_shelf)+parseInt(CUR.data.s_wh)} шт
-            `;
+            document.getElementById('arch-info').innerHTML = `Дата: ${CUR.data.date}<br>Время: ${CUR.data.duration}<br>Остаток: ${parseInt(CUR.data.s_shelf)+parseInt(CUR.data.s_wh)} шт`;
         } else if(CUR.start) {
-            restoreForm();
             document.getElementById('work-block').style.display = 'block';
+            renderScannedItems();
+            updateTotalFields();
         } else {
             document.getElementById('start-block').style.display = 'block';
             checkPlan();
@@ -407,16 +400,17 @@
     function startVisit() {
         CUR.start = Date.now();
         localStorage.setItem('mx_shops', JSON.stringify(DATA.shops));
+        SCANNED_ITEMS = []; // Новый визит - пустой список
         document.getElementById('start-block').style.display = 'none';
         document.getElementById('work-block').style.display = 'block';
-        // Обнуление формы
+        
         document.getElementById('stock-shelf').value = 0;
         document.getElementById('stock-wh').value = 0;
         document.getElementById('faces-mine').value = 0;
         document.getElementById('faces-total').value = 0;
         IMGS = { pre:null, post:null, price:null };
         document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok'));
-        calcTotal();
+        renderScannedItems();
     }
 
     function resetVisit() {
@@ -432,6 +426,7 @@
         document.getElementById('scan-overlay').style.display = 'flex';
         document.getElementById('new-prod-block').style.display = 'none';
         document.getElementById('scan-msg').style.display = 'block';
+        document.getElementById('qty-popup').style.display = 'none';
         
         html5QrCode = new Html5Qrcode("reader");
         html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScan, (err)=>{});
@@ -440,59 +435,127 @@
     function closeScanner() {
         if(html5QrCode) html5QrCode.stop().then(()=> html5QrCode.clear());
         document.getElementById('scan-overlay').style.display = 'none';
+        document.getElementById('qty-popup').style.display = 'none';
     }
 
     async function onScan(code) {
-        if(lastCode === code) return; // Защита от дребезга
+        if(lastCode === code) return; 
         lastCode = code;
-        
-        // Звук пика
+        html5QrCode.pause(); // Ставим на паузу, пока юзер вводит кол-во
         speak("Пик");
 
-        // Проверка в базе
         try {
             const r = await fetch(`${API_URL}/check-barcode?code=${code}&key=${DATA.key}`);
             const d = await r.json();
             
             if(d.exists) {
-                // Товар найден -> Добавляем
-                addStock(scanTarget);
-                document.getElementById('scan-msg').innerHTML = `<span style="color:var(--green)">${d.name}</span><br>+1 ДОБАВЛЕНО`;
-                setTimeout(() => { lastCode = null; document.getElementById('scan-msg').innerText = "СКАНИРУЙТЕ ДАЛЬШЕ..."; }, 1500);
+                // Товар найден -> Показываем попап количества
+                tempScanName = d.name;
+                showQtyPopup();
             } else {
-                // Товар новый -> Пауза и ввод имени
-                html5QrCode.pause();
+                // Товар новый -> Ввод названия
                 document.getElementById('scan-msg').style.display = 'none';
                 document.getElementById('new-prod-block').style.display = 'block';
                 document.getElementById('new-prod-name').focus();
             }
-        } catch(e) { alert("Ошибка сети"); }
+        } catch(e) { alert("Ошибка сети"); html5QrCode.resume(); lastCode = null; }
     }
 
-    function addStock(target) {
-        const el = document.getElementById(target === 'shelf' ? 'stock-shelf' : 'stock-wh');
-        el.value = parseInt(el.value) + 1;
-        calcTotal();
-    }
-
-    async function saveNewProduct() {
+    async function saveNewProductName() {
         const name = document.getElementById('new-prod-name').value;
         if(!name) return;
+        tempScanName = name;
         
+        // Сохраняем имя в базу
         try {
             await fetch(`${API_URL}/save-barcode`, {
                 method:'POST', headers:{'Content-Type':'application/json'},
                 body: JSON.stringify({ key: DATA.key, code: lastCode, name: name })
             });
-            // Успех
-            addStock(scanTarget);
+            // Переходим к вводу количества
             document.getElementById('new-prod-block').style.display = 'none';
             document.getElementById('new-prod-name').value = "";
-            document.getElementById('scan-msg').style.display = 'block';
-            document.getElementById('scan-msg').innerText = "СОХРАНЕНО! ГОТОВ К СЛЕДУЮЩЕМУ...";
-            html5QrCode.resume();
-            lastCode = null;
-        } catch(e) { alert("Не удалось сохранить"); }
+            showQtyPopup();
+        } catch(e) { alert("Не удалось сохранить"); html5QrCode.resume(); lastCode = null; }
+    }
+
+    function showQtyPopup() {
+        document.getElementById('scan-msg').style.display = 'none';
+        const popup = document.getElementById('qty-popup');
+        document.getElementById('qty-title').innerText = tempScanName;
+        document.getElementById('qty-input').value = 1;
+        popup.style.display = 'block';
+        document.getElementById('qty-input').focus();
+        document.getElementById('qty-input').select();
+    }
+
+    function confirmQty() {
+        const qty = parseInt(document.getElementById('qty-input').value);
+        if(!qty || qty < 0) return;
+        
+        // Добавляем в список
+        const item = {
+            name: tempScanName,
+            qty: qty,
+            type: scanTarget // 'shelf' или 'wh'
+        };
+        SCANNED_ITEMS.push(item);
+        
+        renderScannedItems();
+        updateTotalFields();
+        
+        // Сброс и продолжение
+        document.getElementById('qty-popup').style.display = 'none';
+        document.getElementById('scan-msg').style.display = 'block';
+        document.getElementById('scan-msg').innerHTML = `<span style="color:var(--green)">+${qty} ${tempScanName}</span><br>ДОБАВЛЕНО!`;
+        
+        lastCode = null;
+        html5QrCode.resume();
+        
+        setTimeout(() => { document.getElementById('scan-msg').innerText = "НАВЕДИТЕ КАМЕРУ..."; }, 1500);
+    }
+
+    function cancelQty() {
+        document.getElementById('qty-popup').style.display = 'none';
+        document.getElementById('scan-msg').style.display = 'block';
+        lastCode = null;
+        html5QrCode.resume();
+    }
+
+    function renderScannedItems() {
+        const container = document.getElementById('scanned-list');
+        if(SCANNED_ITEMS.length === 0) {
+            container.innerHTML = '<div style="padding:15px; text-align:center; font-size:12px; opacity:0.5;">Список пуст. Сканируйте товары.</div>';
+            return;
+        }
+        
+        // Группировка одинаковых товаров для отображения (опционально)
+        // Пока просто выводим список последних действий сверху
+        let html = '';
+        // Переворачиваем копию, чтобы новые были сверху
+        [...SCANNED_ITEMS].reverse().forEach(item => {
+            const color = item.type === 'shelf' ? 'var(--accent)' : 'var(--blue)';
+            const typeText = item.type === 'shelf' ? 'ПОЛКА' : 'СКЛАД';
+            html += `
+            <div class="scanned-item">
+                <div style="font-size:12px; font-weight:700;">${item.name}</div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                    <div style="font-size:14px; font-weight:900;">${item.qty} шт</div>
+                    <div style="font-size:9px; color:${color}; font-weight:bold;">${typeText}</div>
+                </div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function updateTotalFields() {
+        let s = 0, w = 0;
+        SCANNED_ITEMS.forEach(i => {
+            if(i.type === 'shelf') s += i.qty;
+            else w += i.qty;
+        });
+        document.getElementById('stock-shelf').value = s;
+        document.getElementById('stock-wh').value = w;
     }
 
     function speak(txt) {
@@ -501,12 +564,6 @@
             u.lang = 'ru-RU'; u.rate = 1.5;
             window.speechSynthesis.speak(u);
         }
-    }
-
-    function calcTotal() {
-        const s = parseInt(document.getElementById('stock-shelf').value) || 0;
-        const w = parseInt(document.getElementById('stock-wh').value) || 0;
-        document.getElementById('total-stock').innerText = s + w;
     }
     
     function calcShare() {
@@ -529,10 +586,8 @@
             r.onload = e => {
                 const img = new Image(); img.src = e.target.result;
                 img.onload = () => {
-                    const c = document.createElement('canvas');
-                    const ctx = c.getContext('2d');
-                    let w = img.width, h = img.height;
-                    const max = 1000;
+                    const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+                    let w = img.width, h = img.height; const max = 1000;
                     if(w > h) { if(w > max) { h*=max/w; w=max; } } else { if(h > max) { w*=max/h; h=max; } }
                     c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h);
                     res(c.toDataURL('image/jpeg', 0.6));
@@ -546,7 +601,6 @@
         const btn = document.getElementById('fin-btn');
         btn.disabled = true; btn.innerText = "ГЕНЕРАЦИЯ ОТЧЕТА...";
 
-        // Данные
         const now = new Date();
         const startT = new Date(CUR.start);
         const dur = Math.round((now - startT)/60000) + " мин";
@@ -570,68 +624,43 @@
         document.getElementById('pdf-prices').innerText = `${document.getElementById('price-our').value} / ${document.getElementById('price-comp').value}`;
         document.getElementById('pdf-exp').innerText = document.getElementById('exp-date').value;
         
-        document.getElementById('pdf-img1').src = IMGS.pre;
-        document.getElementById('pdf-img2').src = IMGS.post;
-        document.getElementById('pdf-img3').src = IMGS.price;
+        document.getElementById('pdf-img1').src = IMGS.pre; document.getElementById('pdf-img2').src = IMGS.post; document.getElementById('pdf-img3').src = IMGS.price;
 
-        // Рендер PDF
         setTimeout(async () => {
             const canvas = await html2canvas(document.getElementById('pdf-render'));
             const pdfData = canvas.toDataURL('image/jpeg', 0.7);
-            
-            // Формирование имени файла: СЕТЬ_АДРЕС
             const safeName = `${CUR.net}_${CUR.addr}`.replace(/[^a-zA-Zа-яА-Я0-9]/g, '_');
 
             const report = {
-                worker: DATA.user,
-                net: CUR.net,
-                address: CUR.addr,
-                city: CUR.city,
-                stock_shelf: stock_s,
-                stock_wh: stock_w,
+                worker: DATA.user, net: CUR.net, address: CUR.addr, city: CUR.city,
+                stock_shelf: stock_s, stock_wh: stock_w,
                 faces: document.getElementById('faces-mine').value,
                 share: document.getElementById('share-val').innerText,
                 ourPrice: document.getElementById('price-our').value,
                 compPrice: document.getElementById('price-comp').value,
                 expDate: document.getElementById('exp-date').value,
-                pdf: pdfData,
-                pdfName: safeName, // Отправляем имя файла
-                startTime: startT.toLocaleTimeString(),
-                endTime: now.toLocaleTimeString(),
-                duration: dur,
-                lat: CUR.lat || 0, lon: CUR.lon || 0,
-                created: Date.now()
+                pdf: pdfData, pdfName: safeName,
+                startTime: startT.toLocaleTimeString(), endTime: now.toLocaleTimeString(), duration: dur,
+                lat: CUR.lat || 0, lon: CUR.lon || 0, created: Date.now()
             };
 
-            // Сохранение в БД
             const tx = db.transaction('reports', 'readwrite');
             tx.objectStore('reports').add(report);
             
-            CUR.done = true;
-            CUR.data = { date: now.toLocaleDateString(), duration: dur, s_shelf: stock_s, s_wh: stock_w };
+            CUR.done = true; CUR.data = { date: now.toLocaleDateString(), duration: dur, s_shelf: stock_s, s_wh: stock_w };
             localStorage.setItem('mx_shops', JSON.stringify(DATA.shops));
             
             alert("Отчет сохранен в очередь!");
-            closeModal();
-            renderList();
-            sync(); // Попытка отправки
+            closeModal(); renderList(); sync();
         }, 500);
     }
 
-    // --- СИНХРОНИЗАЦИЯ (ОЧЕРЕДЬ) ---
+    // --- СИНХРОНИЗАЦИЯ ---
     function initDB() {
         const r = indexedDB.open("MerchX_DB", 2);
-        r.onupgradeneeded = e => {
-            const d = e.target.result;
-            if(!d.objectStoreNames.contains('reports')) d.createObjectStore('reports', {keyPath:'id', autoIncrement:true});
-        };
-        r.onsuccess = e => {
-            db = e.target.result;
-            updateQ();
-            setInterval(sync, 10000); // Авто-синк каждые 10 сек
-        };
+        r.onupgradeneeded = e => { if(!e.target.result.objectStoreNames.contains('reports')) e.target.result.createObjectStore('reports', {keyPath:'id', autoIncrement:true}); };
+        r.onsuccess = e => { db = e.target.result; updateQ(); setInterval(sync, 10000); };
     }
-
     function updateQ() {
         if(!db) return;
         db.transaction('reports').objectStore('reports').count().onsuccess = e => {
@@ -641,7 +670,6 @@
             document.getElementById('qCount').innerText = c;
         };
     }
-
     async function sync() {
         if(!db || !navigator.onLine) return;
         const tx = db.transaction('reports', 'readonly');
@@ -650,7 +678,6 @@
             if(cur) {
                 const item = cur.value;
                 try {
-                    // Отправка на сервер
                     const res = await fetch(API_URL + '/merch-upload', {
                         method: 'POST', headers:{'Content-Type':'application/json'},
                         body: JSON.stringify(item)
@@ -664,11 +691,6 @@
                 cur.continue();
             }
         };
-    }
-
-    // Восстановление данных формы (если случайно закрыли)
-    function restoreForm() {
-        // Упрощенная логика: просто открываем, поля пустые
     }
 </script>
 </body>
