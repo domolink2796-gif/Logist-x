@@ -148,13 +148,7 @@
     const API = 'https://logist-x-server-production.up.railway.app';
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, lastError = "...";
 
-    function speak(t) {
-        if(!window.speechSynthesis) return;
-        window.speechSynthesis.cancel();
-        const s = new SpeechSynthesisUtterance(t);
-        s.lang = 'ru-RU'; s.rate = 1.0; s.pitch = 1.0;
-        window.speechSynthesis.speak(s);
-    }
+    function speak(t) { if(!window.speechSynthesis) return; window.speechSynthesis.cancel(); const s = new SpeechSynthesisUtterance(t); s.lang = 'ru-RU'; window.speechSynthesis.speak(s); }
 
     async function checkPlanogram(addr) {
         const box = document.getElementById('plan-btn-box');
@@ -202,7 +196,7 @@
                         body: JSON.stringify({ city: cur.city, addr: cur.addr, key: DATA.key, image: compressed })
                     });
                     if(res.ok) { 
-                        speak("Планограмма успешно сохранена");
+                        speak("Планограмма сохранена");
                         setTimeout(() => { checkPlanogram(cur.addr); }, 1500);
                     } else {
                         alert("Ошибка сервера"); box.innerHTML = originalContent;
@@ -245,8 +239,8 @@
             const d = await res.json();
             if(d.status === 'active') { 
                 DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); 
-                document.getElementById('auth-screen').style.display='none';
-                speak("Лицензия активирована. Добро пожаловать, " + n);
+                document.getElementById('auth-screen').style.display='none'; 
+                speak("Лицензия активна. Привет " + n);
             } else alert(d.message);
         } catch(e) { alert("Сервер недоступен"); }
     }
@@ -336,8 +330,9 @@
                 const d = await res.json(); if(d[0]) { cur.lat = parseFloat(d[0].lat); cur.lon = parseFloat(d[0].lon); }
             } catch(e) { console.log("Geocode error"); }
         }
-        cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
-        speak("Визит начат. Удачной работы.");
+        cur.start = Date.now(); 
+        localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
+        speak("Визит начат");
         render(); openModal(cur.id); btn.innerText = "НАЧАТЬ ВИЗИТ";
     }
 
@@ -377,11 +372,7 @@
                 const arch = { shop_addr: cur.addr, ...report, img_pre: IMGS.pre, img_post: IMGS.post, img_price: IMGS.price };
                 const tx = db.transaction(["reports", "archive"], "readwrite"); 
                 tx.objectStore("reports").add(report); tx.objectStore("archive").put(arch);
-                tx.oncomplete = () => { 
-                    cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
-                    speak("Отчет сохранен и добавлен в очередь отправки.");
-                    closeModal(); render(); updateQueueUI(); sync(); 
-                };
+                tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
                 btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
             }, 500);
         }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true, timeout: 10000 });
@@ -400,7 +391,7 @@
                     if(res.ok) {
                         const delTx = db.transaction("reports", "readwrite");
                         delTx.objectStore("reports").delete(rid); lastError = "ОК";
-                        speak("Отчет по адресу " + report.address + " успешно отправлен на сервер.");
+                        speak("Отчет отправлен по адресу " + report.address);
                     } else throw new Error("Server busy");
                 } catch(err) { lastError = err.message; report.sending = 0; const errTx = db.transaction("reports", "readwrite"); errTx.objectStore("reports").put(report, rid); }
                 syncing = false; updateQueueUI();
@@ -442,7 +433,7 @@
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
             DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', city: r['Город'] || 'Орёл', addr: r['Адрес'] || '?', lat: parseFloat(r['Широта']) || 0, lon: parseFloat(r['Долгота']) || 0, done: false, start: null }));
             localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
-            speak("План загружен. Обнаружено точек: " + DATA.shops.length);
+            speak("План загружен");
             render();
         }; r.readAsArrayBuffer(inp.files[0]);
     }
