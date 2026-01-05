@@ -148,17 +148,12 @@
     const API = 'https://logist-x-server-production.up.railway.app';
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, lastError = "...";
 
-    // Функция голосового сопровождения
-    function speak(text) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance();
-            msg.text = text;
-            msg.lang = 'ru-RU';
-            msg.rate = 1.0;
-            msg.pitch = 1.0;
-            window.speechSynthesis.speak(msg);
-        }
+    function speak(t) {
+        if(!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const s = new SpeechSynthesisUtterance(t);
+        s.lang = 'ru-RU'; s.rate = 1.0; s.pitch = 1.0;
+        window.speechSynthesis.speak(s);
     }
 
     async function checkPlanogram(addr) {
@@ -238,10 +233,7 @@
 
     window.onload = () => {
         DATA.name = localStorage.getItem('m_name') || ""; DATA.key = localStorage.getItem('m_key') || "";
-        if(DATA.key && DATA.name) {
-            document.getElementById('auth-screen').style.display='none';
-            speak("Система готова. Выберите торговую точку.");
-        }
+        if(DATA.key && DATA.name) document.getElementById('auth-screen').style.display='none';
         DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]"); openDB(); render();
     };
 
@@ -253,8 +245,8 @@
             const d = await res.json();
             if(d.status === 'active') { 
                 DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); 
-                document.getElementById('auth-screen').style.display='none'; 
-                speak("Ключ принят. Приятной работы, " + n);
+                document.getElementById('auth-screen').style.display='none';
+                speak("Лицензия активирована. Добро пожаловать, " + n);
             } else alert(d.message);
         } catch(e) { alert("Сервер недоступен"); }
     }
@@ -308,7 +300,6 @@
             document.getElementById('i-comp-price').value = 0; document.getElementById('share-val').innerText = 0;
             document.getElementById('i-exp').value = ""; localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
             render(); openModal(cur.id);
-            speak("Повторный визит начат");
         }
     }
 
@@ -345,8 +336,9 @@
                 const d = await res.json(); if(d[0]) { cur.lat = parseFloat(d[0].lat); cur.lon = parseFloat(d[0].lon); }
             } catch(e) { console.log("Geocode error"); }
         }
-        cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); openModal(cur.id); btn.innerText = "НАЧАТЬ ВИЗИТ";
-        speak("Визит начат. Сделайте необходимые фотографии.");
+        cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
+        speak("Визит начат. Удачной работы.");
+        render(); openModal(cur.id); btn.innerText = "НАЧАТЬ ВИЗИТ";
     }
 
     async function saveToQueue() {
@@ -387,8 +379,8 @@
                 tx.objectStore("reports").add(report); tx.objectStore("archive").put(arch);
                 tx.oncomplete = () => { 
                     cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
+                    speak("Отчет сохранен и добавлен в очередь отправки.");
                     closeModal(); render(); updateQueueUI(); sync(); 
-                    speak("Отчет успешно сформирован и поставлен в очередь.");
                 };
                 btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
             }, 500);
@@ -408,6 +400,7 @@
                     if(res.ok) {
                         const delTx = db.transaction("reports", "readwrite");
                         delTx.objectStore("reports").delete(rid); lastError = "ОК";
+                        speak("Отчет по адресу " + report.address + " успешно отправлен на сервер.");
                     } else throw new Error("Server busy");
                 } catch(err) { lastError = err.message; report.sending = 0; const errTx = db.transaction("reports", "readwrite"); errTx.objectStore("reports").put(report, rid); }
                 syncing = false; updateQueueUI();
@@ -448,8 +441,9 @@
             const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
             DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', city: r['Город'] || 'Орёл', addr: r['Адрес'] || '?', lat: parseFloat(r['Широта']) || 0, lon: parseFloat(r['Долгота']) || 0, done: false, start: null }));
-            localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render();
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
             speak("План загружен. Обнаружено точек: " + DATA.shops.length);
+            render();
         }; r.readAsArrayBuffer(inp.files[0]);
     }
 
