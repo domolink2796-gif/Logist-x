@@ -239,7 +239,7 @@
             const d = await res.json();
             if(d.status === 'active') { 
                 DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); document.getElementById('auth-screen').style.display='none'; 
-                speak("Авторизация успешна. Удачной работы!");
+                speak(`Авторизация успешна. Добро пожаловать, ${n}. Удачной работы!`);
             } else alert(d.message);
         } catch(e) { alert("Сервер недоступен"); }
     }
@@ -304,7 +304,7 @@
             const d = req.result; if(!d) return;
             document.getElementById('arch-details').innerHTML = `
                 <div style="background:#1a1a1a; padding:10px; border-radius:10px; margin-bottom:10px;">
-                    <span style="color:var(--accent); font-weight:800; font-size:0.7rem;">ВРЕМЯ В МАГАЗИНЕ</span><br>
+                    <span style="color:var(--accent); font-weight:800; font-size:0.7rem;">ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ</span><br>
                     <span style="color:#fff; font-size:1.2rem; font-weight:900;">${d.duration}</span>
                 </div>
                 <b>Визит:</b> ${d.startTime} — ${d.endTime}<br>
