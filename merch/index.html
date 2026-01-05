@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        /* --- СТИЛИ (ТЕМНАЯ ТЕМА) --- */
+        /* --- СТИЛИ --- */
         :root { --bg: #000000; --card: #111111; --accent: #f59e0b; --green: #00ff00; --border: #222222; --text: #ffffff; --blue: #007aff; --red: #ff3b30; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; user-select: none; -webkit-tap-highlight-color: transparent; }
         
@@ -37,34 +37,30 @@
         .card { background: var(--card); border: 1px solid var(--border); margin-bottom: 10px; padding: 15px; border-radius: 16px; position: relative; transition: 0.2s; }
         .card:active { transform: scale(0.98); background: #1a1a1a; }
         .card-net { font-size: 0.7rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
-        .card-addr { font-size: 0.95rem; font-weight: 600; line-height: 1.3; }
-        .dot { position: absolute; right: 15px; top: 15px; width: 8px; height: 8px; border-radius: 50%; background: #333; }
+        .card-addr { font-size: 0.95rem; font-weight: 600; line-height: 1.3; padding-right: 40px; }
+        .dist-badge { position: absolute; top: 15px; right: 15px; font-size: 10px; font-weight: 800; background: #333; padding: 4px 8px; border-radius: 10px; color: #aaa; }
+        .dot { position: absolute; right: 15px; bottom: 15px; width: 8px; height: 8px; border-radius: 50%; background: #333; }
         .dot.done { background: var(--green); box-shadow: 0 0 5px var(--green); }
         .dot.active { background: var(--blue); }
 
-        /* Модальное окно задачи */
+        /* Модальное окно */
         .modal { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; overflow-y: auto; }
         .m-head { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #000; z-index: 10; }
         .m-body { padding: 20px; padding-bottom: 100px; }
         .f-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.5; font-weight: 800; margin-top: 15px; display: block; margin-bottom: 5px; }
         
-        /* Сетка фото */
+        /* Фото и Планограмма */
         .photo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
         .cam-btn { background: #1a1a1a; border: 1px dashed #444; height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; color: #666; font-size: 0.6rem; font-weight: 700; }
         .cam-btn.ok { border: 1px solid var(--green); color: var(--green); background: rgba(0,255,0,0.1); }
-        
-        /* Планограмма */
         .plan-box { padding: 15px; border: 1px dashed var(--accent); border-radius: 14px; background: rgba(245, 158, 11, 0.05); text-align: center; margin-bottom: 20px; }
 
-        /* Сканер штрих-кодов */
+        /* Сканер */
         .scan-overlay { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; }
         .scan-view { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         #reader { width: 100%; height: 100%; object-fit: cover; }
         .scan-ui { padding: 20px; background: #111; border-top: 1px solid var(--border); text-align: center; }
         .scan-frame { position: absolute; width: 70%; aspect-ratio: 1; border: 2px solid var(--accent); box-shadow: 0 0 0 100vmax rgba(0,0,0,0.7); border-radius: 20px; z-index: 10; pointer-events: none; }
-        
-        /* Индикатор очереди */
-        #syncIndicator { position: fixed; bottom: 20px; right: 20px; background: var(--red); color: #fff; padding: 10px 20px; border-radius: 30px; font-weight: 900; font-size: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); display: none; z-index: 500; }
         
         /* Список сканирования */
         .scanned-item { background: #222; border-bottom: 1px solid #333; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -74,6 +70,9 @@
         /* Попап количества */
         #qty-popup { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; border: 2px solid var(--accent); padding: 20px; border-radius: 20px; width: 80%; z-index: 2500; display: none; box-shadow: 0 0 50px rgba(0,0,0,1); text-align: center; }
 
+        /* Очередь */
+        #syncIndicator { position: fixed; bottom: 20px; right: 20px; background: var(--red); color: #fff; padding: 10px 20px; border-radius: 30px; font-weight: 900; font-size: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); display: none; z-index: 500; }
+        
         /* PDF Генератор (скрытый) */
         #pdf-render { position: absolute; left: -9999px; width: 800px; background: #fff; color: #000; font-family: sans-serif; }
     </style>
@@ -85,7 +84,7 @@
     <input type="text" id="lic-key" placeholder="Лицензионный Ключ" style="text-align:center;">
     <input type="text" id="work-name" placeholder="Ваше Имя (Фамилия)" style="text-align:center;">
     <button class="btn-blue btn-gold" onclick="auth()">ВОЙТИ В СИСТЕМУ</button>
-    <div style="font-size:10px; opacity:0.3; margin-top:20px;">v 2.1.0 | Smart Scanner</div>
+    <div style="font-size:10px; opacity:0.3; margin-top:20px;">v 2.2.0 | GPS + Smart Scan</div>
 </div>
 
 <div id="scan-overlay" class="scan-overlay">
@@ -93,11 +92,9 @@
         <div style="font-weight:900; font-size:18px;">SCANNER</div>
         <div onclick="closeScanner()" style="font-size:24px;">✕</div>
     </div>
-    
     <div class="scan-view">
         <div id="reader"></div>
         <div class="scan-frame"></div>
-        
         <div id="qty-popup">
             <div id="qty-title" style="color:var(--accent); font-weight:800; font-size:16px; margin-bottom:15px;">ТОВАР НАЙДЕН</div>
             <div style="font-size:12px; margin-bottom:5px; opacity:0.7;">Введите количество:</div>
@@ -108,17 +105,14 @@
             </div>
         </div>
     </div>
-
     <div class="scan-ui">
         <div id="scan-msg" style="color:var(--accent); font-weight:800; font-size:14px; margin-bottom:10px;">НАВЕДИТЕ КАМЕРУ НА КОД</div>
-        
         <div id="new-prod-block" style="display:none;">
-            <div style="color:#fff; margin-bottom:10px; font-size:12px;">НОВЫЙ ТОВАР. ВВЕДИТЕ НАЗВАНИЕ:</div>
+            <div style="color:#fff; margin-bottom:10px; font-size:12px;">НОВЫЙ ТОВАР. НАЗВАНИЕ:</div>
             <input type="text" id="new-prod-name" placeholder="Например: Кофе Gold 100г">
-            <button class="btn-blue btn-gold" onclick="saveNewProductName()">ДАЛЕЕ: ВВОД КОЛИЧЕСТВА</button>
+            <button class="btn-blue btn-gold" onclick="saveNewProductName()">ДАЛЕЕ</button>
         </div>
-        
-        <button id="scan-close-btn" class="btn-blue" style="background:#333; margin-top:10px;" onclick="closeScanner()">ЗАКОНЧИТЬ СКАНИРОВАНИЕ</button>
+        <button id="scan-close-btn" class="btn-blue" style="background:#333; margin-top:10px;" onclick="closeScanner()">ЗАКРЫТЬ</button>
     </div>
 </div>
 
@@ -160,18 +154,13 @@
         </div>
 
         <div id="work-block" style="display:none;">
-            
             <div style="background:#1a1a1a; padding:15px; border-radius:16px; margin-bottom:15px; border:1px solid #333;">
-                <div style="font-size:12px; font-weight:800; color:var(--accent); margin-bottom:10px; text-transform:uppercase;">СКАНИРОВАНИЕ ТОВАРОВ</div>
-                
+                <div style="font-size:12px; font-weight:800; color:var(--accent); margin-bottom:10px; text-transform:uppercase;">СКАНИРОВАНИЕ</div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <button class="btn-blue" onclick="openScanner('shelf')" style="background:var(--accent); color:#000;">📷 НА ПОЛКУ</button>
                     <button class="btn-blue" onclick="openScanner('wh')" style="background:var(--blue); color:#fff;">📷 НА СКЛАД</button>
                 </div>
-                
-                <div id="scanned-list" style="margin-top:15px; background:#111; border-radius:10px; overflow:hidden;">
-                    </div>
-
+                <div id="scanned-list" style="margin-top:15px; background:#111; border-radius:10px; overflow:hidden;"></div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px; border-top:1px solid #333; padding-top:10px;">
                     <div><span class="f-label">ВСЕГО ПОЛКА</span><input type="number" id="stock-shelf" value="0" readonly style="color:var(--accent); font-weight:bold;"></div>
                     <div><span class="f-label">ВСЕГО СКЛАД</span><input type="number" id="stock-wh" value="0" readonly style="color:var(--blue); font-weight:bold;"></div>
@@ -210,65 +199,68 @@
             <div id="arch-info" style="opacity:0.7; font-size:12px; line-height:1.6; margin-bottom:20px;"></div>
             <button class="btn-blue" onclick="resetVisit()">🔄 ПЕРЕДЕЛАТЬ ОТЧЕТ</button>
         </div>
-
     </div>
 </div>
 
 <div id="pdf-render">
-    <div style="padding:40px; box-sizing:border-box; border:1px solid #000;">
+    <div style="padding:40px; box-sizing:border-box; border:1px solid #000; height: 1120px; position:relative;">
         <div style="display:flex; justify-content:space-between; border-bottom:4px solid #000; padding-bottom:15px;">
-            <div style="font-size:36px; font-weight:900;">MERCH <span style="color:#f59e0b">X</span></div>
+            <div style="font-size:36px; font-weight:900;">MERCH <span style="color:#f59e0b">X</span> REPORT</div>
             <div id="pdf-date" style="font-size:16px; margin-top:15px; opacity:0.6;"></div>
         </div>
         <div style="margin-top:30px;">
             <div id="pdf-net" style="color:#f59e0b; font-weight:800; font-size:18px; text-transform:uppercase;"></div>
-            <div id="pdf-addr" style="font-size:32px; font-weight:900; margin-bottom:10px;"></div>
-            <div style="font-size:18px; margin-top:10px;">Сотрудник: <b id="pdf-worker"></b></div>
-            <div style="background:#eee; padding:15px; margin-top:20px; border-radius:10px; font-weight:800;">
-                ВРЕМЯ В МАГАЗИНЕ: <span id="pdf-dur"></span> (<span id="pdf-time"></span>)
+            <div id="pdf-addr" style="font-size:28px; font-weight:900; margin-bottom:10px;"></div>
+            <div style="font-size:16px;">Сотрудник: <b id="pdf-worker"></b></div>
+            <div style="background:#eee; padding:15px; margin-top:20px; border-radius:10px; font-weight:800; display:flex; justify-content:space-between;">
+                <span>ВРЕМЯ: <span id="pdf-dur"></span></span>
+                <span style="font-weight:400; font-size:12px;">GPS: <span id="pdf-gps"></span></span>
             </div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:40px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:30px;">
             <div style="background:#f9f9f9; padding:20px; border-radius:20px;">
                 <div style="font-size:12px; font-weight:800; opacity:0.5;">ОСТАТКИ</div>
-                <div style="font-size:48px; font-weight:900;"><span id="pdf-stock">0</span> <span style="font-size:16px; opacity:0.5;">шт</span></div>
-                <div style="font-size:14px; margin-top:5px;">Полка: <b id="pdf-s-shelf"></b> / Склад: <b id="pdf-s-wh"></b></div>
+                <div style="font-size:42px; font-weight:900;"><span id="pdf-stock">0</span> <span style="font-size:16px; opacity:0.5;">шт</span></div>
+                <div style="font-size:14px; margin-top:5px; border-top:1px solid #ccc; padding-top:5px;">
+                    Полка: <b id="pdf-s-shelf">0</b> &nbsp;|&nbsp; Склад: <b id="pdf-s-wh">0</b>
+                </div>
             </div>
             <div style="background:#f9f9f9; padding:20px; border-radius:20px;">
                 <div style="font-size:12px; font-weight:800; opacity:0.5;">ДОЛЯ ПОЛКИ</div>
-                <div style="font-size:48px; font-weight:900; color:#f59e0b;"><span id="pdf-share">0</span>%</div>
+                <div style="font-size:42px; font-weight:900; color:#f59e0b;"><span id="pdf-share">0</span>%</div>
                 <div style="font-size:14px; margin-top:5px;">Фейсинг: <b id="pdf-faces"></b></div>
             </div>
         </div>
-        <div style="margin-top:30px; display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-            <div>Цены (Мы/Конк): <b id="pdf-prices"></b></div>
-            <div>Срок годности: <b id="pdf-exp"></b></div>
+        <div style="margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:20px; font-size:14px;">
+            <div style="border:1px solid #eee; padding:10px; border-radius:10px;">Цены (Мы/Конк): <b id="pdf-prices"></b></div>
+            <div style="border:1px solid #eee; padding:10px; border-radius:10px;">Срок годности: <b id="pdf-exp"></b></div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:40px;">
-            <img id="pdf-img1" style="width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:10px;">
-            <img id="pdf-img2" style="width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:10px;">
-            <img id="pdf-img3" style="width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:10px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:30px;">
+            <div><img id="pdf-img1" style="width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:8px;"><div style="text-align:center; font-size:10px; font-weight:bold; margin-top:5px;">ДО</div></div>
+            <div><img id="pdf-img2" style="width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:8px;"><div style="text-align:center; font-size:10px; font-weight:bold; margin-top:5px;">ПОСЛЕ</div></div>
+            <div><img id="pdf-img3" style="width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:8px;"><div style="text-align:center; font-size:10px; font-weight:bold; margin-top:5px;">ЦЕННИК</div></div>
         </div>
+        <div style="position:absolute; bottom:20px; left:40px; font-size:10px; color:#999;">Generated by MERCH X System</div>
     </div>
 </div>
 
 <script>
-    // --- НАСТРОЙКИ ---
+    // --- КОНФИГУРАЦИЯ ---
     const API_URL = 'https://logist-x-server-production.up.railway.app';
     
     let DATA = { shops: [], user: "", key: "" };
     let CUR = null; 
     let IMGS = { pre:null, post:null, price:null };
     let db;
-    let SCANNED_ITEMS = []; // Список сканированных товаров
+    let SCANNED_ITEMS = []; 
+    let MY_GPS = { lat: 0, lon: 0 };
     
-    // Переменные сканера
+    // Сканер
     let html5QrCode;
     let scanTarget = 'shelf'; 
     let lastCode = null;
     let tempScanName = "";
 
-    // --- ИНИЦИАЛИЗАЦИЯ ---
     window.onload = () => {
         DATA.user = localStorage.getItem('mx_user');
         DATA.key = localStorage.getItem('mx_key');
@@ -280,9 +272,18 @@
             checkLic();
         }
         initDB();
+        
+        // ЗАПУСК ГЕОЛОКАЦИИ (ИЗ СТАРОГО ФАЙЛА)
+        if(navigator.geolocation) {
+            navigator.geolocation.watchPosition(p => {
+                MY_GPS = { lat: p.coords.latitude, lon: p.coords.longitude };
+                renderList(); // Перерисовываем список, чтобы обновить расстояния
+            }, err => console.log(err), { enableHighAccuracy: true });
+        }
         renderList();
     };
 
+    // --- ЛОГИКА АВТОРИЗАЦИИ ---
     async function auth() {
         const k = document.getElementById('lic-key').value.trim().toUpperCase();
         const n = document.getElementById('work-name').value.trim();
@@ -301,12 +302,11 @@
             } else alert(d.message);
         } catch(e) { alert("Ошибка соединения с сервером"); }
     }
-    
     async function checkLic() {
         try { await fetch(API_URL + '/check-license', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ licenseKey: DATA.key, workerName: DATA.user }) }); } catch(e){}
     }
 
-    // --- СПИСОК МАГАЗИНОВ ---
+    // --- ЗАГРУЗКА И СПИСОК (С ГЕОЛОКАЦИЕЙ) ---
     function loadFile(inp) {
         const r = new FileReader();
         r.onload = e => {
@@ -314,20 +314,42 @@
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
             DATA.shops = rows.map((x, i) => ({
                 id: i, net: x['Сеть'] || 'Магазин', addr: x['Адрес'] || 'Без адреса', city: x['Город'] || 'Город',
-                lat: x['Широта'], lon: x['Долгота'], done: false, data: null
+                lat: parseFloat(x['Широта']) || 0, lon: parseFloat(x['Долгота']) || 0, 
+                done: false, data: null
             }));
             localStorage.setItem('mx_shops', JSON.stringify(DATA.shops));
             renderList();
         }; r.readAsArrayBuffer(inp.files[0]);
     }
 
+    // ФУНКЦИЯ РАСЧЕТА ДИСТАНЦИИ (ИЗ СТАРОГО ФАЙЛА)
+    function getDist(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; const p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
+        const dp = (lat2-lat1) * Math.PI/180, dl = (lon2-lon1) * Math.PI/180;
+        const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
     function renderList() {
         const s = document.getElementById('srch').value.toLowerCase();
         const l = document.getElementById('list');
+        
+        // Считаем дистанцию и сортируем
+        DATA.shops.forEach(x => {
+            if(x.lat && x.lon && MY_GPS.lat) x.dist = getDist(MY_GPS.lat, MY_GPS.lon, x.lat, x.lon);
+            else x.dist = 9999999;
+        });
+        DATA.shops.sort((a,b) => a.dist - b.dist);
+
         let doneC = 0;
         l.innerHTML = DATA.shops.filter(x => (x.addr.toLowerCase().includes(s) || x.net.toLowerCase().includes(s))).map(x => {
             if(x.done) doneC++;
+            let distBadge = "";
+            if(x.dist < 9000000) {
+                distBadge = `<div class="dist-badge">${x.dist < 1000 ? Math.round(x.dist)+" м" : (x.dist/1000).toFixed(1)+" км"}</div>`;
+            }
             return `<div class="card" onclick="openTask(${x.id})">
+                ${distBadge}
                 <div class="dot ${x.done ? 'done' : (x.start ? 'active' : '')}"></div>
                 <div class="card-net">${x.net}</div>
                 <div class="card-addr">${x.addr}</div>
@@ -336,10 +358,8 @@
         document.getElementById('st-total').innerText = DATA.shops.length;
         document.getElementById('st-done').innerText = doneC;
     }
-
-    function clearAll() {
-        if(confirm("Удалить все данные и выйти?")) { localStorage.clear(); location.reload(); }
-    }
+    
+    function clearAll() { if(confirm("Удалить все?")) { localStorage.clear(); location.reload(); } }
 
     // --- ЛОГИКА ВИЗИТА ---
     function openTask(id) {
@@ -364,15 +384,10 @@
             checkPlan();
         }
     }
-    
-    function closeModal() {
-        document.getElementById('task-modal').style.display = 'none';
-        if(html5QrCode) closeScanner();
-    }
+    function closeModal() { document.getElementById('task-modal').style.display = 'none'; if(html5QrCode) closeScanner(); }
 
     async function checkPlan() {
-        const box = document.getElementById('plan-check');
-        box.innerHTML = 'Загрузка планограммы...';
+        const box = document.getElementById('plan-check'); box.innerHTML = 'Загрузка планограммы...';
         try {
             const r = await fetch(`${API_URL}/get-planogram?key=${DATA.key}&addr=${encodeURIComponent(CUR.addr)}`);
             const d = await r.json();
@@ -386,234 +401,128 @@
             }
         } catch(e) { box.innerHTML = "Ошибка связи"; }
     }
-
     async function upPlan(inp) {
         if(!inp.files[0]) return;
         const img = await compress(inp.files[0]);
-        await fetch(`${API_URL}/upload-planogram`, {
-            method: 'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ key:DATA.key, addr:CUR.addr, image:img })
-        });
+        await fetch(`${API_URL}/upload-planogram`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ key:DATA.key, addr:CUR.addr, image:img }) });
         checkPlan();
     }
-
     function startVisit() {
         CUR.start = Date.now();
         localStorage.setItem('mx_shops', JSON.stringify(DATA.shops));
-        SCANNED_ITEMS = []; // Новый визит - пустой список
+        SCANNED_ITEMS = []; 
         document.getElementById('start-block').style.display = 'none';
         document.getElementById('work-block').style.display = 'block';
-        
-        document.getElementById('stock-shelf').value = 0;
-        document.getElementById('stock-wh').value = 0;
-        document.getElementById('faces-mine').value = 0;
-        document.getElementById('faces-total').value = 0;
+        document.getElementById('stock-shelf').value = 0; document.getElementById('stock-wh').value = 0;
+        document.getElementById('faces-mine').value = 0; document.getElementById('faces-total').value = 0;
         IMGS = { pre:null, post:null, price:null };
         document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok'));
         renderScannedItems();
     }
-
     function resetVisit() {
-        if(confirm("Данные старого отчета будут заменены. Продолжить?")) {
-            CUR.done = false; CUR.start = null; CUR.data = null;
-            openTask(CUR.id);
-        }
+        if(confirm("Данные старого отчета будут заменены. Продолжить?")) { CUR.done = false; CUR.start = null; CUR.data = null; openTask(CUR.id); }
     }
 
-    // --- СКАНЕР И ТОВАРЫ ---
+    // --- УМНЫЙ СКАНЕР ---
     function openScanner(type) {
         scanTarget = type;
         document.getElementById('scan-overlay').style.display = 'flex';
         document.getElementById('new-prod-block').style.display = 'none';
         document.getElementById('scan-msg').style.display = 'block';
         document.getElementById('qty-popup').style.display = 'none';
-        
         html5QrCode = new Html5Qrcode("reader");
         html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScan, (err)=>{});
     }
-
     function closeScanner() {
         if(html5QrCode) html5QrCode.stop().then(()=> html5QrCode.clear());
         document.getElementById('scan-overlay').style.display = 'none';
         document.getElementById('qty-popup').style.display = 'none';
     }
-
     async function onScan(code) {
         if(lastCode === code) return; 
-        lastCode = code;
-        html5QrCode.pause(); // Ставим на паузу, пока юзер вводит кол-во
-        speak("Пик");
-
+        lastCode = code; html5QrCode.pause(); speak("Пик");
         try {
             const r = await fetch(`${API_URL}/check-barcode?code=${code}&key=${DATA.key}`);
             const d = await r.json();
-            
-            if(d.exists) {
-                // Товар найден -> Показываем попап количества
-                tempScanName = d.name;
-                showQtyPopup();
-            } else {
-                // Товар новый -> Ввод названия
-                document.getElementById('scan-msg').style.display = 'none';
-                document.getElementById('new-prod-block').style.display = 'block';
-                document.getElementById('new-prod-name').focus();
-            }
+            if(d.exists) { tempScanName = d.name; showQtyPopup(); } 
+            else { document.getElementById('scan-msg').style.display = 'none'; document.getElementById('new-prod-block').style.display = 'block'; document.getElementById('new-prod-name').focus(); }
         } catch(e) { alert("Ошибка сети"); html5QrCode.resume(); lastCode = null; }
     }
-
     async function saveNewProductName() {
         const name = document.getElementById('new-prod-name').value;
         if(!name) return;
         tempScanName = name;
-        
-        // Сохраняем имя в базу
         try {
-            await fetch(`${API_URL}/save-barcode`, {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ key: DATA.key, code: lastCode, name: name })
-            });
-            // Переходим к вводу количества
-            document.getElementById('new-prod-block').style.display = 'none';
-            document.getElementById('new-prod-name').value = "";
+            await fetch(`${API_URL}/save-barcode`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ key: DATA.key, code: lastCode, name: name }) });
+            document.getElementById('new-prod-block').style.display = 'none'; document.getElementById('new-prod-name').value = "";
             showQtyPopup();
         } catch(e) { alert("Не удалось сохранить"); html5QrCode.resume(); lastCode = null; }
     }
-
     function showQtyPopup() {
         document.getElementById('scan-msg').style.display = 'none';
         const popup = document.getElementById('qty-popup');
         document.getElementById('qty-title').innerText = tempScanName;
         document.getElementById('qty-input').value = 1;
-        popup.style.display = 'block';
-        document.getElementById('qty-input').focus();
-        document.getElementById('qty-input').select();
+        popup.style.display = 'block'; document.getElementById('qty-input').focus(); document.getElementById('qty-input').select();
     }
-
     function confirmQty() {
         const qty = parseInt(document.getElementById('qty-input').value);
         if(!qty || qty < 0) return;
-        
-        // Добавляем в список
-        const item = {
-            name: tempScanName,
-            qty: qty,
-            type: scanTarget // 'shelf' или 'wh'
-        };
+        const item = { name: tempScanName, qty: qty, type: scanTarget };
         SCANNED_ITEMS.push(item);
-        
-        renderScannedItems();
-        updateTotalFields();
-        
-        // Сброс и продолжение
+        renderScannedItems(); updateTotalFields();
         document.getElementById('qty-popup').style.display = 'none';
         document.getElementById('scan-msg').style.display = 'block';
         document.getElementById('scan-msg').innerHTML = `<span style="color:var(--green)">+${qty} ${tempScanName}</span><br>ДОБАВЛЕНО!`;
-        
-        lastCode = null;
-        html5QrCode.resume();
-        
+        lastCode = null; html5QrCode.resume();
         setTimeout(() => { document.getElementById('scan-msg').innerText = "НАВЕДИТЕ КАМЕРУ..."; }, 1500);
     }
-
     function cancelQty() {
-        document.getElementById('qty-popup').style.display = 'none';
-        document.getElementById('scan-msg').style.display = 'block';
-        lastCode = null;
-        html5QrCode.resume();
+        document.getElementById('qty-popup').style.display = 'none'; document.getElementById('scan-msg').style.display = 'block'; lastCode = null; html5QrCode.resume();
     }
-
     function renderScannedItems() {
         const container = document.getElementById('scanned-list');
-        if(SCANNED_ITEMS.length === 0) {
-            container.innerHTML = '<div style="padding:15px; text-align:center; font-size:12px; opacity:0.5;">Список пуст. Сканируйте товары.</div>';
-            return;
-        }
-        
-        // Группировка одинаковых товаров для отображения (опционально)
-        // Пока просто выводим список последних действий сверху
+        if(SCANNED_ITEMS.length === 0) { container.innerHTML = '<div style="padding:15px; text-align:center; font-size:12px; opacity:0.5;">Список пуст. Сканируйте товары.</div>'; return; }
         let html = '';
-        // Переворачиваем копию, чтобы новые были сверху
         [...SCANNED_ITEMS].reverse().forEach(item => {
             const color = item.type === 'shelf' ? 'var(--accent)' : 'var(--blue)';
             const typeText = item.type === 'shelf' ? 'ПОЛКА' : 'СКЛАД';
-            html += `
-            <div class="scanned-item">
-                <div style="font-size:12px; font-weight:700;">${item.name}</div>
-                <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                    <div style="font-size:14px; font-weight:900;">${item.qty} шт</div>
-                    <div style="font-size:9px; color:${color}; font-weight:bold;">${typeText}</div>
-                </div>
-            </div>`;
+            html += `<div class="scanned-item"><div style="font-size:12px; font-weight:700;">${item.name}</div><div style="display:flex; flex-direction:column; align-items:flex-end;"><div style="font-size:14px; font-weight:900;">${item.qty} шт</div><div style="font-size:9px; color:${color}; font-weight:bold;">${typeText}</div></div></div>`;
         });
         container.innerHTML = html;
     }
-
     function updateTotalFields() {
         let s = 0, w = 0;
-        SCANNED_ITEMS.forEach(i => {
-            if(i.type === 'shelf') s += i.qty;
-            else w += i.qty;
-        });
-        document.getElementById('stock-shelf').value = s;
-        document.getElementById('stock-wh').value = w;
+        SCANNED_ITEMS.forEach(i => { if(i.type === 'shelf') s += i.qty; else w += i.qty; });
+        document.getElementById('stock-shelf').value = s; document.getElementById('stock-wh').value = w;
     }
-
-    function speak(txt) {
-        if(window.speechSynthesis) {
-            const u = new SpeechSynthesisUtterance(txt);
-            u.lang = 'ru-RU'; u.rate = 1.5;
-            window.speechSynthesis.speak(u);
-        }
-    }
+    function speak(txt) { if(window.speechSynthesis) { const u = new SpeechSynthesisUtterance(txt); u.lang = 'ru-RU'; u.rate = 1.5; window.speechSynthesis.speak(u); } }
+    function calcShare() { const m = document.getElementById('faces-mine').value; const t = document.getElementById('faces-total').value; document.getElementById('share-val').innerText = (t > 0) ? Math.round((m/t)*100) : 0; }
     
-    function calcShare() {
-        const m = document.getElementById('faces-mine').value;
-        const t = document.getElementById('faces-total').value;
-        document.getElementById('share-val').innerText = (t > 0) ? Math.round((m/t)*100) : 0;
-    }
-
-    // --- ФОТО И ОТПРАВКА ---
-    async function procImg(inp, type) {
-        if(inp.files[0]) {
-            IMGS[type] = await compress(inp.files[0]);
-            document.getElementById(type === 'pre' ? 'l-p1' : (type === 'post' ? 'l-p2' : 'l-p3')).classList.add('ok');
-        }
-    }
-
+    // --- ФОТО И ФИНАЛ ---
+    async function procImg(inp, type) { if(inp.files[0]) { IMGS[type] = await compress(inp.files[0]); document.getElementById(type === 'pre' ? 'l-p1' : (type === 'post' ? 'l-p2' : 'l-p3')).classList.add('ok'); } }
     function compress(file) {
         return new Promise(res => {
             const r = new FileReader();
-            r.onload = e => {
-                const img = new Image(); img.src = e.target.result;
-                img.onload = () => {
-                    const c = document.createElement('canvas'); const ctx = c.getContext('2d');
-                    let w = img.width, h = img.height; const max = 1000;
-                    if(w > h) { if(w > max) { h*=max/w; w=max; } } else { if(h > max) { w*=max/h; h=max; } }
-                    c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h);
-                    res(c.toDataURL('image/jpeg', 0.6));
-                }
-            }; r.readAsDataURL(file);
+            r.onload = e => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); let w = img.width, h = img.height; const max = 1000; if(w > h) { if(w > max) { h*=max/w; w=max; } } else { if(h > max) { w*=max/h; h=max; } } c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); res(c.toDataURL('image/jpeg', 0.6)); } }; r.readAsDataURL(file);
         });
     }
 
     async function finishVisit() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Сделайте 3 фото!");
-        const btn = document.getElementById('fin-btn');
-        btn.disabled = true; btn.innerText = "ГЕНЕРАЦИЯ ОТЧЕТА...";
+        const btn = document.getElementById('fin-btn'); btn.disabled = true; btn.innerText = "ГЕНЕРАЦИЯ ОТЧЕТА...";
+        const now = new Date(); const startT = new Date(CUR.start); const dur = Math.round((now - startT)/60000) + " мин";
+        const stock_s = document.getElementById('stock-shelf').value; const stock_w = document.getElementById('stock-wh').value;
 
-        const now = new Date();
-        const startT = new Date(CUR.start);
-        const dur = Math.round((now - startT)/60000) + " мин";
-        const stock_s = document.getElementById('stock-shelf').value;
-        const stock_w = document.getElementById('stock-wh').value;
-
-        // Заполнение PDF шаблона
+        // ЗАПОЛНЕНИЕ PDF (ОБНОВЛЕННОЕ)
         document.getElementById('pdf-date').innerText = now.toLocaleString();
         document.getElementById('pdf-net').innerText = CUR.net;
         document.getElementById('pdf-addr').innerText = CUR.addr;
         document.getElementById('pdf-worker').innerText = DATA.user;
         document.getElementById('pdf-dur').innerText = dur;
         document.getElementById('pdf-time').innerText = `${startT.toLocaleTimeString()} - ${now.toLocaleTimeString()}`;
+        // Вшиваем реальные GPS
+        document.getElementById('pdf-gps').innerText = MY_GPS.lat ? `${MY_GPS.lat.toFixed(5)}, ${MY_GPS.lon.toFixed(5)}` : "Нет сигнала";
         
         document.getElementById('pdf-stock').innerText = parseInt(stock_s) + parseInt(stock_w);
         document.getElementById('pdf-s-shelf').innerText = stock_s;
@@ -623,7 +532,6 @@
         document.getElementById('pdf-faces').innerText = document.getElementById('faces-mine').value;
         document.getElementById('pdf-prices').innerText = `${document.getElementById('price-our').value} / ${document.getElementById('price-comp').value}`;
         document.getElementById('pdf-exp').innerText = document.getElementById('exp-date').value;
-        
         document.getElementById('pdf-img1').src = IMGS.pre; document.getElementById('pdf-img2').src = IMGS.post; document.getElementById('pdf-img3').src = IMGS.price;
 
         setTimeout(async () => {
@@ -634,14 +542,12 @@
             const report = {
                 worker: DATA.user, net: CUR.net, address: CUR.addr, city: CUR.city,
                 stock_shelf: stock_s, stock_wh: stock_w,
-                faces: document.getElementById('faces-mine').value,
-                share: document.getElementById('share-val').innerText,
-                ourPrice: document.getElementById('price-our').value,
-                compPrice: document.getElementById('price-comp').value,
-                expDate: document.getElementById('exp-date').value,
+                faces: document.getElementById('faces-mine').value, share: document.getElementById('share-val').innerText,
+                ourPrice: document.getElementById('price-our').value, compPrice: document.getElementById('price-comp').value, expDate: document.getElementById('exp-date').value,
                 pdf: pdfData, pdfName: safeName,
                 startTime: startT.toLocaleTimeString(), endTime: now.toLocaleTimeString(), duration: dur,
-                lat: CUR.lat || 0, lon: CUR.lon || 0, created: Date.now()
+                lat: MY_GPS.lat || CUR.lat, lon: MY_GPS.lon || CUR.lon, // Отправляем реальные координаты если есть
+                created: Date.now()
             };
 
             const tx = db.transaction('reports', 'readwrite');
@@ -650,45 +556,24 @@
             CUR.done = true; CUR.data = { date: now.toLocaleDateString(), duration: dur, s_shelf: stock_s, s_wh: stock_w };
             localStorage.setItem('mx_shops', JSON.stringify(DATA.shops));
             
-            alert("Отчет сохранен в очередь!");
+            alert("Отчет сохранен!");
             closeModal(); renderList(); sync();
         }, 500);
     }
 
     // --- СИНХРОНИЗАЦИЯ ---
-    function initDB() {
-        const r = indexedDB.open("MerchX_DB", 2);
-        r.onupgradeneeded = e => { if(!e.target.result.objectStoreNames.contains('reports')) e.target.result.createObjectStore('reports', {keyPath:'id', autoIncrement:true}); };
-        r.onsuccess = e => { db = e.target.result; updateQ(); setInterval(sync, 10000); };
-    }
-    function updateQ() {
-        if(!db) return;
-        db.transaction('reports').objectStore('reports').count().onsuccess = e => {
-            const c = e.target.result;
-            const ind = document.getElementById('syncIndicator');
-            ind.style.display = c > 0 ? 'block' : 'none';
-            document.getElementById('qCount').innerText = c;
-        };
-    }
+    function initDB() { const r = indexedDB.open("MerchX_DB", 2); r.onupgradeneeded = e => { if(!e.target.result.objectStoreNames.contains('reports')) e.target.result.createObjectStore('reports', {keyPath:'id', autoIncrement:true}); }; r.onsuccess = e => { db = e.target.result; updateQ(); setInterval(sync, 10000); }; }
+    function updateQ() { if(!db) return; db.transaction('reports').objectStore('reports').count().onsuccess = e => { const c = e.target.result; document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; document.getElementById('qCount').innerText = c; }; }
     async function sync() {
         if(!db || !navigator.onLine) return;
         const tx = db.transaction('reports', 'readonly');
         tx.objectStore('reports').openCursor().onsuccess = async e => {
             const cur = e.target.result;
             if(cur) {
-                const item = cur.value;
                 try {
-                    const res = await fetch(API_URL + '/merch-upload', {
-                        method: 'POST', headers:{'Content-Type':'application/json'},
-                        body: JSON.stringify(item)
-                    });
-                    if(res.ok) {
-                        const delTx = db.transaction('reports', 'readwrite');
-                        delTx.objectStore('reports').delete(cur.key);
-                        updateQ();
-                    }
-                } catch(err) { console.log("Sync wait..."); }
-                cur.continue();
+                    const res = await fetch(API_URL + '/merch-upload', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cur.value) });
+                    if(res.ok) { const delTx = db.transaction('reports', 'readwrite'); delTx.objectStore('reports').delete(cur.key); updateQ(); }
+                } catch(err) {} cur.continue();
             }
         };
     }
