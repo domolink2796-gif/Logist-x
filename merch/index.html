@@ -148,6 +148,8 @@
     const API = 'https://logist-x-server-production.up.railway.app';
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, lastError = "...";
 
+    function speak(t) { const m = new SpeechSynthesisUtterance(); m.text = t; m.lang = 'ru-RU'; window.speechSynthesis.speak(m); }
+
     async function checkPlanogram(addr) {
         const box = document.getElementById('plan-btn-box');
         const url = `${API}/get-planogram?city=${encodeURIComponent(cur.city)}&addr=${encodeURIComponent(addr)}&key=${encodeURIComponent(DATA.key)}`;
@@ -194,6 +196,7 @@
                         body: JSON.stringify({ city: cur.city, addr: cur.addr, key: DATA.key, image: compressed })
                     });
                     if(res.ok) { 
+                        speak("Планограмма успешно сохранена");
                         setTimeout(() => { checkPlanogram(cur.addr); }, 1500);
                     } else {
                         alert("Ошибка сервера"); box.innerHTML = originalContent;
@@ -234,7 +237,10 @@
         try {
             const res = await fetch(`${API}/check-license`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ licenseKey: k, workerName: n }) });
             const d = await res.json();
-            if(d.status === 'active') { DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); document.getElementById('auth-screen').style.display='none'; } else alert(d.message);
+            if(d.status === 'active') { 
+                DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); document.getElementById('auth-screen').style.display='none'; 
+                speak("Авторизация успешна. Удачной работы!");
+            } else alert(d.message);
         } catch(e) { alert("Сервер недоступен"); }
     }
 
@@ -324,6 +330,7 @@
             } catch(e) { console.log("Geocode error"); }
         }
         cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); openModal(cur.id); btn.innerText = "НАЧАТЬ ВИЗИТ";
+        speak("Визит начат. Сделайте необходимые фотографии.");
     }
 
     async function saveToQueue() {
@@ -331,7 +338,10 @@
         const btn = document.getElementById('finish-btn'); btn.innerText = "ПРОВЕРКА GPS..."; btn.disabled = true;
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const dist = getDist(pos.coords.latitude, pos.coords.longitude, cur.lat, cur.lon);
-            if(dist > 600) { alert(`ВЫ СЛИШКОМ ДАЛЕКО!\nРасстояние: ${Math.round(dist)}м.\nНужно быть ближе 600м.`); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; return; }
+            if(dist > 600) { 
+                speak("Вы слишком далеко от магазина. Нужно быть ближе шестисот метров.");
+                alert(`ВЫ СЛИШКОМ ДАЛЕКО!\nРасстояние: ${Math.round(dist)}м.\nНужно быть ближе 600м.`); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; return; 
+            }
             const now = new Date();
             const startT = new Date(cur.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const endT = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -364,8 +374,12 @@
                 tx.objectStore("reports").add(report); tx.objectStore("archive").put(arch);
                 tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
                 btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
+                speak("Отчет успешно сформирован и поставлен в очередь отправки");
             }, 500);
-        }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true, timeout: 10000 });
+        }, (err) => { 
+            speak("Включите навигацию в настройках телефона, чтобы завершить визит.");
+            alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; 
+        }, { enableHighAccuracy: true, timeout: 10000 });
     }
 
     async function sync() {
