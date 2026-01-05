@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MERCH X | PRO v2.2.1</title>
+    <title>LOGIST_X | MERCH SMART PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -11,420 +11,484 @@
         :root { --bg: #000000; --card: #111111; --accent: #f59e0b; --green: #00ff00; --border: #222222; --text: #ffffff; --blue: #007aff; --red: #ff3b30; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        #auth-screen { position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
+        /* Авторизация */
+        #auth-screen { position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 30px; }
         
-        .header { background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); padding: 15px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-        .logo { font-size: 1.4rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 10px; }
+        /* Шапка */
+        .header { background: var(--bg); padding: 20px 15px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.4rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 15px; }
         .logo span { color: var(--accent); }
         
+        /* Статистика */
         .stats-main { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .s-box { background: var(--card); border: 1px solid var(--border); padding: 10px; border-radius: 12px; text-align: center; }
-        .s-v { display: block; font-size: 1.2rem; font-weight: 800; color: #fff; }
-        .s-t { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; font-weight: 700; margin-top: 4px; }
+        .s-box { background: var(--card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; text-align: center; }
+        .s-v { display: block; font-size: 1.1rem; font-weight: 800; }
+        .s-t { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; margin-top: 4px; font-weight: 700; }
         
-        .btn-blue { background: var(--blue); color: white; padding: 14px; border-radius: 12px; text-align: center; font-weight: 700; cursor: pointer; border: none; width: 100%; display: block; box-sizing: border-box; margin-bottom: 8px; font-size: 14px; }
+        /* Кнопки */
+        .btn-blue { background: var(--blue); color: white; padding: 16px; border-radius: 14px; text-align: center; font-weight: 700; cursor: pointer; border: none; width: 100%; display: block; box-sizing: border-box; margin-bottom: 10px; text-decoration: none; font-size: 14px; }
         .btn-gold { background: var(--accent); color: #000; }
-        input { width: 100%; padding: 14px; background: #1a1a1a; border: 1px solid var(--border); color: white; border-radius: 12px; margin-bottom: 10px; font-size: 16px; box-sizing: border-box; outline: none; }
+        
+        input { width: 100%; padding: 14px; background: #111; border: 1px solid var(--border); color: white; border-radius: 12px; margin-top: 5px; font-size: 16px; box-sizing: border-box; outline: none; }
         input:focus { border-color: var(--accent); }
 
-        .card { background: var(--card); border: 1px solid var(--border); margin-bottom: 10px; padding: 15px; border-radius: 16px; position: relative; transition: 0.2s; }
-        .card:active { transform: scale(0.98); background: #1a1a1a; }
-        .card-net { font-size: 0.7rem; color: var(--accent); font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
-        .card-addr { font-size: 0.95rem; font-weight: 600; line-height: 1.3; padding-right: 40px; }
-        .dist-badge { position: absolute; top: 15px; right: 15px; font-size: 10px; font-weight: 800; background: #333; padding: 4px 8px; border-radius: 10px; color: #aaa; }
-        .dot { position: absolute; right: 15px; bottom: 15px; width: 8px; height: 8px; border-radius: 50%; background: #333; }
-        .dot.done { background: var(--green); box-shadow: 0 0 5px var(--green); }
-        .dot.active { background: var(--blue); }
+        /* Список точек */
+        #srch { width: calc(100% - 30px); margin: 10px 15px; }
+        .card { background: var(--card); border: 1px solid var(--border); margin: 10px 15px; padding: 18px; border-radius: 16px; position: relative; }
+        .card-net { font-size: 0.7rem; color: var(--accent); font-weight: 800; text-transform: uppercase; }
+        .card-addr { font-size: 1rem; font-weight: 600; padding-right: 30px; }
+        .dot { position: absolute; right: 18px; top: 18px; width: 10px; height: 10px; border-radius: 50%; background: #222; }
 
-        .modal { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; overflow-y: auto; }
-        .m-head { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #000; z-index: 10; }
-        .m-body { padding: 20px; padding-bottom: 100px; }
-        .f-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.5; font-weight: 800; margin-top: 15px; display: block; margin-bottom: 5px; }
+        /* Модальное окно */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 15px; }
+        .m-form { background: #000; width: 100%; max-width: 420px; padding: 25px; border-radius: 28px; border: 1px solid var(--border); box-sizing: border-box; max-height: 95vh; overflow-y: auto; position: relative; }
+        .f-label { font-size: 0.65rem; text-transform: uppercase; opacity: 0.5; font-weight: 800; margin-top: 15px; display: block; }
         
+        /* Сканер */
+        .scan-overlay { position: fixed; inset: 0; background: #000; z-index: 3000; display: none; flex-direction: column; }
+        #reader { width: 100%; height: 50%; object-fit: cover; }
+        .scan-ui { padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        #qty-popup { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; border: 2px solid var(--accent); padding: 25px; border-radius: 20px; width: 85%; z-index: 3500; display: none; text-align: center; box-shadow: 0 0 100px #000; }
+        
+        .scan-item-row { background: #111; border: 1px solid #222; border-radius: 12px; padding: 12px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; }
         .photo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .cam-btn { background: #1a1a1a; border: 1px dashed #444; height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; color: #666; font-size: 0.6rem; font-weight: 700; position: relative; }
-        .cam-btn.ok { border: 1px solid var(--green); color: var(--green); background: rgba(0,255,0,0.1); }
-        .plan-box { padding: 15px; border: 1px dashed var(--accent); border-radius: 14px; background: rgba(245, 158, 11, 0.05); text-align: center; margin-bottom: 20px; }
+        .cam-btn { background: #111; border: 1px solid var(--border); height: 75px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; font-size: 0.55rem; font-weight: 800; color: #666; cursor: pointer; }
+        .cam-btn.ok { border-color: var(--green); color: var(--green); background: rgba(0,255,0,0.05); }
 
-        .scan-overlay { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; }
-        .scan-view { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        #reader { width: 100%; height: 100%; object-fit: cover; }
-        .scan-ui { padding: 20px; background: #111; border-top: 1px solid var(--border); text-align: center; }
-        .scan-frame { position: absolute; width: 70%; aspect-ratio: 1; border: 2px solid var(--accent); box-shadow: 0 0 0 100vmax rgba(0,0,0,0.7); border-radius: 20px; z-index: 10; pointer-events: none; }
-        
-        .scanned-item { background: #222; border-bottom: 1px solid #333; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        #qty-popup { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; border: 2px solid var(--accent); padding: 20px; border-radius: 20px; width: 80%; z-index: 2500; display: none; box-shadow: 0 0 50px rgba(0,0,0,1); text-align: center; }
-
-        #syncIndicator { position: fixed; bottom: 20px; right: 20px; background: var(--red); color: #fff; padding: 10px 20px; border-radius: 30px; font-weight: 900; font-size: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); display: none; z-index: 500; }
-        #pdf-render { position: absolute; left: -9999px; width: 800px; background: #fff; color: #000; font-family: sans-serif; }
+        #pdf-render { position: absolute; left: -9999px; width: 800px; background: #fff; color: #000; padding: 40px; box-sizing: border-box; }
+        .hidden { display: none; }
+        .plan-box { margin: 15px 0; padding: 12px; border: 1px dashed var(--accent); border-radius: 14px; text-align: center; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div id="auth-screen">
-    <div class="logo" style="font-size:2rem; margin-bottom:30px;">MERCH <span>X</span></div>
-    <input type="text" id="lic-key" placeholder="Лицензионный Ключ" style="text-align:center;">
-    <input type="text" id="work-name" placeholder="Ваше Имя (Фамилия)" style="text-align:center;">
-    <button class="btn-blue btn-gold" onclick="auth()">ВОЙТИ В СИСТЕМУ</button>
+    <div style="width:100%; max-width: 300px;">
+        <center><div class="logo">LOGIST_X <span>MERCH</span></div></center>
+        <input type="text" id="lic-key" placeholder="Лицензионный Ключ" style="text-align:center; margin-bottom:10px;">
+        <input type="text" id="work-name" placeholder="Ваша Фамилия" style="text-align:center; margin-bottom:15px;">
+        <div class="btn-blue btn-gold" onclick="saveAuth()">ВОЙТИ</div>
+    </div>
 </div>
 
 <div id="scan-overlay" class="scan-overlay">
-    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; background:#000;">
-        <div style="font-weight:900; font-size:18px;">SCANNER</div>
-        <div onclick="closeScanner()" style="font-size:24px;">✕</div>
-    </div>
-    <div class="scan-view">
-        <div id="reader"></div>
-        <div class="scan-frame"></div>
-        <div id="qty-popup">
-            <div id="qty-title" style="color:var(--accent); font-weight:800; font-size:16px; margin-bottom:15px;">ТОВАР НАЙДЕН</div>
-            <input type="number" id="qty-input" value="1" style="font-size:24px; text-align:center; font-weight:bold; color:var(--green);">
-            <div style="display:flex; gap:10px;">
-                <button class="btn-blue" onclick="confirmQty()" style="background:var(--green); color:#000;">ДОБАВИТЬ</button>
-                <button class="btn-blue" onclick="cancelQty()" style="background:#333;">ОТМЕНА</button>
-            </div>
-        </div>
-    </div>
+    <div id="reader"></div>
     <div class="scan-ui">
-        <div id="scan-msg" style="color:var(--accent); font-weight:800; font-size:14px; margin-bottom:10px;">НАВЕДИТЕ КАМЕРУ</div>
-        <div id="new-prod-block" style="display:none;">
-            <input type="text" id="new-prod-name" placeholder="Название товара">
-            <button class="btn-blue btn-gold" onclick="saveNewProductName()">СОХРАНИТЬ</button>
+        <div id="scan-msg" style="text-align:center; color:var(--accent); font-weight:bold; margin-bottom:15px; font-size: 18px;">СКАНЕР ГОТОВ</div>
+        <div id="new-prod-block" style="display:none; background: #111; padding: 15px; border-radius: 15px; border: 1px solid var(--accent);">
+            <div style="font-size: 12px; margin-bottom: 10px; color: var(--accent);">НЕИЗВЕСТНЫЙ ТОВАР. НАЗВАНИЕ:</div>
+            <input type="text" id="new-prod-name" placeholder="Напр: Сок Добрый 1л">
+            <button class="btn-blue btn-gold" style="margin-top:10px;" onclick="saveNewProduct()">СОХРАНИТЬ</button>
         </div>
-        <button class="btn-blue" style="background:#333; margin-top:10px;" onclick="closeScanner()">ЗАКРЫТЬ</button>
+        <button class="btn-blue" style="background:#222; margin-top: 15px;" onclick="closeScanner()">ЗАКРЫТЬ</button>
+    </div>
+    <div id="qty-popup">
+        <div id="qty-title" style="color:var(--accent); font-weight:900; font-size: 18px; margin-bottom:15px;"></div>
+        <div style="font-size: 11px; opacity: 0.6; margin-bottom: 5px;">ВВЕДИТЕ КОЛИЧЕСТВО:</div>
+        <input type="number" id="qty-input" value="1" style="text-align:center; font-size:32px; color:var(--green); background: #000; border: 1px solid #333;">
+        <div style="display:flex; gap:10px; margin-top: 15px;">
+            <button class="btn-blue" style="background:var(--green); color:#000; margin:0;" onclick="confirmQty()">OK</button>
+            <button class="btn-blue" style="background:#333; margin:0;" onclick="cancelQty()">ОТМЕНА</button>
+        </div>
     </div>
 </div>
 
 <div class="header">
-    <div class="logo">LOGIST <span>X</span></div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="logo">LOGIST_X <span>MERCH</span></div>
+        <div id="syncIndicator" style="background:var(--red); padding: 5px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; display:none;">ОЧЕРЕДЬ: <span id="qCount">0</span></div>
+    </div>
     <div class="stats-main">
-        <div class="s-box"><span class="s-v" id="st-total">0</span><span class="s-t">Точки</span></div>
-        <div class="s-box"><span class="s-v" id="st-done" style="color:var(--green)">0</span><span class="s-t">Готово</span></div>
+        <div class="s-box"><span class="s-v" id="st-total">0</span><span class="s-t">Точек</span></div>
+        <div class="s-box"><span class="s-v" id="st-done" style="color:var(--green)">0</span><span class="s-t">Визитов</span></div>
     </div>
     <div style="display:flex; gap:10px;">
-        <label class="btn-blue" style="flex:1;" for="file-in">📂 XLSX</label>
-        <button class="btn-blue" style="flex:0.3; background:var(--red);" onclick="clearAll()">🗑️</button>
+        <label class="btn-blue" for="file-in" style="flex:1; margin:0; background: #222;">📂 ЗАГРУЗИТЬ ПЛАН</label>
+        <div class="btn-blue" onclick="clearData()" style="flex:0.3; background:var(--red); margin:0;">🗑️</div>
     </div>
-    <input type="file" id="file-in" hidden onchange="loadFile(this)">
-    <input type="text" id="srch" placeholder="Поиск магазина..." style="margin-top:10px;" oninput="renderList()">
+    <input type="file" id="file-in" class="hidden" onchange="handleFile(this)">
 </div>
 
-<div id="list" style="padding:15px;"></div>
-<div id="syncIndicator" onclick="sync()">ОТПРАВКА... <span id="qCount">0</span></div>
+<input type="text" id="srch" placeholder="Поиск магазина..." oninput="render()">
+<div id="list"></div>
 
 <div id="task-modal" class="modal">
-    <div class="m-head">
-        <div><div id="m-net" style="color:var(--accent); font-weight:900;"></div><div id="m-addr" style="font-size:12px; opacity:0.7;"></div></div>
-        <button style="background:none; border:none; color:#fff; font-size:24px;" onclick="closeModal()">✕</button>
-    </div>
-    <div class="m-body">
+    <div class="m-form">
+        <div id="m-net" style="color:var(--accent); font-weight:900; font-size:0.7rem; text-transform:uppercase;"></div>
+        <div id="m-addr-title" style="font-size: 1.2rem; font-weight: 800; margin-bottom: 10px;"></div>
+        
+        <div id="planogram-section" class="plan-box">Проверка планограммы...</div>
+        
         <div id="start-block">
-            <div class="plan-box" id="plan-check">Проверка планограммы...</div>
-            <button class="btn-blue btn-green" style="background:var(--green); color:#000;" onclick="startVisit()">НАЧАТЬ РАБОТУ</button>
+            <button class="btn-blue btn-gold" style="height: 60px; font-size: 18px;" onclick="begin()">НАЧАТЬ ВИЗИТ</button>
         </div>
-        <div id="work-block" style="display:none;">
-            <div style="background:#1a1a1a; padding:15px; border-radius:16px; margin-bottom:15px; border: 1px solid #333;">
-                <div style="font-size:12px; font-weight:800; color:var(--accent); margin-bottom:10px; text-transform:uppercase;">СКАНИРОВАНИЕ</div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <button class="btn-blue" onclick="openScanner('shelf')" style="background:var(--accent); color:#000;">📷 ПОЛКА</button>
-                    <button class="btn-blue" onclick="openScanner('wh')" style="background:var(--blue); color:#fff;">📷 СКЛАД</button>
-                </div>
-                <div id="scanned-list" style="margin-top:15px; background:#111; border-radius:10px; overflow:hidden;"></div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px; border-top:1px solid #333; padding-top:10px;">
-                    <div><span class="f-label">ВСЕГО ПОЛКА</span><input type="number" id="stock-shelf" value="0" readonly style="color:var(--accent); font-weight:bold;"></div>
-                    <div><span class="f-label">ВСЕГО СКЛАД</span><input type="number" id="stock-wh" value="0" readonly style="color:var(--blue); font-weight:bold;"></div>
-                </div>
-            </div>
+
+        <div id="report-block" class="hidden">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div><span class="f-label">НАШ ФЕЙСИНГ</span><input type="number" id="faces-mine" value="0" oninput="calcShare()"></div>
-                <div><span class="f-label">ВСЕГО ПОЛКА</span><input type="number" id="faces-total" value="0" oninput="calcShare()"></div>
+                <button class="btn-blue" style="background:var(--accent); color:#000;" onclick="openScanner('shelf')">📷 ПОЛКА</button>
+                <button class="btn-blue" style="background:var(--blue);" onclick="openScanner('wh')">📦 СКЛАД</button>
             </div>
-            <div style="text-align:center; margin-bottom:15px;"><span class="f-label">ДОЛЯ ПОЛКИ</span><div style="font-size:18px; font-weight:900; color:var(--accent);"><span id="share-val">0</span>%</div></div>
+            
+            <div id="scanned-items-list" style="margin-top: 10px;"></div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+                <div><span class="f-label">Фейсинг наш</span><input type="number" id="i-faces" value="0" oninput="calcShare()"></div>
+                <div><span class="f-label">Фейсинг всего</span><input type="number" id="i-total-faces" value="0" oninput="calcShare()"></div>
+            </div>
+            <center><div style="color:var(--accent); font-weight:900; margin:10px 0;">ДОЛЯ ПОЛКИ: <span id="share-val">0</span>%</div></center>
+
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div><span class="f-label">ЦЕНА НАША</span><input type="number" id="price-our" step="0.1"></div>
-                <div><span class="f-label">ЦЕНА КОНК.</span><input type="number" id="price-comp" step="0.1"></div>
+                <input type="number" id="i-our-price" placeholder="Наша цена" step="0.1">
+                <input type="number" id="i-comp-price" placeholder="Конкурент" step="0.1">
             </div>
-            <span class="f-label">СРОК ГОДНОСТИ</span><input type="date" id="exp-date">
+            
+            <span class="f-label">Срок годности самого старого товара</span>
+            <input type="date" id="i-exp">
+
             <div class="photo-grid">
-                <label class="cam-btn" id="l-p1">📸 ДО<input type="file" hidden accept="image/*" capture="camera" onchange="procImg(this, 'pre')"></label>
-                <label class="cam-btn" id="l-p2">📸 ПОСЛЕ<input type="file" hidden accept="image/*" capture="camera" onchange="procImg(this, 'post')"></label>
-                <label class="cam-btn" id="l-p3">📸 ЦЕННИК<input type="file" hidden accept="image/*" capture="camera" onchange="procImg(this, 'price')"></label>
+                <label class="cam-btn" id="l-p1">📸<br>ДО<input type="file" accept="image/*" capture="camera" class="hidden" onchange="cam(this, 'pre')"></label>
+                <label class="cam-btn" id="l-p2">📸<br>ПОСЛЕ<input type="file" accept="image/*" capture="camera" class="hidden" onchange="cam(this, 'post')"></label>
+                <label class="cam-btn" id="l-p3">📸<br>ЦЕННИК<input type="file" accept="image/*" capture="camera" class="hidden" onchange="cam(this, 'price')"></label>
             </div>
-            <button class="btn-blue btn-green" id="fin-btn" style="margin-top:30px; background:var(--green); color:#000;" onclick="finishVisit()">ЗАВЕРШИТЬ ВИЗИТ</button>
+            
+            <button class="btn-blue" id="finish-btn" style="background:var(--green); color:black; margin-top:25px; height: 60px;" onclick="saveToQueue()">ОТПРАВИТЬ ОТЧЕТ</button>
         </div>
-        <div id="arch-block" style="display:none; text-align:center;">
-            <div style="font-size:18px; font-weight:900; color:var(--green);">ОТЧЕТ ОТПРАВЛЕН</div>
-            <button class="btn-blue" style="margin-top:20px;" onclick="resetVisit()">🔄 ПЕРЕДЕЛАТЬ</button>
+
+        <div id="archive-block" class="hidden">
+            <div style="color:var(--green); font-weight: 800; text-align: center; margin-bottom: 10px;">ВИЗИТ ЗАВЕРШЕН</div>
+            <div id="arch-details" style="font-size:0.8rem; background:#111; padding:15px; border-radius:15px; line-height: 1.5;"></div>
+            <button class="btn-blue" style="margin-top:15px; background: #333;" onclick="startNewVisit()">🔄 ПЕРЕДЕЛАТЬ ВИЗИТ</button>
         </div>
+        
+        <button class="btn-blue" style="background:none; color:#666; font-size: 12px; margin-top: 10px;" onclick="closeModal()">ЗАКРЫТЬ ОКНО</button>
     </div>
 </div>
 
 <div id="pdf-render">
-    <div style="padding:40px; border:1px solid #000; height: 1120px; position:relative; background: #fff;">
-        <div style="display:flex; justify-content:space-between; border-bottom:4px solid #000; padding-bottom:15px;">
-            <div style="font-size:36px; font-weight:900;">MERCH <span style="color:#f59e0b">X</span> REPORT</div>
-            <div id="pdf-date" style="font-size:16px; margin-top:15px;"></div>
-        </div>
-        <div style="margin-top:30px;">
-            <div id="pdf-net" style="color:#f59e0b; font-weight:800; font-size:18px;"></div>
-            <div id="pdf-addr" style="font-size:28px; font-weight:900;"></div>
-            <div style="font-size:16px; margin-top:10px;">Сотрудник: <b id="pdf-worker"></b> | Время: <span id="pdf-time-val"></span></div>
-            <div style="background:#eee; padding:10px; margin-top:15px; font-size:12px;">GPS СТАТУС: <b id="pdf-gps"></b></div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:30px;">
-            <div style="background:#f9f9f9; padding:20px; border-radius:20px;">
-                <div style="font-size:12px; opacity:0.5;">ОСТАТКИ (ШТ)</div>
-                <div style="font-size:42px; font-weight:900;" id="pdf-stock">0</div>
-            </div>
-            <div style="background:#f9f9f9; padding:20px; border-radius:20px;">
-                <div style="font-size:12px; opacity:0.5;">ДОЛЯ ПОЛКИ</div>
-                <div style="font-size:42px; font-weight:900; color:#f59e0b;"><span id="pdf-share">0</span>%</div>
-            </div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:30px;">
-            <img id="pdf-img1" style="width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:8px;">
-            <img id="pdf-img2" style="width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:8px;">
-            <img id="pdf-img3" style="width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:8px;">
+    <div style="display:flex; justify-content:space-between; border-bottom:5px solid #f59e0b; padding-bottom:15px;">
+        <div style="font-size:36px; font-weight:900;">LOGIST_X <span style="color:#f59e0b">MERCH</span></div>
+        <div style="font-size:14px; text-align: right;" id="p-date"></div>
+    </div>
+    <div style="margin-top:25px;">
+        <div id="p-net" style="color:#f59e0b; font-weight:800; font-size:18px; text-transform: uppercase;"></div>
+        <div id="p-addr-val" style="font-size:32px; font-weight:900; margin-bottom: 10px;"></div>
+        <div style="font-size:18px;">Мерчандайзер: <b id="p-worker"></b></div>
+        <div style="background:#f0f0f0; padding:15px; margin-top:20px; border-radius: 10px; font-size: 18px;">
+            <b>ВРЕМЯ:</b> <span id="p-start-t"></span> - <span id="p-end-t"></span> (<span id="p-dur"></span>)
         </div>
     </div>
+    
+    <h3 style="margin-top: 30px; border-left: 5px solid #f59e0b; padding-left: 10px;">ДАННЫЕ ПО ТОВАРАМ</h3>
+    <table style="width:100%; border-collapse: collapse; margin-top:10px;">
+        <thead><tr style="background:#000; color:#fff;">
+            <th style="padding:12px; border:1px solid #000; text-align:left;">Наименование товара</th>
+            <th style="padding:12px; border:1px solid #000; width: 80px;">Полка</th>
+            <th style="padding:12px; border:1px solid #000; width: 80px;">Склад</th>
+        </tr></thead>
+        <tbody id="p-table-body"></tbody>
+    </table>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:15px; margin-top:40px; text-align:center;">
+        <div><img id="p-i1" style="width:100%; border:1px solid #ddd; border-radius:8px;"><br><b>ФОТО ДО</b></div>
+        <div><img id="p-i2" style="width:100%; border:1px solid #ddd; border-radius:8px;"><br><b>ФОТО ПОСЛЕ</b></div>
+        <div><img id="p-i3" style="width:100%; border:1px solid #ddd; border-radius:8px;"><br><b>ЦЕННИК</b></div>
+    </div>
+    <div style="margin-top: 30px; font-size: 10px; color: #aaa; text-align: center;">Сгенерировано в системе MERCH X PRO | GPS Verified</div>
 </div>
 
 <script>
-    const API_URL = 'https://logist-x-server-production.up.railway.app';
-    let DATA = { shops: [], user: "", key: "" };
-    let CUR = null; 
-    let IMGS = { pre:null, post:null, price:null };
-    let db, html5QrCode, scanTarget = 'shelf', lastCode = null, tempScanName = "";
-    let MY_GPS = { lat: 0, lon: 0 };
-    let SCANNED_ITEMS = [];
+    const API = 'https://logist-x-server-production.up.railway.app';
+    let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false;
+    let SCANNED = [], lastCode = '', scanTarget = '', scanner = null, tempName = '';
 
-    function speak(txt) { if(window.speechSynthesis) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'ru-RU'; u.rate = 1.3; window.speechSynthesis.speak(u); } }
+    function speak(t) { 
+        if ('speechSynthesis' in window) {
+            const m = new SpeechSynthesisUtterance(t); 
+            m.lang = 'ru-RU'; 
+            m.rate = 1.1;
+            window.speechSynthesis.speak(m); 
+        }
+    }
+
+    function initDB() {
+        const req = indexedDB.open("MerchX_Final_DB", 10);
+        req.onupgradeneeded = (e) => { 
+            const d = e.target.result; 
+            if(!d.objectStoreNames.contains("reports")) d.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
+            if(!d.objectStoreNames.contains("archive")) d.createObjectStore("archive", { keyPath: "addr" });
+        };
+        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 15000); };
+    }
 
     window.onload = () => {
-        DATA.user = localStorage.getItem('mx_user');
-        DATA.key = localStorage.getItem('mx_key');
-        DATA.shops = JSON.parse(localStorage.getItem('mx_shops') || "[]");
-        if(!DATA.user) document.getElementById('auth-screen').style.display = 'flex';
-        else { document.getElementById('auth-screen').style.display = 'none'; speak("Система готова к работе"); }
-        if(navigator.geolocation) {
-            navigator.geolocation.watchPosition(p => { MY_GPS = { lat: p.coords.latitude, lon: p.coords.longitude }; renderList(); }, null, { enableHighAccuracy: true });
-        }
-        initDB(); renderList();
+        DATA.name = localStorage.getItem('m_name') || ""; DATA.key = localStorage.getItem('m_key') || "";
+        if(DATA.key && DATA.name) document.getElementById('auth-screen').style.display='none';
+        DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]"); 
+        initDB(); render();
     };
 
-    async function auth() {
-        const k = document.getElementById('lic-key').value.trim().toUpperCase();
-        const n = document.getElementById('work-name').value.trim();
-        if(!k || !n) return alert("Заполните поля");
+    async function saveAuth() {
+        const n = document.getElementById('work-name').value.trim(), k = document.getElementById('lic-key').value.trim().toUpperCase();
+        if(!n || !k) return alert("Введите данные");
         try {
-            const r = await fetch(API_URL + '/check-license', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ licenseKey: k, workerName: n }) });
-            const d = await r.json();
-            if(d.status === 'active') { localStorage.setItem('mx_user', n); localStorage.setItem('mx_key', k); location.reload(); }
-            else alert(d.message);
-        } catch(e) { alert("Ошибка сервера"); }
+            const res = await fetch(`${API}/check-license`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ licenseKey: k, workerName: n }) });
+            const d = await res.json();
+            if(d.status === 'active') { 
+                DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k);
+                speak("Приветствую, " + n + ". Лицензия активна.");
+                setTimeout(() => location.reload(), 1500);
+            } else alert(d.message);
+        } catch(e) { alert("Сервер недоступен"); }
     }
 
-    function getDist(lat1, lon1, lat2, lon2) {
-        if(!lat1 || !lat2) return 999999;
-        const R = 6371e3; const p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
-        const dp = (lat2-lat1) * Math.PI/180, dl = (lon2-lon1) * Math.PI/180;
-        const a = Math.sin(dp/2)**2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2)**2;
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    function render() {
+        const list = document.getElementById('list'), s = document.getElementById('srch').value.toLowerCase();
+        document.getElementById('st-total').innerText = DATA.shops.length; 
+        document.getElementById('st-done').innerText = DATA.shops.filter(x => x.done).length;
+        list.innerHTML = DATA.shops.filter(x => x.addr.toLowerCase().includes(s)).map(x => `
+            <div class="card" onclick="openModal(${x.id})">
+                <div class="dot" style="background:${x.done ? 'var(--green)' : (x.start ? 'var(--blue)' : '#222')}"></div>
+                <div class="card-net">${x.net}</div>
+                <div class="card-addr">${x.addr}</div>
+            </div>
+        `).join('');
     }
 
-    function renderList() {
-        const s = document.getElementById('srch').value.toLowerCase();
-        DATA.shops.forEach(x => x.dist = getDist(MY_GPS.lat, MY_GPS.lon, x.lat, x.lon));
-        DATA.shops.sort((a,b) => a.dist - b.dist);
-        let doneC = 0;
-        document.getElementById('list').innerHTML = DATA.shops.filter(x => x.addr.toLowerCase().includes(s)).map(x => {
-            if(x.done) doneC++;
-            const dB = x.dist < 100000 ? `<div class="dist-badge">${x.dist < 1000 ? Math.round(x.dist)+"м" : (x.dist/1000).toFixed(1)+"км"}</div>` : "";
-            return `<div class="card" onclick="openTask(${x.id})">${dB}<div class="dot ${x.done?'done':(x.start?'active':'')}"></div><div class="card-net">${x.net}</div><div class="card-addr">${x.addr}</div></div>`;
-        }).join('');
-        document.getElementById('st-total').innerText = DATA.shops.length;
-        document.getElementById('st-done').innerText = doneC;
-    }
-
-    function loadFile(inp) {
-        const r = new FileReader(); r.onload = e => {
-            const rows = XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(e.target.result), {type:'array'}).Sheets[0]);
-            DATA.shops = rows.map((x, i) => ({ id: i, net: x['Сеть']||'Магазин', addr: x['Адрес'], city: x['Город'], lat: parseFloat(x['Широта']), lon: parseFloat(x['Долгота']), done: false }));
-            localStorage.setItem('mx_shops', JSON.stringify(DATA.shops)); renderList();
-        }; r.readAsArrayBuffer(inp.files[0]);
-    }
-
-    function openTask(id) {
-        CUR = DATA.shops.find(x => x.id === id);
-        document.getElementById('m-net').innerText = CUR.net;
-        document.getElementById('m-addr').innerText = CUR.addr;
+    function openModal(id) {
+        cur = DATA.shops.find(x => x.id === id); 
+        document.getElementById('m-net').innerText = cur.net;
+        document.getElementById('m-addr-title').innerText = cur.addr;
         document.getElementById('task-modal').style.display = 'flex';
-        document.getElementById('start-block').style.display = CUR.done||CUR.start ? 'none' : 'block';
-        document.getElementById('work-block').style.display = !CUR.done&&CUR.start ? 'block' : 'none';
-        document.getElementById('arch-block').style.display = CUR.done ? 'block' : 'none';
-        if(!CUR.done && !CUR.start) { checkPlan(); speak("Вы выбрали точку " + CUR.net); }
-        if(CUR.start && !CUR.done) {
-            renderScannedItems();
-            updateTotalFields();
+        checkPlanogram(cur.addr);
+        if(cur.done) {
+            document.getElementById('start-block').classList.add('hidden');
+            document.getElementById('report-block').classList.add('hidden');
+            document.getElementById('archive-block').classList.remove('hidden');
+            loadArchive(cur.addr);
+        } else if(cur.start) {
+            document.getElementById('start-block').classList.add('hidden');
+            document.getElementById('report-block').classList.remove('hidden');
+            document.getElementById('archive-block').classList.add('hidden');
+            renderScanned();
+        } else {
+            document.getElementById('start-block').classList.remove('hidden');
+            document.getElementById('report-block').classList.add('hidden');
+            document.getElementById('archive-block').classList.add('hidden');
         }
     }
 
-    async function checkPlan() {
-        try {
-            const r = await fetch(`${API_URL}/get-planogram?key=${DATA.key}&addr=${encodeURIComponent(CUR.addr)}`);
-            const d = await r.json();
-            document.getElementById('plan-check').innerHTML = d.exists ? `<button class="btn-blue" onclick="window.open('${d.url}')">СХЕМА НАЙДЕНА (ОТКРЫТЬ)</button>` : "Планограммы нет";
-        } catch(e) { document.getElementById('plan-check').innerText = "Ошибка планограммы"; }
+    function begin() {
+        cur.start = Date.now(); SCANNED = [];
+        localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+        speak("Визит начат. Удачной работы.");
+        openModal(cur.id); render();
     }
 
-    function startVisit() { CUR.start = Date.now(); SCANNED_ITEMS = []; speak("Визит начат. Удачной работы."); openTask(CUR.id); }
-
-    function openScanner(t) { 
-        scanTarget = t; document.getElementById('scan-overlay').style.display = 'flex'; 
+    // --- УМНЫЙ СКАНЕР ---
+    function openScanner(target) {
+        scanTarget = target;
+        document.getElementById('scan-overlay').style.display = 'flex';
         document.getElementById('new-prod-block').style.display = 'none';
-        document.getElementById('scan-msg').style.display = 'block';
-        html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScan, null);
-        speak("Сканер готов");
+        scanner = new Html5Qrcode("reader");
+        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScan).catch(e => alert("Камера не найдена"));
     }
-    
-    function closeScanner() { if(html5QrCode) html5QrCode.stop(); document.getElementById('scan-overlay').style.display = 'none'; }
 
     async function onScan(code) {
-        if(lastCode === code) return; lastCode = code; html5QrCode.pause();
+        if(code === lastCode) return; lastCode = code;
         try {
-            const r = await fetch(`${API_URL}/check-barcode?code=${code}&key=${DATA.key}`);
+            const r = await fetch(`${API}/check-barcode?code=${code}&key=${DATA.key}`);
             const d = await r.json();
-            if(d.exists) { tempScanName = d.name; document.getElementById('qty-popup').style.display = 'block'; speak(d.name); }
-            else { document.getElementById('scan-msg').style.display = 'none'; document.getElementById('new-prod-block').style.display = 'block'; speak("Новый товар"); }
-        } catch(e) { speak("Ошибка сети"); html5QrCode.resume(); lastCode = null; }
+            if(d.exists) { 
+                tempName = d.name; 
+                speak("Товар " + d.name);
+                showQty(); 
+            } else { 
+                speak("Неизвестный штрих код. Введите название.");
+                document.getElementById('new-prod-block').style.display = 'block'; 
+            }
+        } catch(e) { alert("Ошибка сети"); }
     }
 
-    async function saveNewProductName() {
-        const name = document.getElementById('new-prod-name').value;
+    function showQty() { 
+        document.getElementById('qty-title').innerText = tempName; 
+        document.getElementById('qty-popup').style.display='block'; 
+        document.getElementById('qty-input').focus();
+    }
+
+    async function saveNewProduct() {
+        const name = document.getElementById('new-prod-name').value; 
         if(!name) return;
-        tempScanName = name;
-        try {
-            await fetch(`${API_URL}/save-barcode`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ key: DATA.key, code: lastCode, name: name }) });
-            document.getElementById('new-prod-block').style.display = 'none'; 
-            document.getElementById('new-prod-name').value = "";
-            document.getElementById('qty-popup').style.display = 'block';
-        } catch(e) { alert("Ошибка сохранения"); html5QrCode.resume(); lastCode = null; }
+        await fetch(`${API}/save-barcode`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key:DATA.key, code:lastCode, name:name})});
+        tempName = name; document.getElementById('new-prod-block').style.display='none'; showQty();
     }
 
     function confirmQty() {
-        const q = parseInt(document.getElementById('qty-input').value);
-        if(!q || q < 0) return;
-        SCANNED_ITEMS.push({ name: tempScanName, qty: q, type: scanTarget });
-        renderScannedItems(); 
-        updateTotalFields();
-        document.getElementById('qty-popup').style.display = 'none'; 
-        document.getElementById('scan-msg').style.display = 'block';
-        lastCode = null; 
-        html5QrCode.resume();
-        speak("Добавлено " + q);
+        const q = parseInt(document.getElementById('qty-input').value) || 0;
+        let item = SCANNED.find(x => x.code === lastCode);
+        if(item) item[scanTarget] += q;
+        else { 
+            item = { code: lastCode, name: tempName, shelf: 0, wh: 0 }; 
+            item[scanTarget] = q; 
+            SCANNED.push(item); 
+        }
+        speak("Добавлено " + q); closeScanner(); renderScanned();
     }
 
-    function cancelQty() { document.getElementById('qty-popup').style.display = 'none'; document.getElementById('scan-msg').style.display = 'block'; lastCode = null; html5QrCode.resume(); }
-
-    function renderScannedItems() {
-        const container = document.getElementById('scanned-list');
-        if(SCANNED_ITEMS.length === 0) { container.innerHTML = '<div style="padding:15px; text-align:center; font-size:12px; opacity:0.5;">Список пуст</div>'; return; }
-        let html = '';
-        [...SCANNED_ITEMS].reverse().forEach(item => {
-            const color = item.type === 'shelf' ? 'var(--accent)' : 'var(--blue)';
-            html += `<div class="scanned-item"><span style="font-size:12px;">${item.name}</span><b style="color:${color}">${item.qty} шт</b></div>`;
-        });
-        container.innerHTML = html;
+    function renderScanned() {
+        document.getElementById('scanned-items-list').innerHTML = SCANNED.map((x, idx) => `
+            <div class="scan-item-row">
+                <div style="font-size:13px; flex: 1;"><b>${x.name}</b><br><small>Полка: ${x.shelf} | Склад: ${x.wh}</small></div>
+                <div style="color:var(--red); font-weight: bold; padding: 10px;" onclick="deleteItem(${idx})">УДАЛИТЬ</div>
+            </div>
+        `).join('');
     }
 
-    function updateTotalFields() {
-        let s = 0, w = 0;
-        SCANNED_ITEMS.forEach(i => { if(i.type === 'shelf') s += i.qty; else w += i.qty; });
-        document.getElementById('stock-shelf').value = s; 
-        document.getElementById('stock-wh').value = w;
+    function deleteItem(idx) { SCANNED.splice(idx,1); renderScanned(); }
+
+    function closeScanner() {
+        if(scanner) scanner.stop().then(() => scanner.clear());
+        document.getElementById('scan-overlay').style.display='none';
+        document.getElementById('qty-popup').style.display='none';
+        lastCode = '';
     }
 
-    function calcShare() { const m = document.getElementById('faces-mine').value; const t = document.getElementById('faces-total').value; document.getElementById('share-val').innerText = t>0 ? Math.round((m/t)*100) : 0; }
-    async function procImg(inp, type) { if(inp.files[0]) { IMGS[type] = await compress(inp.files[0]); inp.parentElement.classList.add('ok'); speak("Фото принято"); } }
-    
-    function compress(file) {
-        return new Promise(res => {
-            const r = new FileReader(); r.onload = e => {
-                const img = new Image(); img.src = e.target.result; img.onload = () => {
-                    const c = document.createElement('canvas'); const ctx = c.getContext('2d');
-                    let w = img.width, h = img.height; const max = 1000;
-                    if(w > h) { if(w > max) { h*=max/w; w=max; } } else { if(h > max) { w*=max/h; h=max; } }
-                    c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); res(c.toDataURL('image/jpeg', 0.6));
-                }
-            }; r.readAsDataURL(file);
-        });
+    function cancelQty() { document.getElementById('qty-popup').style.display='none'; lastCode = ''; }
+
+    // --- ФИНАЛИЗАЦИЯ И GPS ---
+    function getDist(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
+        const dLat = (lat2-lat1)*Math.PI/180;
+        const dLon = (lon2-lon1)*Math.PI/180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-    async function finishVisit() {
-        if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужно 3 фото!");
-        const btn = document.getElementById('fin-btn'); btn.disabled = true; btn.innerText = "ГЕНЕРАЦИЯ...";
-        
-        const now = new Date();
-        const dist = getDist(MY_GPS.lat, MY_GPS.lon, CUR.lat, CUR.lon);
-        const gpsStatus = dist < 300 ? "OK (В зоне)" : "ВНЕ ЗОНЫ (" + Math.round(dist) + "м)";
-        
-        speak("Начинаю генерацию отчета. Проверяю координаты.");
+    async function saveToQueue() {
+        if(!IMGS.pre || !IMGS.post) return alert("Необходимы фото ДО и ПОСЛЕ");
+        const btn = document.getElementById('finish-btn'); 
+        btn.innerText = "ПРОВЕРКА GPS..."; btn.disabled = true;
 
-        document.getElementById('pdf-date').innerText = now.toLocaleString();
-        document.getElementById('pdf-net').innerText = CUR.net;
-        document.getElementById('pdf-addr').innerText = CUR.addr;
-        document.getElementById('pdf-worker').innerText = DATA.user;
-        document.getElementById('pdf-time-val').innerText = Math.round((now - CUR.start)/60000) + " мин";
-        document.getElementById('pdf-gps').innerText = gpsStatus;
-        document.getElementById('pdf-stock').innerText = parseInt(document.getElementById('stock-shelf').value) + parseInt(document.getElementById('stock-wh').value);
-        document.getElementById('pdf-share').innerText = document.getElementById('share-val').innerText;
-        document.getElementById('pdf-img1').src = IMGS.pre; 
-        document.getElementById('pdf-img2').src = IMGS.post; 
-        document.getElementById('pdf-img3').src = IMGS.price;
-
-        setTimeout(async () => {
-            try {
-                const canvas = await html2canvas(document.getElementById('pdf-render'));
-                const report = {
-                    worker: DATA.user, net: CUR.net, address: CUR.addr,
-                    pdf: canvas.toDataURL('image/jpeg', 0.7),
-                    lat: MY_GPS.lat, lon: MY_GPS.lon, gps_status: gpsStatus,
-                    items: SCANNED_ITEMS,
-                    created: Date.now()
-                };
-                const tx = db.transaction('reports', 'readwrite');
-                tx.objectStore('reports').add(report);
-                CUR.done = true; localStorage.setItem('mx_shops', JSON.stringify(DATA.shops));
-                speak("Визит завершен. Отчет поставлен в очередь.");
-                closeModal(); renderList(); sync();
-            } catch(e) { alert("Ошибка PDF: " + e); btn.disabled = false; btn.innerText = "ПОВТОРИТЬ"; }
-        }, 1000);
-    }
-
-    function initDB() { 
-        const r = indexedDB.open("MerchX_v2", 1); 
-        r.onupgradeneeded = e => e.target.result.createObjectStore('reports', {keyPath:'id', autoIncrement:true});
-        r.onsuccess = e => { db = e.target.result; updateQ(); setInterval(sync, 15000); };
-    }
-    function updateQ() { db.transaction('reports').objectStore('reports').count().onsuccess = e => { const c = e.target.result; document.getElementById('syncIndicator').style.display = c>0?'block':'none'; document.getElementById('qCount').innerText = c; }; }
-    async function sync() {
-        if(!navigator.onLine) return;
-        const tx = db.transaction('reports', 'readonly');
-        tx.objectStore('reports').openCursor().onsuccess = async e => {
-            const cur = e.target.result;
-            if(cur) {
-                try {
-                    const res = await fetch(API_URL + '/merch-upload', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cur.value) });
-                    if(res.ok) { db.transaction('reports', 'readwrite').objectStore('reports').delete(cur.key); updateQ(); }
-                } catch(err){} cur.continue();
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const dist = getDist(pos.coords.latitude, pos.coords.longitude, cur.lat, cur.lon);
+            if(dist > 600) {
+                speak("Ошибка. Вы слишком далеко от магазина. Расстояние " + Math.round(dist) + " метров.");
+                alert("Слишком далеко! Нужно быть в пределах 600м от точки.");
+                btn.disabled = false; btn.innerText = "ОТПРАВИТЬ ОТЧЕТ"; return;
             }
+
+            const now = new Date();
+            const dur = Math.round((now - cur.start)/60000) + " мин";
+
+            // Таблица в PDF
+            document.getElementById('p-table-body').innerHTML = SCANNED.map(x => `
+                <tr>
+                    <td style="border:1px solid #000; padding:10px;">${x.name}</td>
+                    <td style="border:1px solid #000; text-align:center;">${x.shelf}</td>
+                    <td style="border:1px solid #000; text-align:center;">${x.wh}</td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('p-date').innerText = now.toLocaleString();
+            document.getElementById('p-net').innerText = cur.net;
+            document.getElementById('p-addr-val').innerText = cur.addr;
+            document.getElementById('p-worker').innerText = DATA.name;
+            document.getElementById('p-start-t').innerText = new Date(cur.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            document.getElementById('p-end-t').innerText = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            document.getElementById('p-dur').innerText = dur;
+            document.getElementById('p-i1').src = IMGS.pre; 
+            document.getElementById('p-i2').src = IMGS.post; 
+            document.getElementById('p-i3').src = IMGS.price || "";
+
+            setTimeout(async () => {
+                const canvas = await html2canvas(document.getElementById('pdf-render'));
+                const report = { 
+                    worker: DATA.name, net: cur.net, address: cur.addr, 
+                    pdf: canvas.toDataURL('image/jpeg', 0.6),
+                    created: Date.now(), lat: pos.coords.latitude, lon: pos.coords.longitude
+                };
+                
+                const tx = db.transaction(["reports", "archive"], "readwrite");
+                tx.objectStore("reports").add(report);
+                tx.objectStore("archive").put({ addr: cur.addr, details: `Дата: ${now.toLocaleDateString()} | Время: ${dur}` });
+                
+                cur.done = true; 
+                localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+                speak("Визит успешно завершен. Отчет сохранен.");
+                closeModal(); render(); updateQueueUI();
+            }, 800);
+        }, () => { 
+            speak("Ошибка. Включите геолокацию в настройках телефона."); 
+            alert("Нет доступа к GPS!"); btn.disabled = false; 
+        }, {enableHighAccuracy: true, timeout: 10000});
+    }
+
+    // --- ВСПОМОГАТЕЛЬНОЕ ---
+    function cam(inp, type) {
+        if(!inp.files[0]) return;
+        const r = new FileReader(); r.onload = (e) => {
+            const img = new Image(); img.src = e.target.result;
+            img.onload = () => {
+                const c = document.createElement('canvas'); 
+                const max = 1000; let w = img.width, h = img.height;
+                if(w > h) { if(w > max) { h *= max/w; w = max; } } else { if(h > max) { w *= max/h; h = max; } }
+                c.width = w; c.height = h;
+                c.getContext('2d').drawImage(img, 0, 0, w, h);
+                IMGS[type] = c.toDataURL('image/jpeg', 0.5);
+                inp.parentElement.classList.add('ok');
+            };
+        }; r.readAsDataURL(inp.files[0]);
+    }
+
+    async function checkPlanogram(addr) {
+        const box = document.getElementById('planogram-section');
+        try {
+            const res = await fetch(`${API}/get-planogram?addr=${encodeURIComponent(addr)}&key=${DATA.key}`);
+            const d = await res.json();
+            box.innerHTML = d.exists ? `<button class="btn-blue" style="background:#444; margin:0;" onclick="window.open('${d.url}')">ОТКРЫТЬ ПЛАНОГРАММУ</button>` : "Планограмма не загружена";
+        } catch(e) { box.innerText = "Ошибка проверки схемы"; }
+    }
+
+    function loadArchive(addr) {
+        db.transaction("archive").objectStore("archive").get(addr).onsuccess = (e) => {
+            if(e.target.result) document.getElementById('arch-details').innerText = e.target.result.details;
         };
     }
-    function closeModal() { document.getElementById('task-modal').style.display = 'none'; if(html5QrCode) closeScanner(); }
-    function resetVisit() { if(confirm("Сбросить?")) { CUR.done = false; CUR.start = null; openTask(CUR.id); } }
-    function clearAll() { if(confirm("Удалить базу?")) { localStorage.clear(); location.reload(); } }
+
+    function startNewVisit() { 
+        if(confirm("Данные текущего визита будут стерты. Переделать?")) { 
+            cur.done = false; cur.start = null; 
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+            openModal(cur.id); render(); 
+        } 
+    }
+
+    function sync() {
+        if(syncing || !navigator.onLine) return; syncing = true;
+        const tx = db.transaction("reports", "readwrite"), store = tx.objectStore("reports"), req = store.openCursor();
+        req.onsuccess = async (e) => {
+            const cursor = e.target.result;
+            if(cursor) {
+                try {
+                    const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(cursor.value) });
+                    if(res.ok) store.delete(cursor.key);
+                } catch(err) {} cursor.continue();
+            } else { syncing = false; updateQueueUI(); }
+        };
+    }
+
+    function updateQueueUI() { if(db) db.transaction("reports").objectStore("reports").count().onsuccess = (e) => { document.getElementById('syncIndicator').style.display = e.target.result > 0 ? 'block' : 'none'; document.getElementById('qCount').innerText = e.target.result; }; }
+    function handleFile(inp) {
+        const r = new FileReader(); r.onload = (e) => {
+            const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+            DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть']||'?', addr: r['Адрес']||'?', lat: parseFloat(r['Широта'])||0, lon: parseFloat(r['Долгота'])||0, done: false }));
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render();
+            speak("Список магазинов загружен. " + DATA.shops.length + " объектов.");
+        }; r.readAsArrayBuffer(inp.files[0]);
+    }
+    function calcShare() { const m = document.getElementById('i-faces').value, t = document.getElementById('i-total-faces').value; document.getElementById('share-val').innerText = t>0?Math.round((m/t)*100):0; }
+    function closeModal() { document.getElementById('task-modal').style.display='none'; }
+    function clearData() { if(confirm("ВНИМАНИЕ! Это удалит все магазины и настройки. Продолжить?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
-
