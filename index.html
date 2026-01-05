@@ -240,7 +240,7 @@
 
                         <div>
                             <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Тип проекта</label>
-                            <select id="buyType" class="login-input !text-left !text-sm !mb-0 !bg-black">
+                            <select id="buyType" class="login-input !text-left !text-sm !mb-0 !bg-black" onchange="calculatePrice()">
                                 <option value="logist">LOGIST_X (Расклейка / Монтаж)</option>
                                 <option value="merch">MERCH_X (Мерчандайзинг / Аналитика)</option>
                             </select>
@@ -273,6 +273,14 @@
         const SERVER_URL = 'https://logist-x-server-production.up.railway.app';
         let deferredPrompt;
         
+        // ГОЛОСОВОЙ ДВИЖОК
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ru-RU';
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
         
         async function handleInstallClick() {
@@ -280,7 +288,11 @@
             else { alert('Меню браузера -> На экран Домой'); }
         }
 
-        function goToBot() { window.location.href = BOT_URL; }
+        function goToBot() { 
+            speak("Переходим в Телеграм бот");
+            window.location.href = BOT_URL; 
+        }
+        
         function openModal(id) { document.getElementById(id).style.display = "block"; }
         function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
@@ -290,19 +302,28 @@
             document.getElementById('buy-section').style.display = isLogin ? 'none' : 'block';
             document.getElementById('btn-tab-login').classList.toggle('active', isLogin);
             document.getElementById('btn-tab-buy').classList.toggle('active', !isLogin);
+            if(!isLogin) speak("Оформление новой лицензии");
         }
 
         function calculatePrice() {
             const limit = parseInt(document.getElementById('buyLimit').value) || 0;
             const days = parseInt(document.getElementById('buyMonths').value);
+            const type = document.getElementById('buyType').value;
+            const typeText = type === 'logist' ? 'Логистика' : 'Мерч';
+            
             let pricePerWorker = 0;
             if (days == 30) pricePerWorker = 1500;
-            else if (days == 90) pricePerWorker = 1350; // (4050/3)
-            else if (days == 180) pricePerWorker = 1275; // (7650/6)
-            else if (days == 365) pricePerWorker = 1250; // (15000/12)
+            else if (days == 90) pricePerWorker = 1350; 
+            else if (days == 180) pricePerWorker = 1275; 
+            else if (days == 365) pricePerWorker = 1250; 
             
             const total = limit * (pricePerWorker * (days / 30));
             document.getElementById('totalPriceDisplay').innerText = Math.round(total).toLocaleString() + ' ₽';
+
+            clearTimeout(window.speechTimer);
+            window.speechTimer = setTimeout(() => {
+                speak(`Выбран проект ${typeText}. Лимит ${limit} человек.`);
+            }, 1000);
         }
 
         async function loginToCabinet() {
@@ -313,11 +334,13 @@
                 const keys = await response.json();
                 const found = keys.find(k => k.key === keyInput);
                 if (found && found.ownerChatId) {
+                    speak(`Доступ подтвержден. Добро пожаловать в систему компании ${found.name}`);
                     document.getElementById('auth-ui').style.display = 'none';
                     document.getElementById('iframe-section').style.display = 'block';
                     document.getElementById('cabinetTitle').innerText = found.name;
                     document.getElementById('cabinetFrame').src = `${SERVER_URL}/client-dashboard?chatId=${found.ownerChatId}`;
                 } else {
+                    speak("Ключ не найден");
                     alert('Ключ не найден или еще не активирован в Telegram боте!');
                 }
             } catch (e) { alert('Ошибка связи с сервером.'); }
@@ -328,7 +351,11 @@
             const limit = document.getElementById('buyLimit').value;
             const days = document.getElementById('buyMonths').value;
             const type = document.getElementById('buyType').value;
-            if(!name) return alert('Введите название объекта!');
+            if(!name) {
+                speak("Введите название объекта");
+                return alert('Введите название объекта!');
+            }
+            speak(`Формируем счет для компании ${name}`);
             try {
                 const r = await fetch(`${SERVER_URL}/api/notify-admin`, {
                     method: 'POST',
