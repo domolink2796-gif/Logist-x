@@ -6,6 +6,7 @@
     <title>LOGIST_X | MERCH PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root { --bg: #000000; --card: #111111; --accent: #f59e0b; --green: #00ff00; --border: #222222; --text: #ffffff; --blue: #007aff; --red: #ff3b30; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; user-select: none; }
@@ -39,6 +40,11 @@
         .arch-view { background: #0a0a0a; border-radius: 20px; padding: 5px; }
         .arch-img-item { width: 100%; border-radius: 12px; aspect-ratio: 3/4; object-fit: cover; border: 1px solid #333; }
         .plan-box { margin: 15px 0; padding: 12px; border: 1px dashed var(--accent); border-radius: 14px; background: rgba(245, 158, 11, 0.03); text-align: center; }
+        
+        /* Стили для сканера */
+        #scanner-container { width: 100%; height: 250px; background: #000; border-radius: 15px; overflow: hidden; margin-top: 10px; display: none; border: 2px solid var(--accent); }
+        .scan-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1500; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .scan-msg { color: var(--accent); font-weight: 800; margin-top: 20px; text-align: center; }
     </style>
 </head>
 <body>
@@ -50,6 +56,18 @@
         <div id="auth-btn" class="btn-blue" onclick="saveAuth()">АКТИВИРОВАТЬ</div>
     </div>
 </div>
+
+<div id="scan-overlay" class="scan-overlay">
+    <div id="reader" style="width: 100%; max-width: 400px;"></div>
+    <div class="scan-msg" id="scan-info">НАВЕДИТЕ НА ШТРИХ-КОД</div>
+    <div id="scan-manual" class="hidden" style="width:100%; margin-top:20px;">
+        <div style="font-size:0.7rem; opacity:0.6; text-transform:uppercase; margin-bottom:5px;">Новый товар найден! Назовите его:</div>
+        <input type="text" id="new-prod-name" placeholder="Название (например: Сок Яблоко)">
+        <button class="btn-blue" style="margin-top:10px; background:var(--green); color:#000;" onclick="submitNewProduct()">ПРИВЯЗАТЬ И ДОБАВИТЬ</button>
+    </div>
+    <button class="btn-blue" style="margin-top:30px; background:none; border:1px solid #333;" onclick="stopScanner()">ЗАКРЫТЬ</button>
+</div>
+
 <div class="header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="logo">LOGIST_X <span>MERCH</span></div>
@@ -80,10 +98,16 @@
         <div id="report-block" class="hidden">
             <span class="f-label">Адрес точки</span>
             <input type="text" id="inp-addr" readonly>
+            
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div><span class="f-label">Остаток</span><input type="number" id="i-stock" value="0"></div>
+                <div style="position:relative;">
+                    <span class="f-label">Остаток</span>
+                    <input type="number" id="i-stock" value="0">
+                    <div style="position:absolute; right:5px; bottom:5px; background:var(--accent); color:#000; width:35px; height:35px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; cursor:pointer;" onclick="startScanner()">📷</div>
+                </div>
                 <div><span class="f-label">Наш Фейсинг</span><input type="number" id="i-faces" value="0" oninput="calcShare()"></div>
             </div>
+
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                 <div><span class="f-label">Наша Цена (₽)</span><input type="number" id="i-our-price" value="0" step="0.1"></div>
                 <div><span class="f-label">Цена Конкурента (₽)</span><input type="number" id="i-comp-price" value="0" step="0.1"></div>
@@ -147,8 +171,97 @@
 <script>
     const API = 'https://logist-x-server-production.up.railway.app';
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false, lastError = "...";
+    
+    // Переменные сканера
+    let html5QrCode;
+    let currentBarcode = null;
+    let sessionStock = 0;
 
     function speak(t) { const m = new SpeechSynthesisUtterance(); m.text = t; m.lang = 'ru-RU'; window.speechSynthesis.speak(m); }
+
+    // --- ЛОГИКА СКАНЕРА ---
+    async function startScanner() {
+        document.getElementById('scan-overlay').style.display = 'flex';
+        document.getElementById('scan-info').innerText = 'НАВЕДИТЕ НА ШТРИХ-КОД';
+        document.getElementById('scan-manual').classList.add('hidden');
+        
+        html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+        
+        try {
+            await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+        } catch (err) {
+            alert("Ошибка камеры: " + err);
+            stopScanner();
+        }
+    }
+
+    async function onScanSuccess(decodedText) {
+        if (currentBarcode === decodedText) return; // Чтобы не частил на одном коде
+        currentBarcode = decodedText;
+        speak("Пик");
+        
+        // Запрос к серверу: знаем ли мы этот товар?
+        try {
+            const res = await fetch(`${API}/check-barcode?code=${decodedText}&key=${DATA.key}`);
+            const data = await res.json();
+            
+            if (data.exists) {
+                sessionStock++;
+                document.getElementById('scan-info').innerHTML = `
+                    <span style="color:var(--green)">${data.name}</span><br>
+                    <span style="font-size:2rem;">+1</span><br>
+                    Всего в этой сессии: ${sessionStock}
+                `;
+                updateMainStock();
+            } else {
+                // Если товар новый - просим назвать
+                html5QrCode.pause();
+                document.getElementById('scan-info').innerText = "НЕИЗВЕСТНЫЙ ТОВАР: " + decodedText;
+                document.getElementById('scan-manual').classList.remove('hidden');
+                document.getElementById('new-prod-name').focus();
+            }
+        } catch (e) {
+            console.error("Ошибка базы кодов", e);
+        }
+    }
+
+    async function submitNewProduct() {
+        const name = document.getElementById('new-prod-name').value.trim();
+        if (!name) return alert("Введите название товара");
+        
+        try {
+            await fetch(`${API}/save-barcode`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ code: currentBarcode, name: name, key: DATA.key })
+            });
+            sessionStock++;
+            updateMainStock();
+            document.getElementById('scan-manual').classList.add('hidden');
+            document.getElementById('new-prod-name').value = "";
+            html5QrCode.resume();
+            document.getElementById('scan-info').innerText = "ТОВАР СОХРАНЕН! ПРОДОЛЖАЙТЕ...";
+        } catch (e) { alert("Ошибка сохранения"); }
+    }
+
+    function updateMainStock() {
+        // Суммируем текущее значение в поле и то, что напикали
+        const currentVal = parseInt(document.getElementById('i-stock').value) || 0;
+        document.getElementById('i-stock').value = currentVal + 1;
+        sessionStock = 0; // Сбрасываем счетчик сессии после добавления в основное поле
+    }
+
+    function stopScanner() {
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                document.getElementById('scan-overlay').style.display = 'none';
+            }).catch(err => console.log(err));
+        } else {
+            document.getElementById('scan-overlay').style.display = 'none';
+        }
+    }
+    // --- КОНЕЦ ЛОГИКИ СКАНЕРА ---
 
     async function checkPlanogram(addr) {
         const box = document.getElementById('plan-btn-box');
