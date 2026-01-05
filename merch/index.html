@@ -151,15 +151,20 @@
     // Функция голосового сопровождения
     function speak(text) {
         if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Остановка текущей речи перед новой
             const msg = new SpeechSynthesisUtterance();
             msg.text = text;
             msg.lang = 'ru-RU';
-            msg.rate = 1;
+            msg.rate = 1.0;
+            msg.pitch = 1.0;
+            msg.volume = 1.0;
             window.speechSynthesis.speak(msg);
+            console.log("Голос: " + text);
         }
     }
 
     async function checkPlanogram(addr) {
+        if(!cur) return;
         const box = document.getElementById('plan-btn-box');
         const url = `${API}/get-planogram?city=${encodeURIComponent(cur.city)}&addr=${encodeURIComponent(addr)}&key=${encodeURIComponent(DATA.key)}`;
         try {
@@ -180,36 +185,60 @@
                     <input type="file" id="up-plan" accept="image/*" capture="camera" class="hidden" onchange="uploadPlanogram(this)">
                 `;
             }
-        } catch(e) { box.innerHTML = '<span style="color:red; font-size:10px;">Ошибка связи</span>'; }
+        } catch(e) { 
+            box.innerHTML = '<span style="color:red; font-size:10px;">Ошибка связи с сервером</span>'; 
+            console.error("Planogram error:", e);
+        }
     }
 
     async function uploadPlanogram(inp) {
-        if(!inp.files[0]) return;
+        if(!inp.files[0] || !cur) return;
         const box = document.getElementById('plan-btn-box');
         const originalContent = box.innerHTML;
         box.innerHTML = '<span style="font-size:10px; color:var(--accent);">СЖАТИЕ И СОХРАНЕНИЕ...</span>';
+        
+        const currentCity = cur.city;
+        const currentAddr = cur.addr;
+        
         const r = new FileReader();
         r.onload = async (e) => {
-            const img = new Image(); img.src = e.target.result;
+            const img = new Image(); 
+            img.src = e.target.result;
             img.onload = async () => {
-                const c = document.createElement('canvas'); const ctx = c.getContext('2d', {alpha: false});
+                const c = document.createElement('canvas'); 
+                const ctx = c.getContext('2d', {alpha: false});
                 let w = img.width, h = img.height, m = 1024;
                 if(w > h) { if(w > m) { h *= m/w; w = m; } } else { if(h > m) { w *= m/h; h = m; } }
-                c.width = w; c.height = h; ctx.imageSmoothingQuality = 'low';
+                c.width = w; c.height = h; 
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, w, h);
-                const compressed = c.toDataURL('image/jpeg', 0.5);
+                const compressed = c.toDataURL('image/jpeg', 0.6);
+                
                 try {
+                    console.log("Отправка планограммы для:", currentCity, currentAddr);
                     const res = await fetch(`${API}/upload-planogram`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ city: cur.city, addr: cur.addr, key: DATA.key, image: compressed })
+                        body: JSON.stringify({ 
+                            city: currentCity, 
+                            addr: currentAddr, 
+                            key: DATA.key, 
+                            image: compressed 
+                        })
                     });
                     if(res.ok) { 
-                        setTimeout(() => { checkPlanogram(cur.addr); }, 1500);
+                        speak("Планограмма успешно сохранена");
+                        setTimeout(() => { checkPlanogram(currentAddr); }, 1500);
                     } else {
-                        alert("Ошибка сервера"); box.innerHTML = originalContent;
+                        const errData = await res.json();
+                        alert("Ошибка сервера: " + (errData.message || "Неизвестная ошибка")); 
+                        box.innerHTML = originalContent;
                     }
-                } catch(err) { alert("Ошибка загрузки"); box.innerHTML = originalContent; }
+                } catch(err) { 
+                    alert("Ошибка загрузки. Проверьте интернет."); 
+                    box.innerHTML = originalContent; 
+                }
                 c.remove();
             };
         };
@@ -230,29 +259,44 @@
             if(!dbRef.objectStoreNames.contains("reports")) dbRef.createObjectStore("reports", { keyPath: "id", autoIncrement: true });
             if(!dbRef.objectStoreNames.contains("archive")) dbRef.createObjectStore("archive", { keyPath: "shop_addr" });
         };
-        req.onsuccess = (e) => { db = e.target.result; updateQueueUI(); setInterval(sync, 8000); };
+        req.onsuccess = (e) => { 
+            db = e.target.result; 
+            updateQueueUI(); 
+            setInterval(sync, 8000); 
+            console.log("База данных готова");
+        };
     }
 
     window.onload = () => {
-        DATA.name = localStorage.getItem('m_name') || ""; DATA.key = localStorage.getItem('m_key') || "";
-        if(DATA.key && DATA.name) document.getElementById('auth-screen').style.display='none';
-        DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]"); openDB(); render();
+        DATA.name = localStorage.getItem('m_name') || ""; 
+        DATA.key = localStorage.getItem('m_key') || "";
+        if(DATA.key && DATA.name) {
+            document.getElementById('auth-screen').style.display='none';
+            speak("Система готова к работе. Выберите торговую точку.");
+        }
+        DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]"); 
+        openDB(); 
+        render();
     };
 
     async function saveAuth() {
         const n = document.getElementById('work-name').value.trim(), k = document.getElementById('lic-key').value.trim().toUpperCase();
         if(!n || !k) return alert("Введите данные");
         try {
-            const res = await fetch(`${API}/check-license`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ licenseKey: k, workerName: n }) });
+            const res = await fetch(`${API}/check-license`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ licenseKey: k, workerName: n }) 
+            });
             const d = await res.json();
             if(d.status === 'active') { 
                 DATA.name = n; DATA.key = k; 
                 localStorage.setItem('m_name', n); 
                 localStorage.setItem('m_key', k); 
                 document.getElementById('auth-screen').style.display='none'; 
-                speak("Ключ принят. Добро пожаловать, " + n);
+                speak("Ключ принят. Добро пожаловать, " + n + ". Желаю продуктивного дня!");
             } else alert(d.message);
-        } catch(e) { alert("Сервер недоступен"); }
+        } catch(e) { alert("Сервер недоступен. Проверьте интернет или VPN."); }
     }
 
     function calcShare() {
@@ -262,7 +306,8 @@
 
     function render() {
         const list = document.getElementById('list'), s = document.getElementById('srch').value.toLowerCase();
-        document.getElementById('st-total').innerText = DATA.shops.length; document.getElementById('st-done').innerText = DATA.shops.filter(x => x.done).length;
+        document.getElementById('st-total').innerText = DATA.shops.length; 
+        document.getElementById('st-done').innerText = DATA.shops.filter(x => x.done).length;
         list.innerHTML = DATA.shops.filter(x => x.addr.toLowerCase().includes(s)).map(x => `
             <div class="card" onclick="openModal(${x.id})">
                 <div class="dot" style="background:${x.done ? 'var(--green)' : (x.start ? 'var(--blue)' : '#222')}"></div>
@@ -277,6 +322,7 @@
         document.getElementById('m-net').innerText = cur.net;
         document.getElementById('task-modal').style.display = 'flex';
         checkPlanogram(cur.addr); 
+        
         if(cur.done) {
             document.getElementById('start-block').classList.add('hidden');
             document.getElementById('report-block').classList.add('hidden');
@@ -296,14 +342,18 @@
     }
 
     function startNewVisit() {
-        if(confirm("Начать новый визит? Форма будет очищена, старый отчет останется на сервере и в архиве.")) {
-            cur.done = false; cur.start = null; IMGS = { pre: null, post: null, price: null };
+        if(confirm("Начать новый визит? Все старые данные останутся в архиве.")) {
+            cur.done = false; cur.start = null; 
+            IMGS = { pre: null, post: null, price: null };
             document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok'));
             document.getElementById('i-stock').value = 0; document.getElementById('i-faces').value = 0;
             document.getElementById('i-total-faces').value = 0; document.getElementById('i-our-price').value = 0;
             document.getElementById('i-comp-price').value = 0; document.getElementById('share-val').innerText = 0;
-            document.getElementById('i-exp').value = ""; localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
-            render(); openModal(cur.id);
+            document.getElementById('i-exp').value = ""; 
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+            render(); 
+            openModal(cur.id);
+            speak("Повторный визит начат.");
         }
     }
 
@@ -333,7 +383,8 @@
     }
 
     async function begin() {
-        const btn = document.getElementById('begin-btn'); btn.innerText = "ПОИСК GPS...";
+        const btn = document.getElementById('begin-btn'); 
+        btn.innerText = "ПОИСК GPS...";
         if(!cur.lat || !cur.lon) {
             try {
                 const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cur.city + ' ' + cur.addr)}`);
@@ -345,34 +396,51 @@
         render(); 
         openModal(cur.id); 
         btn.innerText = "НАЧАТЬ ВИЗИТ";
-        speak("Визит начат. Сделайте три фотографии: общий план, полка и ценники.");
+        speak("Визит начат. Пожалуйста, сделайте фотографии до начала работ, после выкладки и фото ценников.");
     }
 
     async function saveToQueue() {
-        if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужно 3 фото");
-        const btn = document.getElementById('finish-btn'); btn.innerText = "ПРОВЕРКА GPS..."; btn.disabled = true;
+        if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Необходимо сделать все 3 фотографии!");
+        const btn = document.getElementById('finish-btn'); 
+        btn.innerText = "ПРОВЕРКА GPS..."; 
+        btn.disabled = true;
+        
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const dist = getDist(pos.coords.latitude, pos.coords.longitude, cur.lat, cur.lon);
-            if(dist > 600) { alert(`ВЫ СЛИШКОМ ДАЛЕКО!\nРасстояние: ${Math.round(dist)}м.\nНужно быть ближе 600м.`); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; return; }
+            if(dist > 600) { 
+                alert(`ВЫ СЛИШКОМ ДАЛЕКО!\nРасстояние: ${Math.round(dist)}м.\nНужно быть ближе 600м к точке.`); 
+                btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; 
+                return; 
+            }
+            
             const now = new Date();
             const startT = new Date(cur.start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const endT = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const durMin = Math.max(1, Math.round((now - cur.start) / 60000));
             const durationTxt = durMin + " МИН";
+            
             document.getElementById('p-date').innerText = now.toLocaleDateString() + ", " + now.toLocaleTimeString(); 
-            document.getElementById('p-start-t').innerText = startT; document.getElementById('p-end-t').innerText = endT;
-            document.getElementById('p-dur').innerText = durationTxt; document.getElementById('p-net').innerText = cur.net; 
-            document.getElementById('p-addr-val').innerText = cur.addr; document.getElementById('p-worker').innerText = DATA.name; 
+            document.getElementById('p-start-t').innerText = startT; 
+            document.getElementById('p-end-t').innerText = endT;
+            document.getElementById('p-dur').innerText = durationTxt; 
+            document.getElementById('p-net').innerText = cur.net; 
+            document.getElementById('p-addr-val').innerText = cur.addr; 
+            document.getElementById('p-worker').innerText = DATA.name; 
             document.getElementById('p-stock').innerText = document.getElementById('i-stock').value;
-            document.getElementById('p-faces').innerText = document.getElementById('i-faces').value; document.getElementById('p-share').innerText = document.getElementById('share-val').innerText;
+            document.getElementById('p-faces').innerText = document.getElementById('i-faces').value; 
+            document.getElementById('p-share').innerText = document.getElementById('share-val').innerText;
             document.getElementById('p-exp-val').innerText = document.getElementById('i-exp').value || "-";
             document.getElementById('p-our-price').innerText = document.getElementById('i-our-price').value;
             document.getElementById('p-comp-price').innerText = document.getElementById('i-comp-price').value;
-            document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
+            document.getElementById('p-i1').src = IMGS.pre; 
+            document.getElementById('p-i2').src = IMGS.post; 
+            document.getElementById('p-i3').src = IMGS.price;
+            
             setTimeout(async () => {
-                const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1 });
-                const pdfFull = canvas.toDataURL('image/jpeg', 0.5);
-                const pdfName = (cur.net + "_" + cur.addr).replace(/[^а-яёa-z0-9]/gi, '_');
+                const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1.5 });
+                const pdfFull = canvas.toDataURL('image/jpeg', 0.6);
+                const pdfName = "ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ";
+                
                 const report = { 
                     worker: DATA.name, net: cur.net, city: cur.city || "Орёл", address: cur.addr, 
                     stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value, 
@@ -381,30 +449,59 @@
                     startTime: startT, endTime: endT, duration: durationTxt, 
                     pdf: pdfFull, pdfName: pdfName, lat: pos.coords.latitude, lon: pos.coords.longitude, sending: 0 
                 };
+                
                 const arch = { shop_addr: cur.addr, ...report, img_pre: IMGS.pre, img_post: IMGS.post, img_price: IMGS.price };
                 const tx = db.transaction(["reports", "archive"], "readwrite"); 
-                tx.objectStore("reports").add(report); tx.objectStore("archive").put(arch);
-                tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); updateQueueUI(); sync(); };
-                btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ";
-            }, 500);
-        }, (err) => { alert("Включите GPS!"); btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; }, { enableHighAccuracy: true, timeout: 10000 });
+                tx.objectStore("reports").add(report); 
+                tx.objectStore("archive").put(arch);
+                
+                tx.oncomplete = () => { 
+                    cur.done = true; 
+                    localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
+                    closeModal(); 
+                    render(); 
+                    updateQueueUI(); 
+                    sync(); 
+                    speak("Визит завершен успешно. Отчет сформирован.");
+                };
+                btn.disabled = false; 
+                btn.innerText = "ЗАВЕРШИТЬ";
+            }, 600);
+        }, (err) => { 
+            alert("Не удалось получить GPS координаты. Включите геолокацию!"); 
+            btn.disabled = false; btn.innerText = "ЗАВЕРШИТЬ"; 
+        }, { enableHighAccuracy: true, timeout: 12000 });
     }
 
     async function sync() {
-        if(syncing || !navigator.onLine || !db) return; syncing = true;
+        if(syncing || !navigator.onLine || !db) return; 
+        syncing = true;
         const tx = db.transaction("reports", "readwrite"), store = tx.objectStore("reports"), req = store.openCursor();
         req.onsuccess = async (e) => {
             const cursor = e.target.result;
             if(cursor) {
-                const report = cursor.value; if(report.sending === 1) { cursor.continue(); return; }
-                const rid = cursor.key; report.sending = 1; cursor.update(report);
+                const report = cursor.value; 
+                if(report.sending === 1) { cursor.continue(); return; }
+                const rid = cursor.key; 
+                report.sending = 1; 
+                cursor.update(report);
                 try {
-                    const res = await fetch(`${API}/merch-upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(report) });
+                    const res = await fetch(`${API}/merch-upload`, { 
+                        method: 'POST', 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify(report) 
+                    });
                     if(res.ok) {
                         const delTx = db.transaction("reports", "readwrite");
-                        delTx.objectStore("reports").delete(rid); lastError = "ОК";
-                    } else throw new Error("Server busy");
-                } catch(err) { lastError = err.message; report.sending = 0; const errTx = db.transaction("reports", "readwrite"); errTx.objectStore("reports").put(report, rid); }
+                        delTx.objectStore("reports").delete(rid); 
+                        lastError = "Данные успешно переданы";
+                    } else throw new Error("Server Error");
+                } catch(err) { 
+                    lastError = "Ошибка сети: " + err.message; 
+                    report.sending = 0; 
+                    const errTx = db.transaction("reports", "readwrite"); 
+                    errTx.objectStore("reports").put(report, rid); 
+                }
                 syncing = false; updateQueueUI();
             } else { syncing = false; updateQueueUI(); }
         };
@@ -412,43 +509,80 @@
     }
 
     function updateQueueUI() {
-        if(!db) return; const tx = db.transaction("reports", "readonly");
+        if(!db) return; 
+        const tx = db.transaction("reports", "readonly");
         tx.objectStore("reports").count().onsuccess = (e) => {
-            const count = e.target.result; const ind = document.getElementById('syncIndicator');
-            ind.style.display = count > 0 ? 'block' : 'none'; document.getElementById('qCount').innerText = count;
+            const count = e.target.result; 
+            const ind = document.getElementById('syncIndicator');
+            ind.style.display = count > 0 ? 'block' : 'none'; 
+            document.getElementById('qCount').innerText = count;
             if(syncing && count > 0) ind.classList.add('sync-active'); else ind.classList.remove('sync-active');
         };
     }
 
-    function checkQueue() { const tx = db.transaction("reports", "readonly"); tx.objectStore("reports").count().onsuccess = (e) => alert(`ОЧЕРЕДЬ: ${e.target.result}\nСТАТУС: ${lastError}`); }
+    function checkQueue() { 
+        const tx = db.transaction("reports", "readonly"); 
+        tx.objectStore("reports").count().onsuccess = (e) => {
+            alert(`В очереди на отправку: ${e.target.result} отчетов.\nПоследний статус: ${lastError}`);
+        };
+    }
 
     function cam(i, t) {
-        if(!i.files[0]) return; const r = new FileReader();
+        if(!i.files[0]) return; 
+        const r = new FileReader();
         r.onload = (e) => {
-            const img = new Image(); img.src = e.target.result;
+            const img = new Image(); 
+            img.src = e.target.result;
             img.onload = () => {
-                const c = document.createElement('canvas'); const ctx = c.getContext('2d', {alpha: false});
-                let w = img.width, h = img.height, m = 1024;
+                const c = document.createElement('canvas'); 
+                const ctx = c.getContext('2d', {alpha: false});
+                let w = img.width, h = img.height, m = 1200; // Немного увеличил качество фото
                 if(w > h) { if(w > m) { h *= m/w; w = m; } } else { if(h > m) { w *= m/h; h = m; } }
-                c.width = w; c.height = h; ctx.imageSmoothingQuality = 'low';
+                c.width = w; c.height = h; 
                 ctx.drawImage(img, 0, 0, w, h);
-                IMGS[t] = c.toDataURL('image/jpeg', 0.5); document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok');
+                IMGS[t] = c.toDataURL('image/jpeg', 0.6); 
+                document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok');
                 c.remove();
             };
-        }; r.readAsDataURL(i.files[0]);
+        }; 
+        r.readAsDataURL(i.files[0]);
     }
 
     function handleFile(inp) {
-        const r = new FileReader(); r.onload = (e) => {
+        const r = new FileReader(); 
+        r.onload = (e) => {
             const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
             const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', city: r['Город'] || 'Орёл', addr: r['Адрес'] || '?', lat: parseFloat(r['Широта']) || 0, lon: parseFloat(r['Долгота']) || 0, done: false, start: null }));
-            localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render();
-        }; r.readAsArrayBuffer(inp.files[0]);
+            DATA.shops = rows.map((r, i) => ({ 
+                id: i, 
+                net: r['Сеть'] || 'МАРКЕТ', 
+                city: r['Город'] || 'Орёл', 
+                addr: r['Адрес'] || '?', 
+                lat: parseFloat(r['Широта']) || 0, 
+                lon: parseFloat(r['Долгота']) || 0, 
+                done: false, 
+                start: null 
+            }));
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
+            render();
+            speak("План загружен. Доступно " + DATA.shops.length + " торговых точек.");
+        }; 
+        r.readAsArrayBuffer(inp.files[0]);
     }
 
-    function closeModal() { document.getElementById('task-modal').style.display='none'; IMGS = { pre:null, post:null, price:null }; document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); }
-    function clearData() { if(confirm("Очистить данные?")) { localStorage.clear(); indexedDB.deleteDatabase("MerchX_Final_Sync"); location.reload(); } }
+    function closeModal() { 
+        document.getElementById('task-modal').style.display='none'; 
+        IMGS = { pre:null, post:null, price:null }; 
+        document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); 
+    }
+    
+    function clearData() { 
+        if(confirm("Внимание! Это удалит все данные, план и архив. Вы уверены?")) { 
+            localStorage.clear(); 
+            indexedDB.deleteDatabase("MerchX_Final_Sync"); 
+            location.reload(); 
+        } 
+    }
 </script>
 </body>
 </html>
