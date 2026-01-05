@@ -312,17 +312,31 @@
             const typeText = type === 'logist' ? 'Логистика' : 'Мерч';
             
             let pricePerWorker = 0;
-            if (days == 30) pricePerWorker = 1500;
-            else if (days == 90) pricePerWorker = 1350; 
-            else if (days == 180) pricePerWorker = 1275; 
-            else if (days == 365) pricePerWorker = 1250; 
+            let discountText = "Без скидки";
+            
+            if (days == 30) {
+                pricePerWorker = 1500;
+                discountText = "Без скидки";
+            }
+            else if (days == 90) {
+                pricePerWorker = 1350; 
+                discountText = "Скидка десять процентов";
+            }
+            else if (days == 180) {
+                pricePerWorker = 1275; 
+                discountText = "Скидка пятнадцать процентов";
+            }
+            else if (days == 365) {
+                pricePerWorker = 1250; 
+                discountText = "Максимальная выгода, скидка более двадцати процентов";
+            }
             
             const total = limit * (pricePerWorker * (days / 30));
             document.getElementById('totalPriceDisplay').innerText = Math.round(total).toLocaleString() + ' ₽';
 
             clearTimeout(window.speechTimer);
             window.speechTimer = setTimeout(() => {
-                speak(`Выбран проект ${typeText}. Лимит ${limit} человек.`);
+                speak(`Проект ${typeText}. Лимит ${limit} человек. ${discountText}.`);
             }, 1000);
         }
 
