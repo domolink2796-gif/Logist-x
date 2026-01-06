@@ -28,7 +28,7 @@
         .scan-overlay { position: fixed; inset: 0; background: #000; z-index: 3000; display: none; flex-direction: column; }
         #reader { width: 100%; height: 200px; background: #000; }
         
-        /* КАРТОЧКА ТОВАРА */
+        /* СТРОКА ТОВАРА */
         .item-row { background: #111; border: 1px solid #222; border-radius: 15px; padding: 12px; margin-top: 10px; }
         .item-name { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 8px; display: block; line-height: 1.2; }
         .qty-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -66,16 +66,16 @@
 
 <div id="scan-overlay" class="scan-overlay">
     <div id="reader"></div>
-    <div style="padding: 15px; background: #000;">
-        <div id="scan-status" style="text-align:center; color:var(--accent); font-weight:bold; margin-bottom:10px;">НАВЕДИТЕ НА ШТРИХ-КОД</div>
+    <div style="padding: 15px; background: #000; flex: 1;">
+        <div id="scan-status" style="text-align:center; color:var(--accent); font-weight:bold; margin-bottom:15px; font-size: 12px; text-transform: uppercase;">Наведите камеру на код</div>
         
-        <div id="new-prod-block" style="display:none; background: #111; padding: 15px; border-radius: 15px; border: 2px solid var(--accent);">
-            <div style="font-size: 12px; color:var(--accent); margin-bottom: 8px; font-weight: 800; text-transform: uppercase;">Это новый товар! Введите название:</div>
-            <input type="text" id="new-prod-name" placeholder="Напр: Jacobs 200г">
-            <button class="btn-blue btn-gold" style="margin-top:12px; margin-bottom:0;" onclick="saveNewProduct()">ДОБАВИТЬ В БАЗУ</button>
+        <div style="background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333;">
+            <span style="font-size: 10px; color: #666; text-transform: uppercase; font-weight: 800;">Название нового товара</span>
+            <input type="text" id="new-prod-name" placeholder="Напр: Jacobs Monarch 200г">
+            <button class="btn-blue btn-gold" style="margin-top:15px; margin-bottom: 0;" onclick="saveNewProduct()">ДОБАВИТЬ И СОХРАНИТЬ</button>
         </div>
         
-        <button id="close-scan-btn" class="btn-blue" style="background:#222; margin-top:15px;" onclick="closeScanner()">ОТМЕНА</button>
+        <button class="btn-blue" style="background:#222; margin-top:20px;" onclick="closeScanner()">ЗАКРЫТЬ СКАНЕР</button>
     </div>
 </div>
 
@@ -84,11 +84,6 @@
         <div class="logo">LOGIST_X <span>MERCH</span></div>
         <div id="syncIndicator" style="background:var(--red); padding: 5px 10px; border-radius: 20px; font-size: 10px; display:none; font-weight: 800;">ОТПРАВКА: <span id="qCount">0</span></div>
     </div>
-    <div style="display:flex; gap:10px; margin-top: 10px;">
-        <label class="btn-blue" for="file-in" style="flex:1; margin:0; background: #222;">📂 ЗАГРУЗИТЬ ПЛАН</label>
-        <div class="btn-blue" onclick="clearData()" style="flex:0.2; background:var(--red); margin:0;">🗑️</div>
-    </div>
-    <input type="file" id="file-in" class="hidden" onchange="handleFile(this)">
 </div>
 
 <input type="text" id="srch" placeholder="Поиск точки..." oninput="render()" style="width: calc(100% - 30px); margin: 10px 15px;">
@@ -240,8 +235,8 @@
 
     function openScanner() {
         document.getElementById('scan-overlay').style.display = 'flex';
-        document.getElementById('new-prod-block').style.display = 'none';
-        document.getElementById('scan-status').innerText = "НАВЕДИТЕ НА ШТРИХ-КОД";
+        document.getElementById('new-prod-name').value = '';
+        document.getElementById('scan-status').innerText = "НАВЕДИТЕ КАМЕРУ НА КОД";
         scanner = new Html5Qrcode("reader");
         scanner.start({ facingMode: "environment" }, { fps: 15, qrbox: {width: window.innerWidth * 0.8, height: 120} }, onScan);
     }
@@ -256,20 +251,29 @@
             speak(d.name); closeScanner(); renderItems();
         } else { 
             speak("Это новый товар. Подпишите его."); 
-            document.getElementById('new-prod-block').style.display = 'block';
             document.getElementById('scan-status').innerText = "КОД РАСПОЗНАН. ВВЕДИТЕ НАЗВАНИЕ:";
-            // Останавливаем сканер чтобы не дергался пока вводят текст
+            // Ставим сканер на паузу, чтобы не мешал вводить текст
             if(scanner) scanner.pause(true);
         }
     }
 
     function saveNewProduct() {
-        const name = document.getElementById('new-prod-name').value; if(!name) return;
-        const newObj = { code: lastCode, name: name };
-        CATALOG.push(newObj); localStorage.setItem('m_catalog', JSON.stringify(CATALOG));
-        fetch(`${API}/update-client-catalog`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ key: DATA.key, product: newObj }) });
-        renderItems(); closeScanner();
-        speak("Товар добавлен в список");
+        const name = document.getElementById('new-prod-name').value; 
+        if(!name) return alert("Введите название товара!");
+        
+        const newObj = { code: lastCode || 'MANUAL_' + Date.now(), name: name };
+        CATALOG.push(newObj); 
+        localStorage.setItem('m_catalog', JSON.stringify(CATALOG));
+        
+        fetch(`${API}/update-client-catalog`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({ key: DATA.key, product: newObj }) 
+        });
+
+        speak("Товар добавлен");
+        closeScanner(); 
+        renderItems();
     }
 
     function closeScanner() { 
