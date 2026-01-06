@@ -181,12 +181,20 @@
 
     function speak(t) { const m = new SpeechSynthesisUtterance(); m.text = t; m.lang = 'ru-RU'; window.speechSynthesis.speak(m); }
     
+    // Вспомогательная функция дистанции
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371000;
+        const dLat = (lat2-lat1) * Math.PI/180;
+        const dLon = (lon2-lon1) * Math.PI/180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
     async function syncCatalog() {
         if(!DATA.key) return;
         try { const res = await fetch(`${API}/get-catalog?key=${DATA.key}`); if(res.ok) PRODUCT_CATALOG = await res.json(); } catch(e) {}
     }
 
-    // Умная загрузка ассортимента точки
     async function fetchShopStock(addr) {
         if(!DATA.key) return;
         try {
@@ -205,14 +213,59 @@
         document.getElementById('share-val').innerText = total > 0 ? Math.round((mine / total) * 100) : 0;
     }
 
+    // ГЛАВНАЯ УМНАЯ ФУНКЦИЯ ВХОДА (GPS + ГОЛОС + СЕРВЕР)
     async function beginVisit() {
         const btn = document.getElementById('begin-btn');
-        btn.innerText = "ЗАГРУЗКА..."; btn.disabled = true;
-        cur.start = Date.now();
-        localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
-        await fetchShopStock(cur.addr); // ПОДГРУЖАЕМ ТОВАРЫ КОЛЛЕГ
-        openModal(cur.id);
-        btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false; speak("Визит открыт");
+        const warn = document.getElementById('gps-warn-box');
+        btn.innerText = "ПРОВЕРКА GPS...";
+        btn.disabled = true;
+        warn.style.display = 'none';
+
+        speak(`Проверяю адрес. ${cur.city || ''}, ${cur.addr}`);
+
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const myLat = pos.coords.latitude;
+            const myLon = pos.coords.longitude;
+
+            try {
+                // Запрос к серверу за координатами
+                const res = await fetch(`${API}/get-coords?addr=${encodeURIComponent((cur.city||'') + " " + cur.addr)}`);
+                const target = await res.json();
+
+                if (target.lat) {
+                    const dist = getDistance(myLat, myLon, target.lat, target.lon);
+                    
+                    if (dist > 600) { // Ограничение 600 метров
+                        const msg = `Доступ запрещен. Вы далеко. До магазина ${Math.round(dist)} метров.`;
+                        speak(msg);
+                        warn.innerText = msg; warn.style.display = 'block';
+                        btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
+                        return;
+                    }
+                }
+
+                // Если всё хорошо
+                speak("Адрес подтверждён. Визит открыт.");
+                cur.start = Date.now();
+                localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+                
+                await fetchShopStock(cur.addr); // Грузим память полок от коллег
+
+                openModal(cur.id);
+                btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
+
+            } catch (e) {
+                // Если сбой карт - пускаем с предупреждением
+                speak("Внимание. Связь с картами потеряна. Вхожу без проверки.");
+                cur.start = Date.now();
+                await fetchShopStock(cur.addr);
+                openModal(cur.id);
+                btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
+            }
+        }, () => {
+            speak("Ошибка. Включите геолокацию.");
+            btn.disabled = false; btn.innerText = "ОТКРЫТЬ ВИЗИТ";
+        });
     }
 
     function toggleScanner(mode) {
