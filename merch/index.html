@@ -91,7 +91,7 @@
 <div class="header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="logo">LOGIST_X <span>MERCH</span></div>
-        <button id="syncIndicator" onclick="checkQueue()" style="background:none; border:none; color:white;">📦 <span id="qCount">0</span></button>
+        <button id="syncIndicator" onclick="checkQueue()" style="background:none; border:none; color:white; display:none;">📦 <span id="qCount">0</span></button>
     </div>
     <div class="stats-main">
         <div class="s-box"><span class="s-v" id="st-total">0</span><span class="s-t">Точек</span></div>
@@ -206,7 +206,6 @@
 
     function speak(t) { const m = new SpeechSynthesisUtterance(); m.text = t; m.lang = 'ru-RU'; window.speechSynthesis.speak(m); }
     
-    // Синхронизация каталога при входе
     async function syncCatalog() {
         if(!DATA.key) return;
         try {
@@ -264,7 +263,16 @@
         if(product) {
             const p = document.getElementById('scan-popup');
             p.innerText = product.name; p.style.display = 'block'; setTimeout(() => p.style.display = 'none', 1500);
-            speak(product.name);
+            
+            // НОВОЕ: Озвучка в режиме поиска
+            if (!isCountMode) {
+                let itm = CURRENT_ITEMS.find(i => i.bc === bc);
+                let stockVal = itm ? itm.stock : 0;
+                speak(product.name + ". На складе " + stockVal + " штук.");
+            } else {
+                speak(product.name);
+            }
+            
             addItem(bc, product.name, isCountMode);
         } else {
             stopScanner(); speak("Новый товар");
@@ -388,7 +396,6 @@
         document.getElementById('p-end-t').innerText = endT;
         document.getElementById('p-stock-val').innerText = document.getElementById('i-stock').value;
         document.getElementById('p-faces-val').innerText = document.getElementById('i-faces').value;
-        document.getElementById('p-share-val').innerText = document.getElementById('share-val').innerText;
         document.getElementById('p-items-summary').innerHTML = CURRENT_ITEMS.map(i => `${i.name}(${i.shelf}/${i.stock})`).join('; ');
         document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
 
@@ -443,7 +450,22 @@
 
     function handleFile(inp) { const r = new FileReader(); r.onload = (e) => { const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'}); const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', city: r['Город'] || 'Орёл', addr: r['Адрес'] || '?', done: false, start: null })); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); }; r.readAsArrayBuffer(inp.files[0]); }
     function closeModal() { document.getElementById('task-modal').style.display='none'; stopScanner(); }
-    function updateUI() { if(!db) return; db.transaction("reports", "readonly").objectStore("reports").count().onsuccess = (e) => { document.getElementById('qCount').innerText = e.target.result; }; }
+    
+    // ОБНОВЛЕНО: Коробочка скрывается, если 0
+    function updateUI() { 
+        if(!db) return; 
+        db.transaction("reports", "readonly").objectStore("reports").count().onsuccess = (e) => { 
+            const q = e.target.result;
+            const ind = document.getElementById('syncIndicator');
+            if (q > 0) {
+                ind.style.display = 'block';
+                document.getElementById('qCount').innerText = q;
+            } else {
+                ind.style.display = 'none';
+            }
+        }; 
+    }
+
     function checkQueue() { alert("В очереди: " + document.getElementById('qCount').innerText); }
     function clearData() { if(confirm("Удалить всё?")) { localStorage.clear(); indexedDB.deleteDatabase("MerchX_Final_Sync"); location.reload(); } }
     function startNewVisit() { if(confirm("Начать заново?")) { cur.done = false; cur.start = null; IMGS = { pre:null, post:null, price:null }; CURRENT_ITEMS = []; refreshList(); document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); openModal(cur.id); } }
