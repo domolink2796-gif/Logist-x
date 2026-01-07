@@ -27,6 +27,7 @@
       "applicationCategory": "BusinessApplication",
       "offers": {
         "@type": "Offer",
+        "@type": "Offer",
         "price": "1500.00",
         "priceCurrency": "RUB"
       }
@@ -273,6 +274,7 @@
             <div class="text-center space-y-4">
                 <p class="text-white text-lg">Ваш объект успешно активирован.</p>
                 <div class="success-key-box" id="displayNewKey">XXXX-XXXX</div>
+                <p class="text-[11px] opacity-60 uppercase italic">Сохраните этот ключ. Он также отправлен вам в Telegram бот.</p>
                 <button onclick="closeModal('modalSuccess'); openModal('modalCabinet')" class="btn-install-gold w-full py-4 text-black">Перейти в кабинет</button>
             </div>
         </div>
@@ -369,10 +371,6 @@
             const type = document.getElementById('buyType').value;
             if(!name) { speak("Введите название объекта"); return alert('Введите название объекта!'); }
             
-            const tempKey = (type === 'merch' ? 'M-' : 'L-') + Math.random().toString(36).substring(2, 6).toUpperCase();
-            localStorage.setItem('pending_payment_key', tempKey);
-            localStorage.setItem('payment_active', 'true');
-            
             speak(`Формируем счет для компании ${name}`);
             try {
                 const r = await fetch(`${SERVER_URL}/api/notify-admin`, {
@@ -385,15 +383,22 @@
             } catch (e) { alert('Ошибка сети'); }
         }
         
+        // ПРОВЕРКА ПОСЛЕ ВОЗВРАТА С РОБОКАССЫ (С РЕАЛЬНЫМ КЛЮЧОМ И ГОЛОСОМ)
         window.addEventListener('load', () => {
-            const isPaymentActive = localStorage.getItem('payment_active');
-            const savedKey = localStorage.getItem('pending_payment_key');
-            if (isPaymentActive === 'true' && savedKey) {
-                document.getElementById('displayNewKey').innerText = savedKey;
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('payment');
+            const realKey = urlParams.get('key');
+
+            if (status === 'success' && realKey) {
+                // Вставляем настоящий ключ от сервера
+                document.getElementById('displayNewKey').innerText = realKey;
                 openModal('modalSuccess');
+                
+                // Озвучиваем успех
                 speak("Оплата прошла успешно. Ваш ключ на экране.");
-                localStorage.removeItem('payment_active');
-                localStorage.removeItem('pending_payment_key');
+                
+                // Очищаем адресную строку без перезагрузки
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
         });
 
