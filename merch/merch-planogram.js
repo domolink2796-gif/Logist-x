@@ -1,41 +1,26 @@
-// ФИНАЛЬНЫЙ МОДУЛЬ ПЛАНОГРАММ (Синхронизировано с Server.js)
+// ВЕРСИЯ 2.0 - С ПОЛНОЙ ПРОВЕРКОЙ ОШИБОК
 console.log("Модуль планограмм запущен...");
-
-// Функция генерации имени файла (в точности как на сервере)
-function getSafeFileName(addr) {
-    return addr.replace(/[^а-яёa-z0-9]/gi, '_') + ".jpg";
-}
 
 window.checkPlanogram = async function(addr) {
     const box = document.getElementById('plan-btn-box');
     if (!box) return;
 
-    // Берем данные из системы
     const currentAPI = 'https://logist-x-server-production.up.railway.app';
     const currentKey = (window.DATA && window.DATA.key) ? window.DATA.key : localStorage.getItem('m_key');
 
     try {
-        // Запрос к серверу
         const res = await fetch(`${currentAPI}/get-planogram?addr=${encodeURIComponent(addr)}&key=${encodeURIComponent(currentKey)}&t=${Date.now()}`);
         const d = await res.json();
         
         if (d.exists && d.url) {
-            box.innerHTML = `
-                <div style="border: 2px solid var(--accent); padding: 10px; border-radius: 15px; background: rgba(245, 158, 11, 0.05);">
-                    <div style="font-size: 9px; color: var(--accent); font-weight: 800; margin-bottom: 5px;">ПЛАНОГРАММА НАЙДЕНА</div>
-                    <button class="btn-blue" style="background:var(--accent); color:#000; font-weight:900;" onclick="window.open('${d.url}', '_blank')">
-                        👁️ ПОСМОТРЕТЬ СХЕМУ
-                    </button>
-                </div>`;
+            box.innerHTML = `<button class="btn-blue" style="background:#f59e0b; color:#000; font-weight:900; padding:15px; border-radius:15px; width:100%; border:none;" onclick="window.open('${d.url}', '_blank')">🖼️ ОТКРЫТЬ СХЕМУ</button>`;
         } else {
             box.innerHTML = `
-                <label class="btn-blue" for="up-plan" style="background:#222; border:1px dashed #444; padding:15px; font-size:12px;">
-                    📸 СДЕЛАТЬ ФОТО ЭТАЛОННОЙ ПОЛКИ
-                </label>
-                <input type="file" id="up-plan" accept="image/*" capture="camera" class="hidden" onchange="uploadPlanogram(this)">`;
+                <label class="btn-blue" for="up-plan" style="background:#222; border:1px dashed #555; padding:15px; font-size:14px; display:block; text-align:center; border-radius:15px; color:#fff;">📸 ПРИВЯЗАТЬ НОВУЮ СХЕМУ</label>
+                <input type="file" id="up-plan" accept="image/*" capture="camera" style="display:none;" onchange="uploadPlanogram(this)">`;
         }
     } catch (e) {
-        console.error("Ошибка планограммы:", e);
+        console.error("Ошибка при поиске:", e);
     }
 };
 
@@ -43,11 +28,19 @@ window.uploadPlanogram = async function(inp) {
     if (!inp.files[0]) return;
     
     const box = document.getElementById('plan-btn-box');
-    box.innerHTML = '<div style="color:var(--accent); font-weight:800; padding:10px;">⏳ ЗАГРУЗКА НА СЕРВЕР...</div>';
+    const originalContent = box.innerHTML;
+    box.innerHTML = '<div style="color:#f59e0b; font-weight:800; padding:15px; text-align:center;">⏳ СОХРАНЕНИЕ НА СЕРВЕР...</div>';
     
     const currentAPI = 'https://logist-x-server-production.up.railway.app';
     const currentKey = (window.DATA && window.DATA.key) ? window.DATA.key : localStorage.getItem('m_key');
-    const currentAddr = (window.cur && window.cur.addr) ? window.cur.addr : addr;
+    // Берем адрес либо из текущего объекта, либо из поля ввода
+    const currentAddr = (window.cur && window.cur.addr) ? window.cur.addr : document.getElementById('inp-addr').value;
+
+    if (!currentKey || !currentAddr) {
+        alert("Ошибка: Не найден ключ или адрес магазина!");
+        box.innerHTML = originalContent;
+        return;
+    }
 
     const r = new FileReader();
     r.onload = async (e) => {
@@ -56,11 +49,12 @@ window.uploadPlanogram = async function(inp) {
         img.onload = async () => {
             const c = document.createElement('canvas');
             const ctx = c.getContext('2d');
-            // Делаем качественное сжатие для сервера
-            c.width = 1000;
-            c.height = img.height * (1000 / img.width);
+            c.width = 800; // Немного уменьшим размер для гарантии загрузки
+            c.height = img.height * (800 / img.width);
             ctx.drawImage(img, 0, 0, c.width, c.height);
             
+            const base64Image = c.toDataURL('image/jpeg', 0.6);
+
             try {
                 const res = await fetch(`${currentAPI}/upload-planogram`, {
                     method: 'POST',
@@ -68,21 +62,24 @@ window.uploadPlanogram = async function(inp) {
                     body: JSON.stringify({
                         addr: currentAddr,
                         key: currentKey,
-                        image: c.toDataURL('image/jpeg', 0.7)
+                        image: base64Image
                     })
                 });
                 
-                if (res.ok) {
-                    if (window.speak) speak("Схема привязана");
-                    // Сразу обновляем кнопку на "Посмотреть"
-                    setTimeout(() => checkPlanogram(currentAddr), 1500);
+                const result = await res.json();
+
+                if (res.ok && result.success) {
+                    alert("✅ УСПЕШНО: Схема сохранена!");
+                    if (window.speak) speak("Схема сохранена");
+                    // Ждем чуть дольше, чтобы Google Drive успел проиндексировать файл
+                    setTimeout(() => checkPlanogram(currentAddr), 3000);
                 } else {
-                    alert("Ошибка сервера при сохранении");
-                    checkPlanogram(currentAddr);
+                    alert("❌ ОШИБКА СЕРВЕРА: " + (result.error || "Неизвестная ошибка"));
+                    box.innerHTML = originalContent;
                 }
             } catch (err) {
-                alert("Ошибка сети");
-                checkPlanogram(currentAddr);
+                alert("❌ ОШИБКА СЕТИ: Сервер недоступен или плохой интернет");
+                box.innerHTML = originalContent;
             }
         };
     };
