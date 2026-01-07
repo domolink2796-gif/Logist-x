@@ -98,31 +98,11 @@
 <div id="help-modal" class="modal">
     <div class="m-form">
         <div style="text-align:center; font-size:1.2rem; font-weight:900; margin-bottom:20px;">ИНСТРУКЦИЯ 📋</div>
-        
-        <div class="help-step">
-            <b>1. НАЧАЛО РАБОТЫ 🚀</b><br>
-            В списке магазинов выберите точку. Нажмите "ОТКРЫТЬ ВИЗИТ". Приложение проверит, что вы находитесь рядом (GPS). Время работы начнет считаться автоматически.
-        </div>
-
-        <div class="help-step">
-            <b>2. КАК СКАНИРОВАТЬ 📸</b><br>
-            Нажмите <b>📸 ПОЛКА</b>, чтобы считать товары на витрине.<br>
-            Нажмите <b>📸 СКЛАД</b>, чтобы считать товары в подсобке.<br>
-            <i>Сканер говорит голосом название товара!</i>
-        </div>
-
-        <div class="help-step">
-            <b>3. РЕЖИМ СЧЕТА (+1) 🎚</b><br>
-            Если галочка включена — каждый "пик" добавляет +1 шт.<br>
-            Если выключена — просто показывает информацию о товаре.
-        </div>
-
-        <div class="help-step">
-            <b>4. ОТЧЕТ И ФОТО 🖼</b><br>
-            Заполните цены и сроки. Сделайте 3 фото: ДО, ПОСЛЕ и ЦЕННИК. Нажмите "ОТПРАВИТЬ ОТЧЕТ".
-        </div>
-
-        <button class="btn-blue" style="margin-top:10px;" onclick="closeHelp()">ПОНЯТНО 👌</button>
+        <div class="help-step"><b>1. НАЧАЛО РАБОТЫ 🚀</b><br>Выберите точку. Нажмите "ОТКРЫТЬ ВИЗИТ". Система проверит GPS.</div>
+        <div class="help-step"><b>2. СКАНЕР 📸</b><br>ПОЛКА — считаем витрину. СКЛАД — остатки. Сканер говорит голосом название.</div>
+        <div class="help-step"><b>3. РЕЖИМ СЧЕТА (+1) 🎚</b><br>Вкл — каждый пик +1. Выкл — только инфо о товаре.</div>
+        <div class="help-step"><b>4. ОТЧЕТ 🖼</b><br>Сделайте 3 фото: ДО, ПОСЛЕ и ЦЕННИК. Нажмите "ОТПРАВИТЬ".</div>
+        <button class="btn-blue" onclick="closeHelp()">ПОНЯТНО 👌</button>
     </div>
 </div>
 
@@ -142,10 +122,7 @@
             <input type="text" id="inp-addr" readonly>
             <div class="smart-scanner-box" id="scanner-container">
                 <div id="scan-popup" style="position:absolute; top:10px; left:10px; right:10px; background:var(--green); color:#000; padding:10px; border-radius:12px; font-size:11px; font-weight:800; text-align:center; z-index:100; display:none;"></div>
-                <div class="scanner-header">
-                    <span style="font-size:0.6rem; font-weight:900; opacity:0.3;">CLOUD SCANNER v3.0</span>
-                    <span id="scan-mode-label" style="font-size:0.6rem; color:var(--accent); font-weight:900;"></span>
-                </div>
+                <div class="scanner-header"><span style="font-size:0.6rem; font-weight:900; opacity:0.3;">CLOUD SCANNER v3.0</span><span id="scan-mode-label" style="font-size:0.6rem; color:var(--accent); font-weight:900;"></span></div>
                 <div class="scanner-controls">
                     <button class="scan-btn" id="btn-shelf" onclick="toggleScanner('shelf')">📸 ПОЛКА</button>
                     <button class="scan-btn" id="btn-stock" onclick="toggleScanner('stock')">📸 СКЛАД</button>
@@ -195,21 +172,15 @@
 </div>
 
 <div id="pdf-render" style="position: absolute; left: -9999px; width: 850px; background: #fff; color: #000; font-family: 'Arial', sans-serif; padding: 40px; box-sizing: border-box;">
-    
     <div style="margin-bottom: 25px;">
         <div id="p-net-addr" style="font-size: 32px; font-weight: 900; text-transform: uppercase; line-height: 1.1;"></div>
-        <div style="font-size: 16px; margin-top: 10px; color: #333;">
-            Сотрудник: <b id="p-worker-val" style="color:#000;"></b>
-        </div>
+        <div style="font-size: 16px; margin-top: 10px; color: #333;">Сотрудник: <b id="p-worker-val" style="color:#000;"></b></div>
         <div style="font-size: 14px; color: #666; margin-top: 5px;" id="p-date-full"></div>
     </div>
-
     <div style="display: flex; justify-content: space-between; background: #f4f4f4; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
         <div>
             <div style="font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px;">Время визита</div>
-            <div style="font-size: 18px; font-weight: 800; margin-top: 5px; color: #000;">
-                <span id="p-time-start"></span> — <span id="p-time-end"></span>
-            </div>
+            <div style="font-size: 18px; font-weight: 800; margin-top: 5px; color: #000;"><span id="p-time-start"></span> — <span id="p-time-end"></span></div>
             <div style="font-size: 13px; color: #555; margin-top: 3px;">Длительность: <b id="p-duration"></b> мин</div>
         </div>
         <div style="text-align: right;">
@@ -217,50 +188,27 @@
             <div style="font-size: 36px; font-weight: 900; color: #000;" id="p-share-big">0%</div>
         </div>
     </div>
-
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px;">
         <div>
             <div style="font-size: 14px; font-weight: 900; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px;">Ценообразование</div>
-            <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                <span style="color:#555;">Цена (Мы):</span> <b id="p-our-price-val"></b>
-            </div>
-            <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                <span style="color:#555;">Цена (Конкур):</span> <b id="p-comp-price-val"></b>
-            </div>
-            <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                <span style="color:#555;">Срок годности:</span> <b id="p-exp-date-val"></b>
-            </div>
+            <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;"><span style="color:#555;">Цена (Мы):</span> <b id="p-our-price-val"></b></div>
+            <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;"><span style="color:#555;">Цена (Конкур):</span> <b id="p-comp-price-val"></b></div>
+            <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;"><span style="color:#555;">Срок годности:</span> <b id="p-exp-date-val"></b></div>
         </div>
-        
         <div>
             <div style="font-size: 14px; font-weight: 900; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px;">Товарный запас</div>
-            <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                <span style="color:#555;">Фейсинг (на полке):</span> <b id="p-faces-val"></b>
-            </div>
-            <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                <span style="color:#555;">Остаток (на складе):</span> <b id="p-stock-val"></b>
-            </div>
+            <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;"><span style="color:#555;">Фейсинг (на полке):</span> <b id="p-faces-val"></b></div>
+            <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;"><span style="color:#555;">Остаток (на складе):</span> <b id="p-stock-val"></b></div>
         </div>
     </div>
-
     <div style="margin-bottom: 30px;">
         <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; color: #999; margin-bottom: 10px;">Номенклатура (Сканер):</div>
         <div id="p-items-list" style="font-size: 12px; line-height: 1.6;"></div>
     </div>
-
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: auto;">
-        <div>
-            <img id="p-i1" style="width: 100%; height: 260px; object-fit: cover; border-radius: 4px; background: #eee;">
-            <div style="text-align: center; font-size: 10px; font-weight: 900; margin-top: 8px; color: #555;">ДО</div>
-        </div>
-        <div>
-            <img id="p-i2" style="width: 100%; height: 260px; object-fit: cover; border-radius: 4px; background: #eee;">
-            <div style="text-align: center; font-size: 10px; font-weight: 900; margin-top: 8px; color: #555;">ПОСЛЕ</div>
-        </div>
-        <div>
-            <img id="p-i3" style="width: 100%; height: 260px; object-fit: cover; border-radius: 4px; background: #eee;">
-            <div style="text-align: center; font-size: 10px; font-weight: 900; margin-top: 8px; color: #555;">ЦЕННИК</div>
-        </div>
+        <div><img id="p-i1" style="width: 100%; height: 260px; object-fit: cover; border-radius: 4px; background: #eee;"><div style="text-align: center; font-size: 10px; font-weight: 900; margin-top: 8px; color: #555;">ДО</div></div>
+        <div><img id="p-i2" style="width: 100%; height: 260px; object-fit: cover; border-radius: 4px; background: #eee;"><div style="text-align: center; font-size: 10px; font-weight: 900; margin-top: 8px; color: #555;">ПОСЛЕ</div></div>
+        <div><img id="p-i3" style="width: 100%; height: 260px; object-fit: cover; border-radius: 4px; background: #eee;"><div style="text-align: center; font-size: 10px; font-weight: 900; margin-top: 8px; color: #555;">ЦЕННИК</div></div>
     </div>
 </div>
 
@@ -279,24 +227,16 @@
 
     async function syncCatalog() { if(!DATA.key) return; try { const res = await fetch(`${API}/get-catalog?key=${DATA.key}`); if(res.ok) PRODUCT_CATALOG = await res.json(); } catch(e) {} }
     
-    // ПРАВИЛЬНАЯ ФУНКЦИЯ: ТЕПЕРЬ ПОДТЯГИВАЕТ Shelf и Stock С ПРОШЛОГО РАЗА
     async function fetchShopStock(addr) { 
         if(!DATA.key) return; 
         try { 
             const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); 
             if(res.ok) { 
                 const prev = await res.json(); 
-                // Восстанавливаем цифры из базы сервера:
-                CURRENT_ITEMS = prev.map(i => ({ 
-                    bc: i.bc, 
-                    name: i.name, 
-                    shelf: i.shelf || 0, 
-                    stock: i.stock || 0 
-                })); 
+                CURRENT_ITEMS = prev.map(i => ({ bc: i.bc, name: i.name, shelf: i.shelf || 0, stock: i.stock || 0 })); 
                 refreshList(); 
-                if(CURRENT_ITEMS.length > 0) speak(`Данные восстановлены.`);
             } 
-        } catch(e) { console.error("Load Stock Error:", e); } 
+        } catch(e) { console.log("Stock fetch error", e); } 
     }
 
     function calcShare() {
@@ -309,11 +249,11 @@
         const btn = document.getElementById('begin-btn'); const warn = document.getElementById('gps-warn-box');
         btn.innerText = "ПРОВЕРКА GPS..."; btn.disabled = true; warn.style.display = 'none';
         speak(`Проверяю адрес. ${cur.city || ''}, ${cur.addr}`);
-
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const myLat = pos.coords.latitude; const myLon = pos.coords.longitude;
             try {
-                const res = await fetch(`${API}/get-coords?addr=${encodeURIComponent((cur.city||'') + " " + cur.addr)}`); const target = await res.json();
+                const res = await fetch(`${API}/get-coords?addr=${encodeURIComponent((cur.city||'') + " " + cur.addr)}`); 
+                const target = await res.json();
                 if (target.lat) {
                     const dist = getDistance(myLat, myLon, target.lat, target.lon);
                     if (dist > 600) {
@@ -322,9 +262,11 @@
                     }
                 }
                 speak("Адрес подтверждён."); cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
-                await fetchShopStock(cur.addr); openModal(cur.id); btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
+                await fetchShopStock(cur.addr); openModal(cur.id); 
+                btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
             } catch (e) {
-                speak("Сбой карт. Вхожу без проверки."); cur.start = Date.now(); await fetchShopStock(cur.addr); openModal(cur.id); btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
+                speak("Сбой карт. Вхожу без проверки."); cur.start = Date.now(); await fetchShopStock(cur.addr); openModal(cur.id); 
+                btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
             }
         }, () => { speak("Включите GPS."); btn.disabled = false; btn.innerText = "ОТКРЫТЬ ВИЗИТ"; });
     }
@@ -339,8 +281,18 @@
         }
     }
 
-    function startScanner() { html5QrCode = new Html5Qrcode("reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 20, qrbox: { width: 300, height: 120 } }, (bc) => processBarcode(bc.trim())).catch(() => stopScanner()); }
-    function stopScanner() { scanMode = null; document.getElementById('scanner-container').classList.remove('scanner-active'); document.querySelectorAll('.scan-btn').forEach(b => { b.classList.remove('active-shelf'); b.classList.remove('active-stock'); }); if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode = null).catch(() => {}); } }
+    function startScanner() { 
+        html5QrCode = new Html5Qrcode("reader"); 
+        html5QrCode.start({ facingMode: "environment" }, { fps: 20, qrbox: { width: 300, height: 120 } }, (bc) => processBarcode(bc.trim()))
+        .catch(() => stopScanner()); 
+    }
+    
+    function stopScanner() { 
+        scanMode = null; 
+        document.getElementById('scanner-container').classList.remove('scanner-active'); 
+        document.querySelectorAll('.scan-btn').forEach(b => { b.classList.remove('active-shelf'); b.classList.remove('active-stock'); }); 
+        if(html5QrCode) { html5QrCode.stop().then(() => html5QrCode = null).catch(() => {}); } 
+    }
 
     function processBarcode(bc) {
         const now = Date.now(); if(bc === lastScannedCode && (now - lastScanTime) < 1500) return;
@@ -369,17 +321,30 @@
             ts += i.shelf; tk += i.stock;
             return `<div class="item-row" data-bc="${i.bc}"><div style="font-size:0.8rem; font-weight:800; color:#fff;">${i.name}</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;"><div class="mini-box"><span style="font-size:7px; opacity:0.5;">ПОЛКА</span><input type="number" class="mini-inp" value="${i.shelf}" oninput="updateVal('${i.bc}','shelf',this.value)"></div><div class="mini-box"><span style="font-size:7px; opacity:0.5;">СКЛАД</span><input type="number" class="mini-inp" value="${i.stock}" oninput="updateVal('${i.bc}','stock',this.value)"></div></div></div>`;
         }).join('');
-        // Автоматически обновляем главные цифры "Общий остаток" и "Фейсинг":
         document.getElementById('i-faces').value = ts; document.getElementById('i-stock').value = ts + tk; calcShare();
     }
 
     function updateVal(bc, f, v) { let i = CURRENT_ITEMS.find(x => x.bc === bc); if(i) i[f] = parseInt(v) || 0; refreshList(); }
-    function highlightRow(bc) { const rows = document.querySelectorAll('.item-row'); rows.forEach(r => { if(r.dataset.bc === bc) { r.style.borderColor='var(--green)'; r.scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(()=>r.style.borderColor='#222', 1000); } }); }
+    
+    function highlightRow(bc) { 
+        const rows = document.querySelectorAll('.item-row'); 
+        rows.forEach(r => { 
+            if(r.dataset.bc === bc) { 
+                r.style.borderColor='var(--green)'; 
+                r.scrollIntoView({behavior:'smooth', block:'center'}); 
+                setTimeout(()=>r.style.borderColor='#222', 1000); 
+            } 
+        }); 
+    }
 
     function openDB() {
         const req = indexedDB.open("MerchX_Final_Sync", 7);
         req.onsuccess = (e) => { db = e.target.result; updateUI(); setInterval(sync, 8000); };
-        req.onupgradeneeded = (e) => { const d = e.target.result; if(!d.objectStoreNames.contains("reports")) d.createObjectStore("reports", {keyPath:"id", autoIncrement:true}); if(!d.objectStoreNames.contains("archive")) d.createObjectStore("archive", {keyPath:"shop_addr"}); };
+        req.onupgradeneeded = (e) => { 
+            const d = e.target.result; 
+            if(!d.objectStoreNames.contains("reports")) d.createObjectStore("reports", {keyPath:"id", autoIncrement:true}); 
+            if(!d.objectStoreNames.contains("archive")) d.createObjectStore("archive", {keyPath:"shop_addr"}); 
+        };
     }
 
     window.onload = () => {
@@ -422,38 +387,27 @@
     async function saveToQueue() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужны все 3 фото!");
         const btn = document.getElementById('finish-btn'); btn.innerText = "СОХРАНЕНИЕ..."; btn.disabled = true;
-
-        // ВРЕМЯ (ЖЕЛЕЗНО)
         const now = Date.now();
         const startMs = cur.start;
         const startT = new Date(startMs).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         const endT = new Date(now).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         let dur = Math.round((now - startMs) / 60000); if(dur < 1) dur = 1;
 
-        // ЗАПОЛНЯЕМ БЛАНК (БЕЗ ТАБЛИЦ)
         document.getElementById('p-net-addr').innerText = `${cur.net} | ${cur.addr}`;
         document.getElementById('p-worker-val').innerText = DATA.name;
         document.getElementById('p-date-full').innerText = new Date().toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        
-        document.getElementById('p-time-start').innerText = startT;
-        document.getElementById('p-time-end').innerText = endT;
+        document.getElementById('p-time-start').innerText = startT; document.getElementById('p-time-end').innerText = endT;
         document.getElementById('p-duration').innerText = dur;
-
-        // ЦИФРЫ
         document.getElementById('p-stock-val').innerText = document.getElementById('i-stock').value;
         document.getElementById('p-faces-val').innerText = document.getElementById('i-faces').value;
         document.getElementById('p-share-big').innerText = document.getElementById('share-val').innerText + "%";
         document.getElementById('p-our-price-val').innerText = document.getElementById('i-our-price').value + " ₽";
         document.getElementById('p-comp-price-val').innerText = document.getElementById('i-comp-price').value + " ₽";
         document.getElementById('p-exp-date-val').innerText = document.getElementById('i-exp-date').value || "—";
-
-        // ТОВАРЫ
         const listContainer = document.getElementById('p-items-list');
         if (CURRENT_ITEMS.length > 0) {
             listContainer.innerHTML = CURRENT_ITEMS.map((i, idx) => `<div>${idx+1}. <b>${i.name}</b> <span style="color:#777;">(П: ${i.shelf}, С: ${i.stock})</span></div>`).join('');
         } else { listContainer.innerHTML = "Товары не сканировались"; }
-
-        // ФОТО
         document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
 
         setTimeout(async () => {
@@ -493,17 +447,89 @@
         };
     }
 
-    function cam(i, t) { if(!i.files[0]) return; const r = new FileReader(); r.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); const maxW = 800; let w = img.width, h = img.height; if(w > maxW) { h *= maxW/w; w = maxW; } c.width = w; c.height = h; ctx.drawImage(img, 0, 0, w, h); IMGS[t] = c.toDataURL('image/jpeg', 0.6); document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok'); speak("Ок"); }; }; r.readAsDataURL(i.files[0]); }
-    function handleFile(inp) { const r = new FileReader(); r.onload = (e) => { const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'}); const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', city: r['Город'] || 'Орёл', addr: r['Адрес'] || '?', done: false, start: null })); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); }; r.readAsArrayBuffer(inp.files[0]); }
+    function cam(i, t) { 
+        if(!i.files[0]) return; 
+        const r = new FileReader(); 
+        r.onload = (e) => { 
+            const img = new Image(); img.src = e.target.result; 
+            img.onload = () => { 
+                const c = document.createElement('canvas'); const ctx = c.getContext('2d'); 
+                const maxW = 800; let w = img.width, h = img.height; 
+                if(w > maxW) { h *= maxW/w; w = maxW; } 
+                c.width = w; c.height = h; ctx.drawImage(img, 0, 0, w, h); 
+                IMGS[t] = c.toDataURL('image/jpeg', 0.6); 
+                document.getElementById(t==='pre'?'l-p1':(t==='post'?'l-p2':'l-p3')).classList.add('ok'); 
+                speak("Ок"); 
+            }; 
+        }; 
+        r.readAsDataURL(i.files[0]); 
+    }
+    
+    function handleFile(inp) { 
+        const r = new FileReader(); 
+        r.onload = (e) => { 
+            const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'}); 
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]); 
+            DATA.shops = rows.map((r, i) => ({ id: i, net: r['Сеть'] || 'МАРКЕТ', city: r['Город'] || 'Орёл', addr: r['Адрес'] || '?', done: false, start: null })); 
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); 
+        }; 
+        r.readAsArrayBuffer(inp.files[0]); 
+    }
+    
     function closeModal() { document.getElementById('task-modal').style.display='none'; stopScanner(); }
-    function updateUI() { if(!db) return; db.transaction("reports", "readonly").objectStore("reports").count().onsuccess = (e) => { const q = e.target.result; const ind = document.getElementById('syncIndicator'); ind.style.display = q > 0 ? 'block' : 'none'; document.getElementById('qCount').innerText = q; }; }
+    
+    function updateUI() { 
+        if(!db) return; 
+        db.transaction("reports", "readonly").objectStore("reports").count().onsuccess = (e) => { 
+            const q = e.target.result; 
+            const ind = document.getElementById('syncIndicator'); 
+            ind.style.display = q > 0 ? 'block' : 'none'; 
+            document.getElementById('qCount').innerText = q; 
+        }; 
+    }
+    
     function checkQueue() { alert("В очереди: " + document.getElementById('qCount').innerText); }
     function clearData() { if(confirm("Удалить всё?")) { localStorage.clear(); indexedDB.deleteDatabase("MerchX_Final_Sync"); location.reload(); } }
-    function startNewVisit() { if(confirm("Начать заново?")) { cur.done = false; cur.start = null; IMGS = { pre:null, post:null, price:null }; CURRENT_ITEMS = []; refreshList(); document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); openModal(cur.id); } }
-    async function checkPlanogram(addr) { const box = document.getElementById('plan-btn-box'); try { const res = await fetch(`${API}/get-planogram?addr=${encodeURIComponent(addr)}&key=${encodeURIComponent(DATA.key)}`); const d = await res.json(); if(d.exists) box.innerHTML = `<button class="btn-blue" style="background:var(--accent); color:#000; padding:10px; font-size:12px;" onclick="window.open('${d.url}', '_blank')">СХЕМА ПЛАНОГРАММЫ</button>`; else box.innerHTML = `<label class="btn-blue" for="up-plan" style="background:#222; border:1px solid #333; padding:10px; font-size:12px;">📸 ПРИВЯЗАТЬ СХЕМУ</label><input type="file" id="up-plan" accept="image/*" capture="camera" class="hidden" onchange="uploadPlanogram(this)">`; } catch(e) {} }
-    async function uploadPlanogram(inp) { if(!inp.files[0]) return; document.getElementById('plan-btn-box').innerHTML = 'ЗАГРУЗКА...'; const r = new FileReader(); r.onload = async (e) => { const img = new Image(); img.src = e.target.result; img.onload = async () => { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); c.width = 1000; c.height = img.height * (1000/img.width); ctx.drawImage(img, 0, 0, c.width, c.height); await fetch(`${API}/upload-planogram`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ addr: cur.addr, key: DATA.key, image: c.toDataURL('image/jpeg', 0.6) }) }); checkPlanogram(cur.addr); }; }; r.readAsDataURL(inp.files[0]); }
+    function startNewVisit() { 
+        if(confirm("Начать заново?")) { 
+            cur.done = false; cur.start = null; 
+            IMGS = { pre:null, post:null, price:null }; CURRENT_ITEMS = []; refreshList(); 
+            document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); 
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); 
+            render(); openModal(cur.id); 
+        } 
+    }
     
-    // ФУНКЦИИ ДЛЯ МОДАЛКИ ПОМОЩИ
+    async function checkPlanogram(addr) { 
+        const box = document.getElementById('plan-btn-box'); 
+        try { 
+            const res = await fetch(`${API}/get-planogram?addr=${encodeURIComponent(addr)}&key=${encodeURIComponent(DATA.key)}`); 
+            const d = await res.json(); 
+            if(d.exists) box.innerHTML = `<button class="btn-blue" style="background:var(--accent); color:#000; padding:10px; font-size:12px;" onclick="window.open('${d.url}', '_blank')">СХЕМА ПЛАНОГРАММЫ</button>`; 
+            else box.innerHTML = `<label class="btn-blue" for="up-plan" style="background:#222; border:1px solid #333; padding:10px; font-size:12px;">📸 ПРИВЯЗАТЬ СХЕМУ</label><input type="file" id="up-plan" accept="image/*" capture="camera" class="hidden" onchange="uploadPlanogram(this)">`; 
+        } catch(e) {} 
+    }
+    
+    async function uploadPlanogram(inp) { 
+        if(!inp.files[0]) return; 
+        document.getElementById('plan-btn-box').innerHTML = 'ЗАГРУЗКА...'; 
+        const r = new FileReader(); 
+        r.onload = async (e) => { 
+            const img = new Image(); img.src = e.target.result; 
+            img.onload = async () => { 
+                const c = document.createElement('canvas'); const ctx = c.getContext('2d'); 
+                c.width = 1000; c.height = img.height * (1000/img.width); 
+                ctx.drawImage(img, 0, 0, c.width, c.height); 
+                await fetch(`${API}/upload-planogram`, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ addr: cur.addr, key: DATA.key, image: c.toDataURL('image/jpeg', 0.6) }) 
+                }); 
+                checkPlanogram(cur.addr); 
+            }; 
+        }; 
+        r.readAsDataURL(inp.files[0]); 
+    }
     function openHelp() { document.getElementById('help-modal').style.display = 'flex'; }
     function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
 </script>
