@@ -373,24 +373,43 @@
             } catch (e) { alert('Ошибка связи.'); }
         }
 
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const isSuccess = urlParams.get('payment') === 'success';
-            const key = urlParams.get('key');
-            const wasWaiting = localStorage.getItem('payment_waiting');
+                // --- ФИНАЛЬНЫЙ АВТО-ДОВОДЧИК ОКНА (СТАВИТЬ СЮДА) ---
+        function forceShowModal(k) {
+            const m = document.getElementById('modalSuccess');
+            const d = document.getElementById('displayNewKey');
+            if (m && d) {
+                d.innerText = k;
+                m.style.display = "block";
+                m.style.setProperty('display', 'block', 'important');
+                speak("Оплата прошла успешно! Забирай свой ключ.");
+                return true;
+            }
+            return false;
+        }
 
-            if (isSuccess || (wasWaiting === 'true' && urlParams.has('payment'))) {
-                document.getElementById('displayNewKey').innerText = key || "АКТИВИРОВАН";
-                openModal('modalSuccess');
-                speak("Оплата прошла успешно. Ваш уникальный ключ на экране. Сохраните его.");
-                localStorage.removeItem('payment_waiting');
-                window.history.replaceState({}, document.title, window.location.pathname);
+        window.addEventListener('load', () => {
+            const params = new URLSearchParams(window.location.search);
+            const k = params.get('key');
+            const isSuccess = params.get('payment') === 'success';
+
+            if (isSuccess && k) {
+                let attempts = 0;
+                const timer = setInterval(() => {
+                    if (forceShowModal(k) || attempts > 15) {
+                        clearInterval(timer);
+                        window.history.replaceState({}, '', window.location.pathname);
+                    }
+                    attempts++;
+                }, 500);
             }
         });
+        // --- КОНЕЦ БЛОКА ---
+}
 
-        function handleInstallClick() { alert('Меню браузера -> На экран Домой'); }
-        function goToBot() { speak("Переходим в Telegram бот"); window.location.href = BOT_URL; }
-        calculatePrice();
-    </script>
+function handleInstallClick() { alert('Меню -> На экран Домой'); }
+function goToBot() { window.location.href = "https://t.me/LogistX_Robot_Bot"; }
+calculatePrice();
+
+</script>
 </body>
 </html>
