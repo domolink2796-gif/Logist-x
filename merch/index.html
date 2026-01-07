@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <script src="merch-voice.js"></script>
-  <script src="merch-design.js"></script>
- <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>LOGIST_X | MERCH PRO</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <style>
+  <script src="merch-voice.js?v=777"></script>
+  <script src="merch-design.js?v=777"></script>
+  <script src="merch-planogram.js?v=777"></script>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>LOGIST_X | MERCH PRO</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
         :root { --bg: #000000; --card: #111111; --accent: #f59e0b; --green: #00ff00; --border: #222222; --text: #ffffff; --blue: #007aff; --red: #ff3b30; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; user-select: none; -webkit-tap-highlight-color: transparent; }
         #auth-screen { position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 30px; }
@@ -63,7 +64,7 @@
         .hidden { display: none; }
         .help-step { margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:10px; }
         .help-step b { color: var(--accent); }
-    </style>
+  </style>
 </head>
 <body>
 
@@ -373,7 +374,15 @@
     function openModal(id) {
         cur = DATA.shops.find(x => x.id === id); 
         document.getElementById('m-net').innerText = cur.net; document.getElementById('task-modal').style.display = 'flex';
-        checkPlanogram(cur.addr);
+        
+        // ВАЖНО: сначала пытаемся вызвать внешнюю функцию планограмм
+        if (typeof window.checkPlanogram === 'function') {
+            window.checkPlanogram(cur.addr);
+        } else {
+            // Если внешний файл не загрузился, используем старый метод
+            fallbackPlanogram(cur.addr);
+        }
+
         if(cur.done) {
             document.getElementById('start-block').classList.add('hidden'); document.getElementById('report-block').classList.add('hidden');
             document.getElementById('archive-block').classList.remove('hidden'); loadArchive(cur.addr);
@@ -503,7 +512,8 @@
         } 
     }
     
-    async function checkPlanogram(addr) { 
+    // СТАНДАРТНЫЕ ФУНКЦИИ (Будут заменены внешними файлами, если они есть)
+    async function fallbackPlanogram(addr) { 
         const box = document.getElementById('plan-btn-box'); 
         try { 
             const res = await fetch(`${API}/get-planogram?addr=${encodeURIComponent(addr)}&key=${encodeURIComponent(DATA.key)}`); 
@@ -513,26 +523,31 @@
         } catch(e) {} 
     }
     
-    async function uploadPlanogram(inp) { 
-        if(!inp.files[0]) return; 
-        document.getElementById('plan-btn-box').innerHTML = 'ЗАГРУЗКА...'; 
-        const r = new FileReader(); 
-        r.onload = async (e) => { 
-            const img = new Image(); img.src = e.target.result; 
-            img.onload = async () => { 
-                const c = document.createElement('canvas'); const ctx = c.getContext('2d'); 
-                c.width = 1000; c.height = img.height * (1000/img.width); 
-                ctx.drawImage(img, 0, 0, c.width, c.height); 
-                await fetch(`${API}/upload-planogram`, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ addr: cur.addr, key: DATA.key, image: c.toDataURL('image/jpeg', 0.6) }) 
-                }); 
-                checkPlanogram(cur.addr); 
+    // Если внешние функции не определены, используем эти
+    if (typeof window.checkPlanogram !== 'function') window.checkPlanogram = fallbackPlanogram;
+    if (typeof window.uploadPlanogram !== 'function') {
+        window.uploadPlanogram = async function(inp) { 
+            if(!inp.files[0]) return; 
+            document.getElementById('plan-btn-box').innerHTML = 'ЗАГРУЗКА...'; 
+            const r = new FileReader(); 
+            r.onload = async (e) => { 
+                const img = new Image(); img.src = e.target.result; 
+                img.onload = async () => { 
+                    const c = document.createElement('canvas'); const ctx = c.getContext('2d'); 
+                    c.width = 1000; c.height = img.height * (1000/img.width); 
+                    ctx.drawImage(img, 0, 0, c.width, c.height); 
+                    await fetch(`${API}/upload-planogram`, { 
+                        method: 'POST', 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify({ addr: cur.addr, key: DATA.key, image: c.toDataURL('image/jpeg', 0.6) }) 
+                    }); 
+                    window.checkPlanogram(cur.addr); 
+                }; 
             }; 
-        }; 
-        r.readAsDataURL(inp.files[0]); 
+            r.readAsDataURL(inp.files[0]); 
+        }
     }
+    
     function openHelp() { document.getElementById('help-modal').style.display = 'flex'; }
     function closeHelp() { document.getElementById('help-modal').style.display = 'none'; }
 </script>
