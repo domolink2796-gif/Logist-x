@@ -1,87 +1,80 @@
-// ВЕРСИЯ 2.0 - С ПОЛНОЙ ПРОВЕРКОЙ ОШИБОК
-console.log("Модуль планограмм запущен...");
+// МОДУЛЬ ПЛАНОГРАММ 3.0 (АВТО-ЗАМЕНА)
+console.log("Logist_X: Модуль планограмм активирован");
 
-window.checkPlanogram = async function(addr) {
-    const box = document.getElementById('plan-btn-box');
-    if (!box) return;
-
-    const currentAPI = 'https://logist-x-server-production.up.railway.app';
-    const currentKey = (window.DATA && window.DATA.key) ? window.DATA.key : localStorage.getItem('m_key');
-
-    try {
-        const res = await fetch(`${currentAPI}/get-planogram?addr=${encodeURIComponent(addr)}&key=${encodeURIComponent(currentKey)}&t=${Date.now()}`);
-        const d = await res.json();
+(function() {
+    // Ждем, когда страница полностью загрузится
+    window.addEventListener('load', () => {
+        console.log("Принудительная перепривязка кнопок...");
         
-        if (d.exists && d.url) {
-            box.innerHTML = `<button class="btn-blue" style="background:#f59e0b; color:#000; font-weight:900; padding:15px; border-radius:15px; width:100%; border:none;" onclick="window.open('${d.url}', '_blank')">🖼️ ОТКРЫТЬ СХЕМУ</button>`;
-        } else {
-            box.innerHTML = `
-                <label class="btn-blue" for="up-plan" style="background:#222; border:1px dashed #555; padding:15px; font-size:14px; display:block; text-align:center; border-radius:15px; color:#fff;">📸 ПРИВЯЗАТЬ НОВУЮ СХЕМУ</label>
-                <input type="file" id="up-plan" accept="image/*" capture="camera" style="display:none;" onchange="uploadPlanogram(this)">`;
-        }
-    } catch (e) {
-        console.error("Ошибка при поиске:", e);
-    }
-};
+        // Перехватываем функции, чтобы старый код не мешал
+        window.checkPlanogram = async function(addr) {
+            const box = document.getElementById('plan-btn-box');
+            if (!box) return;
 
-window.uploadPlanogram = async function(inp) {
-    if (!inp.files[0]) return;
-    
-    const box = document.getElementById('plan-btn-box');
-    const originalContent = box.innerHTML;
-    box.innerHTML = '<div style="color:#f59e0b; font-weight:800; padding:15px; text-align:center;">⏳ СОХРАНЕНИЕ НА СЕРВЕР...</div>';
-    
-    const currentAPI = 'https://logist-x-server-production.up.railway.app';
-    const currentKey = (window.DATA && window.DATA.key) ? window.DATA.key : localStorage.getItem('m_key');
-    // Берем адрес либо из текущего объекта, либо из поля ввода
-    const currentAddr = (window.cur && window.cur.addr) ? window.cur.addr : document.getElementById('inp-addr').value;
-
-    if (!currentKey || !currentAddr) {
-        alert("Ошибка: Не найден ключ или адрес магазина!");
-        box.innerHTML = originalContent;
-        return;
-    }
-
-    const r = new FileReader();
-    r.onload = async (e) => {
-        const img = new Image();
-        img.src = e.target.result;
-        img.onload = async () => {
-            const c = document.createElement('canvas');
-            const ctx = c.getContext('2d');
-            c.width = 800; // Немного уменьшим размер для гарантии загрузки
-            c.height = img.height * (800 / img.width);
-            ctx.drawImage(img, 0, 0, c.width, c.height);
-            
-            const base64Image = c.toDataURL('image/jpeg', 0.6);
+            const api = 'https://logist-x-server-production.up.railway.app';
+            const key = (window.DATA && window.DATA.key) ? window.DATA.key : localStorage.getItem('m_key');
 
             try {
-                const res = await fetch(`${currentAPI}/upload-planogram`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        addr: currentAddr,
-                        key: currentKey,
-                        image: base64Image
-                    })
-                });
+                const res = await fetch(`${api}/get-planogram?addr=${encodeURIComponent(addr)}&key=${encodeURIComponent(key)}&t=${Date.now()}`);
+                const d = await res.json();
                 
-                const result = await res.json();
-
-                if (res.ok && result.success) {
-                    alert("✅ УСПЕШНО: Схема сохранена!");
-                    if (window.speak) speak("Схема сохранена");
-                    // Ждем чуть дольше, чтобы Google Drive успел проиндексировать файл
-                    setTimeout(() => checkPlanogram(currentAddr), 3000);
+                if (d.exists && d.url) {
+                    box.innerHTML = `
+                        <button class="btn-blue" style="background:#f59e0b !important; color:#000 !important; font-weight:900; padding:15px; border-radius:15px; width:100%; border:none; display:block; cursor:pointer;" onclick="window.open('${d.url}', '_blank')">
+                            👁️ ОТКРЫТЬ СХЕМУ
+                        </button>`;
                 } else {
-                    alert("❌ ОШИБКА СЕРВЕРА: " + (result.error || "Неизвестная ошибка"));
-                    box.innerHTML = originalContent;
+                    box.innerHTML = `
+                        <label class="btn-blue" for="up-plan" style="background:#222 !important; border:1px dashed #555 !important; padding:15px; font-size:14px; display:block; text-align:center; border-radius:15px; color:#fff; cursor:pointer;">
+                            📸 ПРИВЯЗАТЬ НОВУЮ СХЕМУ
+                        </label>
+                        <input type="file" id="up-plan" accept="image/*" capture="camera" style="display:none;" onchange="uploadPlanogram(this)">`;
                 }
-            } catch (err) {
-                alert("❌ ОШИБКА СЕТИ: Сервер недоступен или плохой интернет");
-                box.innerHTML = originalContent;
-            }
+            } catch (e) { console.error("Ошибка планограммы:", e); }
         };
-    };
-    r.readAsDataURL(inp.files[0]);
-};
+
+        window.uploadPlanogram = async function(inp) {
+            if (!inp.files[0]) return;
+            
+            const api = 'https://logist-x-server-production.up.railway.app';
+            const key = (window.DATA && window.DATA.key) ? window.DATA.key : localStorage.getItem('m_key');
+            const addr = (window.cur && window.cur.addr) ? window.cur.addr : (document.getElementById('inp-addr') ? document.getElementById('inp-addr').value : '');
+
+            const box = document.getElementById('plan-btn-box');
+            const oldHtml = box.innerHTML;
+            box.innerHTML = '<div style="color:#f59e0b; font-weight:800; padding:15px; text-align:center;">⏳ СОХРАНЕНИЕ...</div>';
+
+            const r = new FileReader();
+            r.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = async () => {
+                    const c = document.createElement('canvas');
+                    const ctx = c.getContext('2d');
+                    c.width = 1000; c.height = img.height * (1000 / img.width);
+                    ctx.drawImage(img, 0, 0, c.width, c.height);
+                    
+                    try {
+                        const response = await fetch(`${api}/upload-planogram`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ addr: addr, key: key, image: c.toDataURL('image/jpeg', 0.6) })
+                        });
+                        const resData = await response.json();
+                        if (resData.success) {
+                            alert("✅ ГОТОВО: Схема сохранена!");
+                            checkPlanogram(addr);
+                        } else { 
+                            alert("Ошибка сервера: " + resData.error); 
+                            box.innerHTML = oldHtml;
+                        }
+                    } catch (err) { 
+                        alert("Ошибка сети. Проверьте интернет."); 
+                        box.innerHTML = oldHtml;
+                    }
+                };
+            };
+            r.readAsDataURL(inp.files[0]);
+        };
+    });
+})();
