@@ -29,23 +29,30 @@
     </div>
 
     <script>
-        // Скрипт ловит меняющийся ключ из ссылки
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const key = urlParams.get('key');
+    window.addEventListener('load', () => {
+        // Читаем все параметры из адресной строки
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Робокасса может прислать ключ как 'key', как 'Shp_key' или 'shp_key'
+        // Мы проверяем все варианты по очереди
+        let key = urlParams.get('key') || urlParams.get('Shp_key') || urlParams.get('shp_key');
+        
+        const keyBox = document.getElementById('keyBox');
+        
+        if (key && key !== "XXXX-XXXX") {
+            keyBox.innerText = key.trim();
+            keyBox.style.opacity = "1";
             
-            if (key) {
-                document.getElementById('keyBox').innerText = key;
-                
-                // Озвучка ключа
-                const utterance = new SpeechSynthesisUtterance("Оплата подтверждена. Ваш лицензионный ключ отображен на экране.");
-                utterance.lang = 'ru-RU';
-                window.speechSynthesis.speak(utterance);
-            } else {
-                document.getElementById('keyBox').innerText = "КЛЮЧ В БОТЕ";
-                document.getElementById('keyBox').style.opacity = "0.5";
-            }
-        });
-    </script>
+            // Голосовое подтверждение
+            const msg = new SpeechSynthesisUtterance("Оплата прошла успешно. Ваш ключ на экране.");
+            msg.lang = 'ru-RU';
+            window.speechSynthesis.speak(msg);
+        } else {
+            // Если ключа нет, выводим это для отладки
+            keyBox.innerText = "КЛЮЧ В БОТЕ";
+            console.log("Ключ не найден в ссылке. Параметры:", window.location.search);
+        }
+    });
+</script>
 </body>
 </html>
