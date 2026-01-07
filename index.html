@@ -387,28 +387,34 @@
             return false;
         }
 
-          window.addEventListener('load', () => {
-            const params = new URLSearchParams(window.location.search);
-            const k = params.get('key');
-            const isSuccess = params.get('payment') === 'success';
+               window.addEventListener('load', () => {
+            // ФУНКЦИЯ-ПОИСКОВИК
+            const startChecking = setInterval(() => {
+                const params = new URLSearchParams(window.location.search);
+                const k = params.get('key');
+                const isSuccess = params.get('payment') === 'success';
 
-            if (isSuccess && k) {
-                let attempts = 0;
-                const timer = setInterval(() => {
+                // Если нашли успех и ключ в ссылке
+                if (isSuccess && k) {
                     const m = document.getElementById('modalSuccess');
                     const d = document.getElementById('displayNewKey');
+                    
                     if (m && d) {
                         d.innerText = k;
                         m.style.display = "block";
-                        speak("Оплата прошла успешно! Забирай свой ключ.");
-                        clearInterval(timer);
+                        m.style.setProperty('display', 'block', 'important');
+                        speak("Оплата прошла успешно! Ваш ключ на экране.");
+                        
+                        clearInterval(startChecking); // Успех! Останавливаем поисковик
                         window.history.replaceState({}, '', window.location.pathname);
                     }
-                    if (attempts++ > 15) clearInterval(timer);
-                }, 500);
-            }
-        });
+                }
+            }, 500); // Проверять каждые 0.5 секунды
 
+            // Остановить поисковик через 15 секунд в любом случае, чтобы не жрал батарею
+            setTimeout(() => clearInterval(startChecking), 15000);
+        });
+   
         function handleInstallClick() { alert('Меню -> На экран Домой'); }
         function goToBot() { window.location.href = "https://t.me/LogistX_Robot_Bot"; }
         function openModal(id) { document.getElementById(id).style.display = "block"; }
