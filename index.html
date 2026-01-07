@@ -61,6 +61,16 @@
 </head>
 <body class="dot-matrix">
 
+    <script type="text/javascript" >
+       (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+       m[i].l=1*new Date();
+       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+       ym(99347514, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/99347514" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+
     <nav class="fixed top-0 w-full z-[1000] bg-black/80 backdrop-blur-xl border-b border-white/5 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
@@ -80,7 +90,7 @@
                 КОНТРОЛЬ <br><span class="text-amber-500 italic underline decoration-amber-500/20 text-4xl md:text-7xl">БЕЗ ОБМАНА</span>
             </h1>
             <p class="text-lg md:text-2xl opacity-40 mb-14 max-w-2xl mx-auto leading-relaxed animate__animated animate__fadeInUp italic text-white">
-                Выберите инструмент для начала работы в системе:
+                Профессиональная экосистема для управления полевым персоналом, монтажными бригадами и мерчандайзингом. Прозрачность на каждом этапе.
             </p>
             <div class="flex flex-col lg:flex-row gap-4 justify-center items-stretch">
                 <button onclick="handleInstallClick()" class="btn-install-gold px-8 py-6 text-sm gap-3 shadow-2xl flex-1">
@@ -100,26 +110,26 @@
         <div class="max-w-7xl mx-auto text-center">
             <h2 class="text-3xl md:text-6xl font-black mb-16 italic uppercase text-white text-center">Наши <span class="text-amber-500">Технологии</span></h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-left text-white">
-                <div class="benefit-card text-center sm:text-left">
-                    <div class="text-amber-500 mb-6 mx-auto sm:mx-0"><i data-lucide="layout-grid" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase italic">Авто-ИерарHierarchy</h3>
-                    <p class="opacity-40 text-xs leading-relaxed italic">Автоматическое создание папок: <strong>Монтажник → Объект → Дата.</strong></p>
+                <div class="benefit-card">
+                    <div class="text-amber-500 mb-6"><i data-lucide="layout-grid" size="40"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase italic">Авто-Иерархия Folders</h3>
+                    <p class="opacity-40 text-xs leading-relaxed italic">Автоматическое структурирование данных на Google Диске по схеме: <strong>Монтажник → Объект → Дата визита.</strong> Никакого ручного поиска файлов.</p>
                 </div>
-                <div class="benefit-card text-center sm:text-left">
-                    <div class="text-amber-500 mb-6 mx-auto sm:mx-0"><i data-lucide="table-2" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase italic">Листы Google</h3>
-                    <p class="opacity-40 text-xs leading-relaxed italic">Персональные вкладки для каждого сотрудника с итоговыми суммами.</p>
+                <div class="benefit-card">
+                    <div class="text-amber-500 mb-6"><i data-lucide="table-2" size="40"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase italic">Листы Google Таблиц</h3>
+                    <p class="opacity-40 text-xs leading-relaxed italic">Для каждого сотрудника создается персональная вкладка с авто-расчетом выплат. Все финансовые показатели прозрачны и доступны 24/7.</p>
                 </div>
-                <div class="benefit-card text-center sm:text-left">
-                    <div class="text-amber-500 mb-6 mx-auto sm:mx-0"><i data-lucide="map-pin" size="40"></i></div>
+                <div class="benefit-card">
+                    <div class="text-amber-500 mb-6"><i data-lucide="map-pin" size="40"></i></div>
                     <h3 class="text-xl font-black mb-4 uppercase italic">GPS-Контроль</h3>
-                    <p class="opacity-40 text-xs leading-relaxed italic">Фотофиксация с защитой от подмены координат и времени.</p>
+                    <p class="opacity-40 text-xs leading-relaxed italic">Фотофиксация с защитой от подмены координат (Mock-location) и времени. Вы точно знаете, где и когда был сделан снимок.</p>
                 </div>
-                <a href="merch-info.html" class="benefit-card border-amber-500/30 bg-amber-500/5 group cursor-pointer text-center sm:text-left">
-                    <div class="text-amber-500 mb-6 mx-auto sm:mx-0 animate-pulse"><i data-lucide="bar-chart-3" size="40"></i></div>
+                <a href="merch-info.html" class="benefit-card border-amber-500/30 bg-amber-500/5 group cursor-pointer">
+                    <div class="text-amber-500 mb-6 animate-pulse"><i data-lucide="bar-chart-3" size="40"></i></div>
                     <h3 class="text-xl font-black mb-4 uppercase italic group-hover:text-amber-500 transition-colors">Система MERCH_X</h3>
-                    <p class="opacity-60 text-xs leading-relaxed mb-6 italic text-amber-500/80">Аналитика полок, остатки товара и расчет доли фейсинга.</p>
-                    <div class="mt-auto text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center justify-center sm:justify-start gap-2">ПОДРОБНЕЕ <i data-lucide="arrow-right" size="14"></i></div>
+                    <p class="opacity-60 text-xs leading-relaxed mb-6 italic text-amber-500/80">Глубокая аналитика ритейла: контроль полочного пространства, остатки товара и расчет доли фейсинга в один клик.</p>
+                    <div class="mt-auto text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">ПОДРОБНЕЕ О МЕРЧ <i data-lucide="arrow-right" size="14"></i></div>
                 </a>
             </div>
         </div>
@@ -128,7 +138,7 @@
     <section class="py-24 px-6 border-t border-white/5 bg-black/40">
         <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
             <div class="bg-[#05070a] p-8 md:p-12 rounded-[3rem] border border-white/5 shadow-2xl">
-                <div class="text-amber-500/40 mb-10 font-black text-xs tracking-[8px] uppercase border-b border-white/5 pb-6 text-white">ERP_Drive_Structure</div>
+                <div class="text-amber-500/40 mb-10 font-black text-xs tracking-[8px] uppercase border-b border-white/5 pb-6 text-white">ERP_Drive_Structure_Log</div>
                 <div class="folder-node">
                     <div class="flex items-center gap-3 text-blue-400 font-black uppercase tracking-widest text-sm"><i data-lucide="user" size="18"></i> Костик_Монтажник</div>
                     <div class="folder-node">
@@ -139,7 +149,7 @@
             </div>
             <div class="text-center lg:text-left text-white">
                 <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase text-amber-500 leading-none">УМНЫЙ АРХИВ</h2>
-                <p class="opacity-40 text-xl italic leading-relaxed">Система сама распределяет фото по адресам. Вы получаете чистую аналитику без ручного труда.</p>
+                <p class="opacity-40 text-xl italic leading-relaxed">Наша ERP-система самостоятельно распределяет входящие фотоотчеты по адресам и датам. Вы получаете идеальный порядок в документации без участия менеджеров.</p>
             </div>
         </div>
     </section>
@@ -150,20 +160,20 @@
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 text-white">
                 <a href="blog-1.html" class="benefit-card flex flex-col justify-between group cursor-pointer">
                     <div><div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">МЕТОДОЛОГИЯ</div>
-                    <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic">Исключаем обман полевого персонала</h3>
-                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Разбираем технологические методы GPS-контроля для обеспечения 100% прозрачности работы полевых сотрудников. Узнайте, как предотвратить подмену координат и гарантировать качество фотоотчетов.</p></div>
+                    <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic">Как исключить обман полевого персонала</h3>
+                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Разбираем технологические методы GPS-контроля для обеспечения 100% прозрачности. Как предотвратить использование Mock-локаций и гарантировать присутствие сотрудника на объекте.</p></div>
                     <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
                 </a>
                 <a href="blog-2.html" class="benefit-card flex flex-col justify-between group cursor-pointer">
                     <div><div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">МЕНЕДЖМЕНТ</div>
                     <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic">Порядок в крупных торговых сетях</h3>
-                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Как организовать эффективный контроль мерчандайзеров на сотнях точек одновременно. Практические советы по внедрению автоматизации и расчет экономической эффективности.</p></div>
+                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Организация эффективного контроля мерчандайзеров на сотнях точек одновременно. Как автоматизация отчетности экономит до 40% времени супервайзеров и исключает человеческий фактор.</p></div>
                     <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
                 </a>
                 <a href="blog-3.html" class="benefit-card flex flex-col justify-between group cursor-pointer">
                     <div><div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">ОБНОВЛЕНИЯ</div>
                     <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic">Экосистема 2026: Новые функции</h3>
-                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Запуск интерактивной панели управления в Telegram и интеграция новых аналитических инструментов в Merch X. Управляйте бизнесом из любой точки мира.</p></div>
+                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Запуск интерактивной панели управления в Telegram и интеграция новых аналитических инструментов в Merch X. Управляйте бизнесом из любой точки мира прямо со своего смартфона.</p></div>
                     <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать статью <i data-lucide="arrow-right" size="14"></i></div>
                 </a>
             </div>
@@ -187,7 +197,7 @@
     </section>
 
     <section class="py-10 px-6 opacity-20 text-[11px] text-center max-w-5xl mx-auto text-white leading-relaxed italic">
-        <p>LOGIST_X — это передовое программное обеспечение для автоматизации контроля монтажников, расклейщиков, курьеров и мерчандайзеров. Система позволяет собирать верифицированные фотоотчеты с GPS-подтверждением напрямую в корпоративные Google Таблицы. Решение идеально подходит для рекламных агентств, клининга и логистики. Использование Logist X гарантирует прозрачность всех полевых работ.</p>
+        <p>LOGIST_X — это передовое программное обеспечение для автоматизации контроля монтажников, расклейщиков, курьеров и мерчандайзеров. Система позволяет собирать верифицированные фотоотчеты с GPS-подтверждением напрямую в корпоративные Google Таблицы. Решение идеально подходит для рекламных агентств, клининга и логистики. Забудьте про отчеты в мессенджерах — используйте профессиональный софт от Logist X.</p>
     </section>
 
     <footer class="py-24 text-center border-t border-white/5 bg-[#05070a]">
@@ -221,7 +231,7 @@
                 <div id="buy-section" style="display: none;">
                     <div class="modal-header">Регистрация лицензии</div>
                     <div class="space-y-4">
-                        <input type="text" id="buyName" class="login-input !text-left !text-sm" placeholder="Название вашего объекта">
+                        <input type="text" id="buyName" class="login-input !text-left !text-sm" placeholder="Введите название вашего объекта">
                         <div class="grid grid-cols-2 gap-2">
                             <input type="number" id="buyLimit" class="login-input !text-left !text-sm" value="5" min="1" oninput="calculatePrice()">
                             <select id="buyMonths" class="login-input !text-left !text-sm !bg-black" onchange="calculatePrice()">
@@ -268,11 +278,11 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span>
             <div class="modal-header">Политика конфиденциальности</div>
-            <div class="opacity-70 text-[12px] space-y-4 leading-relaxed">
+            <div class="opacity-70 text-[12px] space-y-4">
                 <p>Настоящая Политика конфиденциальности персональных данных действует в отношении всей информации, которую сервис LOGIST_X может получить о Пользователе во время использования сайта и программного обеспечения.</p>
-                <p>1. Сбор данных осуществляется исключительно для обеспечения работоспособности личного кабинета, формирования фотоотчетов и взаимодействия с пользователем.</p>
-                <p>2. Сервис гарантирует сохранность данных на защищенных серверах и обязуется не передавать их третьим лицам без законных оснований.</p>
-                <p>3. Пользователь имеет право в любой момент запросить удаление или изменение своих данных из системы через службу поддержки.</p>
+                <p>1. Сбор данных осуществляется исключительно для обеспечения работоспособности личного кабинета и формирования отчетов.</p>
+                <p>2. Сервис гарантирует сохранность данных на защищенных серверах и не передает их третьим лицам без законных оснований.</p>
+                <p>3. Пользователь имеет право в любой момент запросить удаление своих данных из системы через службу поддержки.</p>
             </div>
         </div>
     </div>
@@ -281,11 +291,11 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal('modalTerms')">&times;</span>
             <div class="modal-header">Публичная оферта</div>
-            <div class="opacity-70 text-[12px] space-y-4 leading-relaxed">
-                <p>Данный документ является официальным предложением ИП Никитин Евгений Анатольевич о заключении договора на предоставление права использования ПО по модели подписки.</p>
-                <p>1. Акцептом оферты считается факт оплаты лицензионного вознаграждения любым доступным способом.</p>
-                <p>2. Лицензия предоставляется на выбранный срок и строго на указанное количество рабочих мест (сотрудников).</p>
-                <p>3. Возврат средств после генерации лицензионного ключа невозможен в силу предоставления доступа к цифровому контенту.</p>
+            <div class="opacity-70 text-[12px] space-y-4">
+                <p>Данный документ является официальным предложением ИП Никитин Е.А. о заключении договора на предоставление права использования ПО (лицензии) по модели подписки.</p>
+                <p>1. Акцептом оферты является факт оплаты лицензионного вознаграждения.</p>
+                <p>2. Лицензия предоставляется на выбранный срок и количество рабочих мест.</p>
+                <p>3. Возврат средств после генерации лицензионного ключа не предусмотрен в связи с предоставлением доступа к цифровому контенту.</p>
             </div>
         </div>
     </div>
@@ -329,7 +339,9 @@
             
             if(!name) { speak("Введите название объекта"); return alert('Пожалуйста, введите название вашего объекта!'); }
             
-            speak(`Формируем счет для компании ${name}`);
+            localStorage.setItem('payment_waiting', 'true');
+            speak(`Формируем платеж для компании ${name}`);
+            
             try {
                 const response = await fetch(`${SERVER_URL}/api/notify-admin`, {
                     method: 'POST',
@@ -338,12 +350,12 @@
                 });
                 const res = await response.json();
                 if(res.success && res.payUrl) window.location.href = res.payUrl;
-            } catch (e) { alert('Ошибка связи с сервером.'); }
+            } catch (e) { alert('Ошибка сети. Попробуйте снова.'); }
         }
 
         async function loginToCabinet() {
             const keyInput = document.getElementById('userKey').value.trim().toUpperCase();
-            if(!keyInput) return alert('Введите ваш ключ!');
+            if(!keyInput) return alert('Введите ключ!');
             try {
                 const response = await fetch(`${SERVER_URL}/api/keys`);
                 const keys = await response.json();
@@ -361,22 +373,17 @@
             } catch (e) { alert('Ошибка связи.'); }
         }
 
-        // ЛОГИКА ОТКРЫТИЯ ОКНА ПОСЛЕ РОБОКАССЫ
         window.addEventListener('load', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const isSuccess = urlParams.get('payment') === 'success';
             const key = urlParams.get('key');
+            const wasWaiting = localStorage.getItem('payment_waiting');
 
-            if (isSuccess && key) {
-                if(document.getElementById('displayNewKey')) {
-                    document.getElementById('displayNewKey').innerText = key;
-                }
+            if (isSuccess || (wasWaiting === 'true' && urlParams.has('payment'))) {
+                document.getElementById('displayNewKey').innerText = key || "АКТИВИРОВАН";
                 openModal('modalSuccess');
-                
-                setTimeout(() => {
-                    speak("Оплата прошла успешно. Ваш уникальный ключ на экране. Сохраните его.");
-                }, 500);
-
+                speak("Оплата прошла успешно. Ваш уникальный ключ на экране. Сохраните его.");
+                localStorage.removeItem('payment_waiting');
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         });
