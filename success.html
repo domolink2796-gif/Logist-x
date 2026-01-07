@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лицензия Активирована | LOGIST_X</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #010409; color: #e6edf3; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .success-card { background: #0d1117; border: 2px solid #f59e0b; padding: 40px; border-radius: 30px; text-align: center; max-width: 450px; width: 90%; box-shadow: 0 0 50px rgba(245, 158, 11, 0.2); }
+        .key-display { background: #000; border: 2px dashed #f59e0b; color: #f59e0b; padding: 25px; font-size: 35px; font-weight: 900; border-radius: 20px; margin: 25px 0; letter-spacing: 4px; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="success-card">
+        <div class="text-amber-500 mb-6 flex justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <h1 class="text-3xl font-black mb-2 uppercase italic text-white">Оплата принята!</h1>
+        <p class="opacity-60 mb-6 text-sm italic">Ваш уникальный ключ доступа в систему:</p>
+        
+        <div id="keyBox" class="key-display italic">XXXX-XXXX</div>
+        
+        <p class="text-[10px] uppercase tracking-widest opacity-40 mb-10">Пожалуйста, сохраните этот ключ. Он потребуется для входа в Личный Кабинет.</p>
+        
+        <button onclick="window.location.href='https://logist-x.ru/'" class="w-full py-5 bg-amber-500 text-black font-black rounded-2xl uppercase tracking-widest hover:scale-105 transition-transform">
+            Вернуться на сайт
+        </button>
+    </div>
+
+    <script>
+        // Скрипт ловит меняющийся ключ из ссылки
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const key = urlParams.get('key');
+            
+            if (key) {
+                document.getElementById('keyBox').innerText = key;
+                
+                // Озвучка ключа
+                const utterance = new SpeechSynthesisUtterance("Оплата подтверждена. Ваш лицензионный ключ отображен на экране.");
+                utterance.lang = 'ru-RU';
+                window.speechSynthesis.speak(utterance);
+            } else {
+                document.getElementById('keyBox').innerText = "КЛЮЧ В БОТЕ";
+                document.getElementById('keyBox').style.opacity = "0.5";
+            }
+        });
+    </script>
+</body>
+</html>
