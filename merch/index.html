@@ -278,7 +278,26 @@
     }
 
     async function syncCatalog() { if(!DATA.key) return; try { const res = await fetch(`${API}/get-catalog?key=${DATA.key}`); if(res.ok) PRODUCT_CATALOG = await res.json(); } catch(e) {} }
-    async function fetchShopStock(addr) { if(!DATA.key) return; try { const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); if(res.ok) { const prev = await res.json(); CURRENT_ITEMS = prev.map(i => ({ bc: i.bc, name: i.name, shelf: 0, stock: 0 })); refreshList(); } } catch(e) {} }
+    
+    // ПРАВИЛЬНАЯ ФУНКЦИЯ: ТЕПЕРЬ ПОДТЯГИВАЕТ Shelf и Stock С ПРОШЛОГО РАЗА
+    async function fetchShopStock(addr) { 
+        if(!DATA.key) return; 
+        try { 
+            const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); 
+            if(res.ok) { 
+                const prev = await res.json(); 
+                // Восстанавливаем цифры из базы сервера:
+                CURRENT_ITEMS = prev.map(i => ({ 
+                    bc: i.bc, 
+                    name: i.name, 
+                    shelf: i.shelf || 0, 
+                    stock: i.stock || 0 
+                })); 
+                refreshList(); 
+                if(CURRENT_ITEMS.length > 0) speak(`Данные восстановлены.`);
+            } 
+        } catch(e) { console.error("Load Stock Error:", e); } 
+    }
 
     function calcShare() {
         const mine = parseFloat(document.getElementById('i-faces').value) || 0;
@@ -350,6 +369,7 @@
             ts += i.shelf; tk += i.stock;
             return `<div class="item-row" data-bc="${i.bc}"><div style="font-size:0.8rem; font-weight:800; color:#fff;">${i.name}</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;"><div class="mini-box"><span style="font-size:7px; opacity:0.5;">ПОЛКА</span><input type="number" class="mini-inp" value="${i.shelf}" oninput="updateVal('${i.bc}','shelf',this.value)"></div><div class="mini-box"><span style="font-size:7px; opacity:0.5;">СКЛАД</span><input type="number" class="mini-inp" value="${i.stock}" oninput="updateVal('${i.bc}','stock',this.value)"></div></div></div>`;
         }).join('');
+        // Автоматически обновляем главные цифры "Общий остаток" и "Фейсинг":
         document.getElementById('i-faces').value = ts; document.getElementById('i-stock').value = ts + tk; calcShare();
     }
 
