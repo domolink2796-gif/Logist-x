@@ -387,7 +387,7 @@
             return false;
         }
 
-        window.addEventListener('load', () => {
+          window.addEventListener('load', () => {
             const params = new URLSearchParams(window.location.search);
             const k = params.get('key');
             const isSuccess = params.get('payment') === 'success';
@@ -395,21 +395,26 @@
             if (isSuccess && k) {
                 let attempts = 0;
                 const timer = setInterval(() => {
-                    if (forceShowModal(k) || attempts > 15) {
+                    const m = document.getElementById('modalSuccess');
+                    const d = document.getElementById('displayNewKey');
+                    if (m && d) {
+                        d.innerText = k;
+                        m.style.display = "block";
+                        speak("Оплата прошла успешно! Забирай свой ключ.");
                         clearInterval(timer);
                         window.history.replaceState({}, '', window.location.pathname);
                     }
-                    attempts++;
+                    if (attempts++ > 15) clearInterval(timer);
                 }, 500);
             }
         });
-        // --- КОНЕЦ БЛОКА ---
-}
 
-function handleInstallClick() { alert('Меню -> На экран Домой'); }
-function goToBot() { window.location.href = "https://t.me/LogistX_Robot_Bot"; }
-calculatePrice();
-
-</script>
+        function handleInstallClick() { alert('Меню -> На экран Домой'); }
+        function goToBot() { window.location.href = "https://t.me/LogistX_Robot_Bot"; }
+        function openModal(id) { document.getElementById(id).style.display = "block"; }
+        function closeModal(id) { document.getElementById(id).style.display = "none"; }
+        
+        calculatePrice();
+    </script>
 </body>
 </html>
