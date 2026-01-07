@@ -519,7 +519,7 @@
             const res = await fetch(`${API}/get-planogram?addr=${encodeURIComponent(addr)}&key=${encodeURIComponent(DATA.key)}`); 
             const d = await res.json(); 
             if(d.exists) box.innerHTML = `<button class="btn-blue" style="background:var(--accent); color:#000; padding:10px; font-size:12px;" onclick="window.open('${d.url}', '_blank')">СХЕМА ПЛАНОГРАММЫ</button>`; 
-            else box.innerHTML = `<label class="btn-blue" for="up-plan" style="background:#222; border:1px solid #333; padding:10px; font-size:12px;">📸 ПРИВЯЗАТЬ СХЕМУ</label><input type="file" id="up-plan" accept="image/*" capture="camera" class="hidden" onchange="uploadPlanogram(this)">`; 
+            else box.innerHTML = `<label class="btn-blue" for="up-plan" style="background:#222; border:1px solid #333; padding:10px; font-size:12px;">📸 ПРИВЯЗАТЬ СХЕМУ</label><input type="file" id="up-plan" accept="image/*" capture="camera" class="hidden" onchange="window.uploadPlanogram(this)">`; 
         } catch(e) {} 
     }
     
