@@ -3,61 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Лицензия Активирована | LOGIST_X</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Оплата прошла успешно</title>
     <style>
-        body { background-color: #010409; color: #e6edf3; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .success-card { background: #0d1117; border: 2px solid #f59e0b; padding: 40px; border-radius: 30px; text-align: center; max-width: 450px; width: 90%; box-shadow: 0 0 50px rgba(245, 158, 11, 0.2); }
-        .key-display { background: #000; border: 2px dashed #f59e0b; color: #f59e0b; padding: 25px; font-size: 35px; font-weight: 900; border-radius: 20px; margin: 25px 0; letter-spacing: 4px; text-transform: uppercase; }
+        body { background-color: black; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+        .container { border: 2px solid gold; padding: 20px; border-radius: 15px; background: rgba(255, 215, 0, 0.1); box-shadow: 0 0 20px gold; }
+        h1 { color: gold; }
+        #license-key { font-size: 2em; font-weight: bold; margin-top: 10px; color: #fff; letter-spacing: 2px; }
+        p { opacity: 0.8; }
     </style>
 </head>
 <body>
-    <div class="success-card">
-        <div class="text-amber-500 mb-6 flex justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-        </div>
-        <h1 class="text-3xl font-black mb-2 uppercase italic text-white">Оплата принята!</h1>
-        <p class="opacity-60 mb-6 text-sm italic">Ваш уникальный ключ доступа в систему:</p>
-        
-        <div id="keyBox" class="key-display italic">XXXX-XXXX</div>
-        
-        <p class="text-[10px] uppercase tracking-widest opacity-40 mb-10">Пожалуйста, сохраните этот ключ. Он потребуется для входа в Личный Кабинет.</p>
-        
-        <button onclick="window.location.href='https://logist-x.ru/'" class="w-full py-5 bg-amber-500 text-black font-black rounded-2xl uppercase tracking-widest hover:scale-105 transition-transform">
-            Вернуться на сайт
-        </button>
+    <div class="container">
+        <h1>ОПЛАТА ПРОШЛА УСПЕШНО</h1>
+        <p>Ваш лицензионный ключ:</p>
+        <div id="license-key">ЗАГРУЗКА...</div>
     </div>
 
     <script>
-window.addEventListener('load', () => {
-    // 1. Ищем ключ (пробуем все варианты, откуда он может прийти)
-    const urlParams = new URLSearchParams(window.location.search);
-    let key = urlParams.get('key') || urlParams.get('Shp_key');
-    const keyBox = document.getElementById('license-key');
+        window.addEventListener('load', () => {
+            // 1. Ищем ключ (пробуем все варианты от Робокассы и ручные)
+            const urlParams = new URLSearchParams(window.location.search);
+            let key = urlParams.get('key') || urlParams.get('Shp_key');
+            const keyBox = document.getElementById('license-key');
 
-    // 2. Если ключ в ссылке есть — показываем его
-    if (key && key !== "") {
-        keyBox.innerText = key.trim();
-        keyBox.style.opacity = "1";
+            if (key) {
+                // Если ключ найден — показываем его
+                keyBox.innerText = key.trim();
+                
+                // 2. Функция голоса
+                const speak = () => {
+                    if (window.speechSynthesis.speaking) return;
+                    const msg = new SpeechSynthesisUtterance("Оплата прошла успешно. Ваш ключ на экране.");
+                    msg.lang = 'ru-RU';
+                    window.speechSynthesis.speak(msg);
+                };
 
-        // 3. Настройка голоса
-        const announce = () => {
-            if (window.speechSynthesis.speaking) return; 
-            const msg = new SpeechSynthesisUtterance("Оплата прошла успешно. Ваш ключ на экране.");
-            msg.lang = 'ru-RU';
-            window.speechSynthesis.speak(msg);
-        };
-
-        // Пробуем сказать сразу
-        announce();
-        
-        // Для телефонов: голос включится, как только ты коснешься экрана
-        document.body.addEventListener('click', announce, { once: true });
-    } else {
-        // Если ключа в ссылке нет, так и напишем
-        keyBox.innerText = "КЛЮЧ НЕ НАЙДЕН";
-    }
-});
-</script>
+                // Пытаемся сказать сразу
+                speak();
+                // Для телефонов: голос сработает при ПЕРВОМ ТЫКЕ в экран
+                document.body.addEventListener('click', speak, { once: true });
+            } else {
+                keyBox.innerText = "КЛЮЧ НЕ НАЙДЕН";
+            }
+        });
+    </script>
 </body>
 </html>
