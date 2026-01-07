@@ -30,30 +30,34 @@
 
     <script>
 window.addEventListener('load', () => {
+    // 1. Ищем ключ (пробуем все варианты, откуда он может прийти)
     const urlParams = new URLSearchParams(window.location.search);
     let key = urlParams.get('key') || urlParams.get('Shp_key');
     const keyBox = document.getElementById('license-key');
 
-    if (key && key !== "XXXX-XXXX") {
+    // 2. Если ключ в ссылке есть — показываем его
+    if (key && key !== "") {
         keyBox.innerText = key.trim();
         keyBox.style.opacity = "1";
 
-        // Функция озвучки
-        const speak = () => {
-            if (window.speechSynthesis.speaking) return;
+        // 3. Настройка голоса
+        const announce = () => {
+            if (window.speechSynthesis.speaking) return; 
             const msg = new SpeechSynthesisUtterance("Оплата прошла успешно. Ваш ключ на экране.");
             msg.lang = 'ru-RU';
             window.speechSynthesis.speak(msg);
         };
 
-        // 1. Пробуем сказать сразу
-        speak();
-
-        // 2. Если браузер заблокировал — скажет при первом клике по экрану
-        document.body.addEventListener('click', speak, { once: true });
+        // Пробуем сказать сразу
+        announce();
+        
+        // Для телефонов: голос включится, как только ты коснешься экрана
+        document.body.addEventListener('click', announce, { once: true });
+    } else {
+        // Если ключа в ссылке нет, так и напишем
+        keyBox.innerText = "КЛЮЧ НЕ НАЙДЕН";
     }
 });
-
 </script>
 </body>
 </html>
