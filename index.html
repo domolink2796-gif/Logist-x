@@ -56,8 +56,7 @@
         #cabinetFrame { width: 100%; height: 80vh; border: none; border-radius: 12px; }
         .tab-btn { font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; padding-bottom: 8px; border-bottom: 2px solid transparent; opacity: 0.4; transition: 0.3s; }
         .tab-btn.active { opacity: 1; color: var(--accent); border-bottom-color: var(--accent); }
-        
-        /* Стиль для отображения ключа в новом окне */
+        /* Новые стили */
         .success-key-box { background: #000; border: 2px dashed var(--accent); color: var(--accent); padding: 20px; border-radius: 15px; font-size: 28px; font-weight: 900; letter-spacing: 4px; margin: 20px 0; text-align: center; }
     </style>
 </head>
@@ -267,9 +266,6 @@
         </div>
     </div>
 
-    <div id="modalPrivacy" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span><div class="modal-header">Политика конфиденциальности</div><p>Настоящая политика действует в отношении всей информации, которую сервис LOGIST_X может получить о пользователе...</p></div></div>
-    <div id="modalTerms" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalTerms')">&times;</span><div class="modal-header">Публичная оферта</div><p>Сервис LOGIST_X (ИП Никитин Е.А.) предоставляет доступ к ПО на условиях подписки 1500 руб/мес...</p></div></div>
-
     <div id="modalSuccess" class="modal">
         <div class="modal-content animate__animated animate__fadeInDown">
             <span class="close-modal" onclick="closeModal('modalSuccess')">&times;</span>
@@ -277,11 +273,13 @@
             <div class="text-center space-y-4">
                 <p class="text-white text-lg">Ваш объект успешно активирован.</p>
                 <div class="success-key-box" id="displayNewKey">XXXX-XXXX</div>
-                <p class="text-[11px] opacity-60 uppercase">Сохраните этот ключ. Он также был отправлен вам в Telegram бот.</p>
                 <button onclick="closeModal('modalSuccess'); openModal('modalCabinet')" class="btn-install-gold w-full py-4 text-black">Перейти в кабинет</button>
             </div>
         </div>
     </div>
+
+    <div id="modalPrivacy" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span><div class="modal-header">Политика конфиденциальности</div><p>Настоящая политика действует в отношении всей информации, которую сервис LOGIST_X может получить о пользователе...</p></div></div>
+    <div id="modalTerms" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalTerms')">&times;</span><div class="modal-header">Публичная оферта</div><p>Сервис LOGIST_X (ИП Никитин Е.А.) предоставляет доступ к ПО на условиях подписки 1500 руб/мес...</p></div></div>
 
     <script>
         lucide.createIcons();
@@ -330,22 +328,10 @@
             let pricePerWorker = 0;
             let discountText = "Без скидки";
             
-            if (days == 30) {
-                pricePerWorker = 1500;
-                discountText = "Без скидки";
-            }
-            else if (days == 90) {
-                pricePerWorker = 1350; 
-                discountText = "Скидка десять процентов";
-            }
-            else if (days == 180) {
-                pricePerWorker = 1275; 
-                discountText = "Скидка пятнадцать процентов";
-            }
-            else if (days == 365) {
-                pricePerWorker = 1250; 
-                discountText = "Максимальная выгода, скидка более двадцати процентов";
-            }
+            if (days == 30) { pricePerWorker = 1500; discountText = "Без скидки"; }
+            else if (days == 90) { pricePerWorker = 1350; discountText = "Скидка десять процентов"; }
+            else if (days == 180) { pricePerWorker = 1275; discountText = "Скидка пятнадцать процентов"; }
+            else if (days == 365) { pricePerWorker = 1250; discountText = "Максимальная выгода, скидка более двадцати процентов"; }
             
             const total = limit * (pricePerWorker * (days / 30));
             document.getElementById('totalPriceDisplay').innerText = Math.round(total).toLocaleString() + ' ₽';
@@ -381,33 +367,33 @@
             const limit = document.getElementById('buyLimit').value;
             const days = document.getElementById('buyMonths').value;
             const type = document.getElementById('buyType').value;
-            if(!name) {
-                speak("Введите название объекта");
-                return alert('Введите название объекта!');
-            }
+            if(!name) { speak("Введите название объекта"); return alert('Введите название объекта!'); }
+            
+            const tempKey = (type === 'merch' ? 'M-' : 'L-') + Math.random().toString(36).substring(2, 6).toUpperCase();
+            localStorage.setItem('pending_payment_key', tempKey);
+            localStorage.setItem('payment_active', 'true');
+            
             speak(`Формируем счет для компании ${name}`);
             try {
                 const r = await fetch(`${SERVER_URL}/api/notify-admin`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ key: "NEW_USER", name: name, days: parseInt(days), limit: parseInt(limit), chatId: "WEBSITE_SALE", type: type })
+                    body: JSON.stringify({ key: "NEW_USER", name, days: parseInt(days), limit: parseInt(limit), chatId: "WEBSITE_SALE", type })
                 });
                 const res = await r.json();
                 if(res.success && res.payUrl) window.location.href = res.payUrl;
-                else alert('Ошибка при создании счета');
             } catch (e) { alert('Ошибка сети'); }
         }
         
-        // ЛОГИКА АВТО-ОТКРЫТИЯ ОКНА ПОСЛЕ ОПЛАТЫ (ДОБАВЛЕНО)
         window.addEventListener('load', () => {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('payment') === 'success') {
-                const keyFromUrl = params.get('key') || 'АКТИВИРОВАН';
-                document.getElementById('displayNewKey').innerText = keyFromUrl;
+            const isPaymentActive = localStorage.getItem('payment_active');
+            const savedKey = localStorage.getItem('pending_payment_key');
+            if (isPaymentActive === 'true' && savedKey) {
+                document.getElementById('displayNewKey').innerText = savedKey;
                 openModal('modalSuccess');
                 speak("Оплата прошла успешно. Ваш ключ на экране.");
-                // Очистка URL, чтобы окно не всплывало при обновлении
-                window.history.replaceState({}, document.title, window.location.pathname);
+                localStorage.removeItem('payment_active');
+                localStorage.removeItem('pending_payment_key');
             }
         });
 
