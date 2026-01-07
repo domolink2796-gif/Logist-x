@@ -1,51 +1,67 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Оплата прошла успешно</title>
+    <title>Лицензия Логист X - Командный доступ</title>
     <style>
-        body { background-color: black; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-        .container { border: 2px solid gold; padding: 20px; border-radius: 15px; background: rgba(255, 215, 0, 0.1); box-shadow: 0 0 20px gold; }
-        h1 { color: gold; }
-        #license-key { font-size: 2em; font-weight: bold; margin-top: 10px; color: #fff; letter-spacing: 2px; }
-        p { opacity: 0.8; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .cabinet-box { border: 2px solid #ffd700; padding: 30px; border-radius: 25px; text-align: center; background: #111; box-shadow: 0 0 35px rgba(255, 215, 0, 0.5); width: 90%; max-width: 420px; }
+        h1 { color: #ffd700; font-size: 1.3rem; text-transform: uppercase; margin-bottom: 5px; }
+        .instruction { color: #ccc; font-size: 0.9rem; margin: 15px 0; line-height: 1.5; text-align: center; }
+        .key-container { background: #ffd700; color: #000; padding: 18px; border-radius: 12px; font-size: 1.7rem; font-weight: 900; margin: 20px 0; cursor: pointer; transition: 0.2s; }
+        .key-container:active { transform: scale(0.98); }
+        .copy-hint { font-size: 0.7rem; color: #333; display: block; margin-top: 5px; font-weight: normal; text-transform: uppercase; }
+        .btn-home { background: #fff; color: #000; padding: 15px; border-radius: 10px; text-decoration: none; display: block; font-weight: bold; margin-top: 20px; transition: 0.3s; }
+        .btn-home:hover { background: #ffd700; border-color: #fff; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>ОПЛАТА ПРОШЛА УСПЕШНО</h1>
-        <p>Ваш лицензионный ключ:</p>
-        <div id="license-key">ЗАГРУЗКА...</div>
+    <div class="cabinet-box">
+        <h1>СИСТЕМА АКТИВИРОВАНА</h1>
+        
+        <p class="instruction">
+            Оплата прошла успешно. Ключ ниже открывает доступ к вашей <b>Панели Управления</b> и аккаунтам всех ваших сотрудников.
+        </p>
+
+        <div class="key-container" id="copy-block" onclick="copyAndVoice()">
+            <span id="key-display">ЗАГРУЗКА...</span>
+            <span class="copy-hint">Нажмите, чтобы скопировать ключ</span>
+        </div>
+
+        <p style="font-size: 0.85rem; color: #ffd700;">Используйте его для входа на главной странице сайта</p>
+
+        <a href="https://logist-x.ru" class="btn-home">В ЛИЧНЫЙ КАБИНЕТ</a>
     </div>
 
     <script>
-        window.addEventListener('load', () => {
-            // 1. Ищем ключ (пробуем все варианты от Робокассы и ручные)
-            const urlParams = new URLSearchParams(window.location.search);
-            let key = urlParams.get('key') || urlParams.get('Shp_key');
-            const keyBox = document.getElementById('license-key');
+        function playSuccessVoice() {
+            if (window.speechSynthesis.speaking) return;
+            const msg = new SpeechSynthesisUtterance("Оплата прошла успешно. Ваша командная лицензия активирована. Скопируйте ключ доступа и введите его в личном кабинете на главной странице для управления персоналом.");
+            msg.lang = 'ru-RU';
+            window.speechSynthesis.speak(msg);
+        }
 
-            if (key) {
-                // Если ключ найден — показываем его
-                keyBox.innerText = key.trim();
-                
-                // 2. Функция голоса
-                const speak = () => {
-                    if (window.speechSynthesis.speaking) return;
-                    const msg = new SpeechSynthesisUtterance("Оплата прошла успешно. Ваш ключ на экране.");
-                    msg.lang = 'ru-RU';
-                    window.speechSynthesis.speak(msg);
-                };
+        function copyAndVoice() {
+            const key = document.getElementById('key-display').innerText;
+            navigator.clipboard.writeText(key).then(() => {
+                alert("Ключ скопирован!");
+                playSuccessVoice();
+            });
+        }
 
-                // Пытаемся сказать сразу
-                speak();
-                // Для телефонов: голос сработает при ПЕРВОМ ТЫКЕ в экран
-                document.body.addEventListener('click', speak, { once: true });
-            } else {
-                keyBox.innerText = "КЛЮЧ НЕ НАЙДЕН";
-            }
-        });
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const key = params.get('key') || params.get('Shp_key') || "АКТИВЕН";
+            document.getElementById('key-display').innerText = key;
+            
+            // Запуск голоса при первом клике на страницу (телефонная защита)
+            document.body.onclick = function() {
+                playSuccessVoice();
+                document.body.onclick = null; // Чтобы не повторялось при каждом клике
+            };
+        };
     </script>
 </body>
 </html>
