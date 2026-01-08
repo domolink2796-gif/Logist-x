@@ -235,7 +235,29 @@
     }
 
     async function syncCatalog() { if(!DATA.key) return; try { const res = await fetch(`${API}/get-catalog?key=${DATA.key}`); if(res.ok) PRODUCT_CATALOG = await res.json(); } catch(e) {} }
-    async function fetchShopStock(addr) { if(!DATA.key) return; try { const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); if(res.ok) { const prev = await res.json(); CURRENT_ITEMS = prev.map(i => ({ bc: i.bc, name: i.name, shelf: i.shelf || 0, stock: i.stock || 0 })); refreshList(); } } catch(e) {} }
+    async function fetchShopStock(addr) {
+    if(!DATA.key) return;
+    try {
+        // Запрашиваем данные у сервера по адресу магазина
+        const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`);
+        if(res.ok) {
+            const prev = await res.json();
+            // Превращаем данные из таблицы в список товаров для телефона
+            CURRENT_ITEMS = prev.map(i => ({ 
+                bc: i.bc, 
+                name: i.name, 
+                shelf: parseInt(i.shelf) || 0, 
+                stock: parseInt(i.stock) || 0 
+            }));
+            // Обновляем список на экране
+            refreshList();
+            console.log("✅ Остатки загружены из Google Таблицы");
+        }
+    } catch(e) {
+        console.error("❌ Ошибка связи с таблицей:", e);
+    }
+}
+
 
     function calcShare() {
         const mine = parseFloat(document.getElementById('i-faces').value) || 0;
