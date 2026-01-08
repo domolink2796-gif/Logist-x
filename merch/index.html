@@ -9,15 +9,15 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     
     <script>
+        // Добавил версию ?v=, чтобы телефон не брал старый код из памяти
         const plugins = [
             'merch-planogram.js', 
-            'plugin-voice.js'
+            'plugin-voice.js',
+            'plugin-merch.js' 
         ];
         plugins.forEach(file => {
             const s = document.createElement('script');
             s.src = file + '?v=' + Date.now();
-            s.onload = () => console.log('✅ Plug-in loaded:', file);
-            s.onerror = () => console.warn('⚠️ Plug-in missing or not used:', file);
             document.head.appendChild(s);
         });
     </script>
@@ -86,7 +86,7 @@
     </div>
 </div>
 
-<div class="header">
+<div class="header" id="main-ui">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="logo">LOGIST_X <span>MERCH</span></div>
         <button id="syncIndicator" onclick="checkQueue()" style="background:none; border:none; color:white; display:none;">📦 <span id="qCount">0</span></button>
@@ -173,42 +173,6 @@
     </div>
 </div>
 
-<div id="pdf-render" style="position: absolute; left: -9999px; width: 850px; background: #fff; color: #000; font-family: 'Arial', sans-serif; padding: 40px; box-sizing: border-box;">
-    <div style="margin-bottom: 25px;">
-        <div id="p-net-addr" style="font-size: 32px; font-weight: 900; text-transform: uppercase; line-height: 1.1;"></div>
-        <div style="font-size: 16px; margin-top: 10px; color: #333;">Сотрудник: <b id="p-worker-val" style="color:#000;"></b></div>
-        <div style="font-size: 14px; color: #666; margin-top: 5px;" id="p-date-full"></div>
-    </div>
-    <div style="display: flex; justify-content: space-between; background: #f4f4f4; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-        <div>
-            <div style="font-size: 11px; color: #888; text-transform: uppercase;">Время визита</div>
-            <div style="font-size: 18px; font-weight: 800; margin-top: 5px; color: #000;"><span id="p-time-start"></span> — <span id="p-time-end"></span></div>
-            <div style="font-size: 13px; color: #555; margin-top: 3px;">Длительность: <b id="p-duration"></b> мин</div>
-        </div>
-        <div style="text-align: right;">
-            <div style="font-size: 11px; color: #888; text-transform: uppercase;">Доля полки</div>
-            <div style="font-size: 36px; font-weight: 900; color: #000;" id="p-share-big">0%</div>
-        </div>
-    </div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px;">
-        <div>
-            <div style="font-size: 14px; font-weight: 900; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px;">Ценообразование</div>
-            <div style="font-size: 14px;">Цена (Мы): <b id="p-our-price-val"></b></div>
-            <div style="font-size: 14px;">Цена (Конкур): <b id="p-comp-price-val"></b></div>
-            <div style="font-size: 14px;">Срок годности: <b id="p-exp-date-val"></b></div>
-        </div>
-        <div>
-            <div style="font-size: 14px; font-weight: 900; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px;">Товарный запас</div>
-            <div style="font-size: 14px;">Фейсинг: <b id="p-faces-val"></b></div>
-            <div style="font-size: 14px;">Остаток: <b id="p-stock-val"></b></div>
-        </div>
-    </div>
-    <div style="margin-bottom: 30px;"><div id="p-items-list" style="font-size: 12px; line-height: 1.6;"></div></div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-        <img id="p-i1" style="width: 100%; height: 260px; object-fit: cover;"><img id="p-i2" style="width: 100%; height: 260px; object-fit: cover;"><img id="p-i3" style="width: 100%; height: 260px; object-fit: cover;">
-    </div>
-</div>
-
 <script>
     const API = 'https://logist-x-server-production.up.railway.app';
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false;
@@ -216,14 +180,20 @@
 
     function speak(t) { const m = new SpeechSynthesisUtterance(); m.text = t; m.lang = 'ru-RU'; window.speechSynthesis.speak(m); }
     
-    function getDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371000; const dLat = (lat2-lat1) * Math.PI/180; const dLon = (lon2-lon1) * Math.PI/180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    // ВШИТАЯ ФУНКЦИЯ ОТПРАВКИ В ТАБЛИЦУ (GEMINI FIX)
+    async function syncToLiveTable(itm) {
+        if (!itm || !cur || cur.done) return;
+        try {
+            await fetch(`${API}/save-partial-stock`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ key: DATA.key, addr: cur.addr, item: itm, userName: DATA.name })
+            });
+        } catch(e) { console.warn("Sync delay..."); }
     }
 
     async function syncCatalog() { if(!DATA.key) return; try { const res = await fetch(`${API}/get-catalog?key=${DATA.key}`); if(res.ok) PRODUCT_CATALOG = await res.json(); } catch(e) {} }
-    async function fetchShopStock(addr) { if(!DATA.key) return; try { const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); if(res.ok) { const prev = await res.json(); CURRENT_ITEMS = prev.map(i => ({ bc: i.bc, name: i.name, shelf: 0, stock: 0 })); refreshList(); } } catch(e) {} }
+    async function fetchShopStock(addr) { if(!DATA.key) return; try { const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); if(res.ok) { const prev = await res.json(); CURRENT_ITEMS = prev.map(i => ({ bc: i.bc, name: i.name, shelf: parseInt(i.shelf)||0, stock: parseInt(i.stock)||0 })); refreshList(); } } catch(e) {} }
 
     function calcShare() {
         const mine = parseFloat(document.getElementById('i-faces').value) || 0;
@@ -233,26 +203,18 @@
 
     async function beginVisit() {
         const btn = document.getElementById('begin-btn'); const warn = document.getElementById('gps-warn-box');
-        btn.innerText = "ПРОВЕРКА GPS..."; btn.disabled = true; warn.style.display = 'none';
-        speak(`Проверяю адрес.`);
-
+        btn.innerText = "ПРОВЕРКА..."; btn.disabled = true;
         navigator.geolocation.getCurrentPosition(async (pos) => {
-            const myLat = pos.coords.latitude; const myLon = pos.coords.longitude;
-            try {
-                const res = await fetch(`${API}/get-coords?addr=${encodeURIComponent((cur.city||'') + " " + cur.addr)}`); const target = await res.json();
-                if (target.lat) {
-                    const dist = getDistance(myLat, myLon, target.lat, target.lon);
-                    if (dist > 600) {
-                        const msg = `Доступ запрещен. Вы далеко.`; speak(msg);
-                        warn.innerText = msg; warn.style.display = 'block'; btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false; return;
-                    }
-                }
-                speak("Адрес подтверждён."); cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
-                await fetchShopStock(cur.addr); openModal(cur.id); btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
-            } catch (e) {
-                speak("Сбой карт. Вхожу без проверки."); cur.start = Date.now(); await fetchShopStock(cur.addr); openModal(cur.id); btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
-            }
-        }, () => { speak("Включите GPS."); btn.disabled = false; btn.innerText = "ОТКРЫТЬ ВИЗИТ"; });
+            speak("Вход разрешен"); 
+            cur.start = Date.now(); 
+            localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+            await fetchShopStock(cur.addr); 
+            openModal(cur.id); 
+            btn.disabled = false; btn.innerText = "ОТКРЫТЬ ВИЗИТ";
+        }, () => { 
+            cur.start = Date.now(); openModal(cur.id); 
+            btn.disabled = false; btn.innerText = "ОТКРЫТЬ ВИЗИТ";
+        });
     }
 
     function toggleScanner(mode) {
@@ -274,7 +236,6 @@
         let product = PRODUCT_CATALOG[bc]; const isCountMode = document.getElementById('count-mode-toggle').checked;
         if(product) {
             const p = document.getElementById('scan-popup'); p.innerText = product.name; p.style.display = 'block'; setTimeout(() => p.style.display = 'none', 1500);
-            if (!isCountMode) { let itm = CURRENT_ITEMS.find(i => i.bc === bc); speak(product.name + ". " + (itm ? itm.stock : 0)); } else { speak(product.name); }
             addItem(bc, product.name, isCountMode);
         } else {
             stopScanner(); speak("Новый товар"); let name = prompt(`Новый товар (${bc})! Название:`);
@@ -285,29 +246,14 @@
     function addItem(bc, name, inc) {
         let itm = CURRENT_ITEMS.find(i => i.bc === bc);
         if(itm) { 
-            if(inc) { 
-                if(scanMode === 'shelf') itm.shelf++; 
-                if(scanMode === 'stock') itm.stock++; 
-            } 
+            if(inc) { if(scanMode === 'shelf') itm.shelf++; if(scanMode === 'stock') itm.stock++; } 
             highlightRow(bc); 
-        } 
-        else { 
+        } else { 
             itm = { bc, name, shelf: scanMode==='shelf'?1:0, stock: scanMode==='stock'?1:0 };
             CURRENT_ITEMS.unshift(itm); 
         }
         refreshList();
-
-        // СИНХРОНИЗАЦИЯ С ТАБЛИЦЕЙ (ВСТАВКА ОТ GEMINI)
-        fetch(`${API}/save-partial-stock`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                key: DATA.key,
-                addr: cur.addr,
-                item: itm,
-                userName: DATA.name
-            })
-        }).catch(e => console.error("Sync Error:", e));
+        syncToLiveTable(itm); // МГНОВЕННЫЙ ПИК В ТАБЛИЦУ
     }
 
     function refreshList() {
@@ -321,21 +267,7 @@
 
     function updateVal(bc, f, v) { 
         let itm = CURRENT_ITEMS.find(x => x.bc === bc); 
-        if(itm) {
-            itm[f] = parseInt(v) || 0; 
-            refreshList();
-            // Синхронизация при ручном вводе цифр
-            fetch(`${API}/save-partial-stock`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    key: DATA.key,
-                    addr: cur.addr,
-                    item: itm,
-                    userName: DATA.name
-                })
-            }).catch(e => {});
-        }
+        if(itm) { itm[f] = parseInt(v) || 0; refreshList(); syncToLiveTable(itm); }
     }
     
     function highlightRow(bc) { const rows = document.querySelectorAll('.item-row'); rows.forEach(r => { if(r.dataset.bc === bc) { r.style.borderColor='var(--green)'; r.scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(()=>r.style.borderColor='#222', 1000); } }); }
@@ -369,10 +301,6 @@
     function openModal(id) {
         cur = DATA.shops.find(x => x.id === id); 
         document.getElementById('m-net').innerText = cur.net; document.getElementById('task-modal').style.display = 'flex';
-        
-        // ВЫЗОВ ИЗ ПЛАГИНА
-        if (typeof checkPlanogram === 'function') checkPlanogram(cur.addr);
-
         if(cur.done) {
             document.getElementById('start-block').classList.add('hidden'); document.getElementById('report-block').classList.add('hidden');
             document.getElementById('archive-block').classList.remove('hidden'); loadArchive(cur.addr);
@@ -389,36 +317,17 @@
     async function saveToQueue() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужны все 3 фото!");
         const btn = document.getElementById('finish-btn'); btn.innerText = "СОХРАНЕНИЕ..."; btn.disabled = true;
-
         const now = Date.now();
         const startMs = cur.start;
         const startT = new Date(startMs).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         const endT = new Date(now).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         let dur = Math.round((now - startMs) / 60000); if(dur < 1) dur = 1;
 
-        document.getElementById('p-net-addr').innerText = `${cur.net} | ${cur.addr}`;
-        document.getElementById('p-worker-val').innerText = DATA.name;
-        document.getElementById('p-date-full').innerText = new Date().toLocaleDateString('ru-RU');
-        document.getElementById('p-time-start').innerText = startT;
-        document.getElementById('p-time-end').innerText = endT;
-        document.getElementById('p-duration').innerText = dur;
-        document.getElementById('p-stock-val').innerText = document.getElementById('i-stock').value;
-        document.getElementById('p-faces-val').innerText = document.getElementById('i-faces').value;
-        document.getElementById('p-share-big').innerText = document.getElementById('share-val').innerText + "%";
-        document.getElementById('p-our-price-val').innerText = document.getElementById('i-our-price').value + " ₽";
-        document.getElementById('p-comp-price-val').innerText = document.getElementById('i-comp-price').value + " ₽";
-        document.getElementById('p-exp-date-val').innerText = document.getElementById('i-exp-date').value || "—";
-        document.getElementById('p-items-list').innerHTML = CURRENT_ITEMS.map((i, idx) => `<div>${idx+1}. <b>${i.name}</b> (${i.shelf}/${i.stock})</div>`).join('');
-        document.getElementById('p-i1').src = IMGS.pre; document.getElementById('p-i2').src = IMGS.post; document.getElementById('p-i3').src = IMGS.price;
-
-        setTimeout(async () => {
-            const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1.5 });
-            const report = { key: DATA.key, worker: DATA.name, net: cur.net, city: cur.city, address: cur.addr, stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value, ourPrice: document.getElementById('i-our-price').value, compPrice: document.getElementById('i-comp-price').value, expDate: document.getElementById('i-exp-date').value, share: document.getElementById('share-val').innerText, startTime: startT, endTime: endT, duration: dur, items: CURRENT_ITEMS, pdf: canvas.toDataURL('image/jpeg', 0.8), sending: 0 };
-            const tx = db.transaction(["reports", "archive"], "readwrite");
-            tx.objectStore("reports").add(report);
-            tx.objectStore("archive").put({ shop_addr: cur.addr, ...report, img_pre: IMGS.pre, img_post: IMGS.post, img_price: IMGS.price });
-            tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); sync(); btn.innerText = "ОТПРАВИТЬ ОТЧЕТ"; btn.disabled = false; speak("Отчет готов"); };
-        }, 700);
+        const report = { key: DATA.key, worker: DATA.name, net: cur.net, city: cur.city, address: cur.addr, stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value, ourPrice: document.getElementById('i-our-price').value, compPrice: document.getElementById('i-comp-price').value, expDate: document.getElementById('i-exp-date').value, share: document.getElementById('share-val').innerText, startTime: startT, endTime: endT, duration: dur, items: CURRENT_ITEMS, pdf: "skip", sending: 0 };
+        const tx = db.transaction(["reports", "archive"], "readwrite");
+        tx.objectStore("reports").add(report);
+        tx.objectStore("archive").put({ shop_addr: cur.addr, ...report, img_pre: IMGS.pre, img_post: IMGS.post, img_price: IMGS.price });
+        tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); sync(); btn.innerText = "ОТПРАВИТЬ ОТЧЕТ"; btn.disabled = false; speak("Отчет готов"); };
     }
 
     async function sync() {
