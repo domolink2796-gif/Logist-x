@@ -15,6 +15,7 @@
             'merch-planogram.js',  
             'plugin-pdf-fix.js'
         ];
+
         myPlugins.forEach(file => {
             const s = document.createElement('script');
             s.src = './' + file + '?v=' + Date.now(); 
@@ -344,9 +345,16 @@
     async function saveAuth() {
         const n = document.getElementById('work-name').value.trim(), k = document.getElementById('lic-key').value.trim().toUpperCase();
         if(!n || !k) return;
-        const res = await fetch(`${API}/check-license`, { method:'POST', headers:'application/json', body:JSON.stringify({licenseKey:k, workerName:n}) });
-        const d = await res.json();
-        if(d.status === 'active') { DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); location.reload(); }
+        try {
+            const res = await fetch(`${API}/check-license`, { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({licenseKey:k, workerName:n}) 
+            });
+            const d = await res.json();
+            if(d.status === 'active') { DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); location.reload(); }
+            else { alert("Ошибка лицензии: " + (d.message || "ключ не активен")); }
+        } catch (e) { alert("Нет связи с сервером"); }
     }
 
     function render() {
@@ -467,10 +475,6 @@
             else showStatus("⚠️ ОШИБКА СЕРВЕРА", "#f59e0b");
         } catch (e) { showStatus("🚫 НЕТ СВЯЗИ", "#ff3b30"); }
     };
-
-    window.addEventListener('load', function() {
-        console.log("🚀 Связь с Логистикой X запущена");
-    });
 })();
 </script>
 </body>
