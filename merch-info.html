@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<link rel="manifest" href="/merch/manifest.json">
-
+    <link rel="manifest" href="/merch/manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MERCH_X | О системе</title>
@@ -33,6 +32,24 @@
         
         .pulse-icon { animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* Анимация лазера сканера */
+        @keyframes scanMove {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #22c55e;
+            box-shadow: 0 0 15px #22c55e;
+            animation: scanMove 2s infinite ease-in-out;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -91,26 +108,13 @@
                     </div>
                 </div>
             </div>
-            <p class="text-[10px] opacity-50 mt-3 italic">Все отчеты строго сортируются по сотрудникам и датам автоматически. Полный контроль архива.</p>
         </div>
 
         <div class="card border-purple-500/30 bg-purple-500/5 mb-6" onclick="speak('Принцип одного касания. Система сама узнает магазин и подгрузит эталон полки для сравнения')">
             <h2 class="text-xs font-black uppercase mb-4 text-purple-400 flex items-center gap-2">
                 <i data-lucide="layout-template" size="14"></i> Умные Планограммы
             </h2>
-            
-            <div class="space-y-3 text-[12px] opacity-80 mb-4">
-                <div class="flex gap-3">
-                    <div class="feature-dot bg-purple-500"></div>
-                    <p>**Принцип «Одного касания»:** Мерчандайзеру достаточно **один раз** загрузить актуальное фото полки, и оно автоматически станет эталоном для этого адреса на все будущие визиты.</p>
-                </div>
-                <div class="flex gap-3">
-                    <div class="feature-dot bg-purple-500"></div>
-                    <p>При каждом следующем визите система сама мгновенно подгрузит актуальную планограмму для сравнения.</p>
-                </div>
-            </div>
-
-            <div class="planogram-compare">
+            <div class="planogram-compare mb-4">
                 <div class="planogram-box">
                     <i data-lucide="image" class="text-white/10" size="24"></i>
                     <span class="planogram-label bg-blue-600 text-white">База (Эталон)</span>
@@ -123,12 +127,47 @@
                     <span class="planogram-label bg-purple-600 text-white">Текущий визит</span>
                 </div>
             </div>
+            <p class="text-[11px] opacity-60 italic leading-tight">Система автоматически подгружает фото прошлого визита для контроля выкладки «Лицом к лицу».</p>
         </div>
 
-        <div class="card border-red-500/30 bg-red-500/5 mb-6 py-3" onclick="speak('Подмена координат и времени невозможна. Строгий контроль местоположения')">
+        <div class="card border-green-500/30 bg-green-500/5 mb-6" onclick="speak('Облачный сканер превращает телефон в профессиональный терминал. Каждое сканирование мгновенно сохраняется в общую таблицу, даже если вы закроете приложение. Это очень удобно при больших объемах товара.')">
+            <h2 class="text-xs font-black uppercase mb-4 text-green-400 flex items-center gap-2">
+                <i data-lucide="scan-barcode" size="14"></i> Облачный сканер ТСД
+            </h2>
+            
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-black/40 p-3 rounded-xl border border-green-500/20 text-center">
+                    <i data-lucide="search" class="text-blue-400 mx-auto mb-2" size="18"></i>
+                    <div class="text-[9px] font-black uppercase text-blue-400 mb-1">ПОИСК</div>
+                    <p class="text-[8px] opacity-50 italic">Находит товар в базе по штрихкоду</p>
+                </div>
+                <div class="bg-black/40 p-3 rounded-xl border border-green-500/20 text-center">
+                    <i data-lucide="plus-square" class="text-green-400 mx-auto mb-2" size="18"></i>
+                    <div class="text-[9px] font-black uppercase text-green-400 mb-1">СЧЕТ (+1)</div>
+                    <p class="text-[8px] opacity-50 italic">Авто-прибавление при каждом «пике»</p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-3 bg-green-500/10 p-3 rounded-lg border border-green-500/10 mb-4">
+                <i data-lucide="zap" class="text-green-400 flex-shrink-0" size="18"></i>
+                <div class="text-[11px] leading-tight text-green-100">
+                    <b>Живая синхронизация:</b> Данные записываются в Google Таблицу прямо в момент сканирования. 
+                </div>
+            </div>
+            
+            <div class="relative h-14 w-full bg-black/60 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center">
+                <div class="scanner-line"></div>
+                <div class="opacity-10">
+                    <i data-lucide="barcode" size="48"></i>
+                </div>
+                <span class="text-[10px] font-black tracking-[5px] text-green-500/80 uppercase z-20">Cloud Sync Active</span>
+            </div>
+        </div>
+
+        <div class="card border-red-500/30 bg-red-500/5 mb-6 py-4" onclick="speak('Подмена координат и времени невозможна. Строгий контроль местоположения')">
             <div class="flex items-center gap-3">
                 <i data-lucide="shield-check" class="text-red-500" size="20"></i>
-                <span class="text-[11px] font-black uppercase">Защита от фейковых визитов (Strict GPS)</span>
+                <span class="text-[11px] font-black uppercase tracking-wider">Защита от фейков (Strict GPS)</span>
             </div>
         </div>
 
@@ -143,46 +182,33 @@
                 <div class="mb-3">
                     <div class="text-amber-600 font-black uppercase text-[10px] leading-tight">МАГНИТ</div>
                     <div class="font-black text-[18px] leading-tight">ул. Саханская, 3</div>
-                    <div class="text-[9px] font-bold opacity-60 mt-1">Мерчендайзер: Ксения</div>
-                    <div class="text-[8px] font-black mt-1 uppercase tracking-tighter">
-                        Начало: 10:10 | Конец: 10:11
-                    </div>
                 </div>
 
-                <div class="bg-amber-500 text-black font-black p-1.5 px-3 inline-block rounded-md text-[9px] mb-4 uppercase shadow-sm">
-                    ВРЕМЯ ПРОВЕДЕННОЕ В МАГАЗИНЕ: 1 МИН
+                <div class="bg-amber-500 text-black font-black p-1.5 px-3 inline-block rounded-md text-[9px] mb-4 uppercase">
+                    ВРЕМЯ В МАГАЗИНЕ: 1 МИН
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div class="bg-gray-50 p-3 rounded-xl border border-black/5 text-center">
-                        <div class="opacity-40 text-[7px] uppercase font-black mb-1">Остаток / Фейсинг</div>
-                        <div class="font-black text-2xl">25 / 5</div>
-                        <div class="text-amber-600 font-black text-[9px] uppercase mt-1">Доля на полке: 29%</div>
+                    <div class="bg-gray-50 p-2 rounded-xl border border-black/5 text-center">
+                        <div class="font-black text-xl">25 / 5</div>
+                        <div class="text-amber-600 font-black text-[8px] uppercase">Доля: 29%</div>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-xl border border-black/5 text-center">
-                        <div class="opacity-40 text-[7px] uppercase font-black mb-1">Цены (Мы / Конкурент)</div>
-                        <div class="font-black text-[16px]">125 / 123.8 ₽</div>
-                        <div class="opacity-40 text-[7px] uppercase font-black mt-2">Срок годности</div>
-                        <div class="text-red-500 font-black text-[10px]">2026-01-22</div>
+                    <div class="bg-gray-50 p-2 rounded-xl border border-black/5 text-center">
+                        <div class="font-black text-[12px]">125 / 123 ₽</div>
+                        <div class="text-red-500 font-black text-[8px] uppercase">Срок: 22.01</div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-1.5">
-                    <div class="aspect-[3/4] bg-black rounded-lg flex flex-col items-center justify-center text-[7px] font-black text-white/30 uppercase p-1">
-                         <span>До</span>
-                    </div>
-                    <div class="aspect-[3/4] bg-black rounded-lg flex flex-col items-center justify-center text-[7px] font-black text-white/30 uppercase p-1">
-                         <span>После</span>
-                    </div>
-                    <div class="aspect-[3/4] bg-black rounded-lg flex flex-col items-center justify-center text-[7px] font-black text-white/30 uppercase p-1">
-                         <span>Ценник</span>
-                    </div>
+                <div class="grid grid-cols-3 gap-1">
+                    <div class="aspect-[3/4] bg-black rounded flex items-center justify-center text-[6px] text-white/30 uppercase">До</div>
+                    <div class="aspect-[3/4] bg-black rounded flex items-center justify-center text-[6px] text-white/30 uppercase">После</div>
+                    <div class="aspect-[3/4] bg-black rounded flex items-center justify-center text-[6px] text-white/30 uppercase">Цена</div>
                 </div>
             </div>
         </div>
 
         <div class="mt-8 pb-10">
-            <button onclick="handleInstall()" class="btn-gold shadow-2xl">
+            <button onclick="handleInstall()" class="btn-gold shadow-2xl shadow-amber-500/20">
                 <i data-lucide="download" size="20"></i>
                 Установить MERCH_X
             </button>
@@ -193,24 +219,25 @@
         lucide.createIcons();
 
         function speak(text) {
-            window.speechSynthesis.cancel(); // Прерываем предыдущую речь, чтобы не накладывалось
+            window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'ru-RU';
-            utterance.rate = 1.1;
+            utterance.rate = 1.05;
             window.speechSynthesis.speak(utterance);
         }
 
-        // Приветствие при загрузке (после первого клика пользователя)
         document.body.addEventListener('click', function() {
             if (!window.wasGreeted) {
                 speak('Модуль Мерч Икс. Аналитика ритейла и контроль выкладки запущен.');
                 window.wasGreeted = true;
             }
-        }, { once: false });
-                function handleInstall() {
+        }, { once: true });
+
+        function handleInstall() {
             speak('Перехожу к установке рабочей версии. Нажмите кнопку поделиться и выберите на экран домой.');
-            // Перенаправляем прямо в рабочую папку
-            window.location.href = "/merch/index.html"; 
+            setTimeout(() => {
+                window.location.href = "/merch/index.html"; 
+            }, 2000);
         }
     </script>
 </body>
