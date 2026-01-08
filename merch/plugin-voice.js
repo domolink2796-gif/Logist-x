@@ -1,46 +1,22 @@
 (function() {
-    console.log("🎤 Плагин Voice: Приветствие при активации активно");
+    console.log("🎤 Плагин приветствия активен");
 
-    // Функция приветствия
-    function sayWelcome(name) {
-        if (!name) return;
-        const text = `Приветствую, ${name}. Лицензия подтверждена. Система Логист Икс готова к работе.`;
-        
-        // Используем твою функцию speak
-        if (typeof speak === 'function') {
-            speak(text);
-        } else {
-            const m = new SpeechSynthesisUtterance(text);
-            m.lang = 'ru-RU';
-            window.speechSynthesis.speak(m);
-        }
+    // Функция самой озвучки
+    function welcomeTalk(text) {
+        window.speechSynthesis.cancel();
+        const m = new SpeechSynthesisUtterance(text);
+        m.lang = 'ru-RU';
+        m.rate = 0.9; // Чуть медленнее, чтобы звучало солидно
+        window.speechSynthesis.speak(m);
     }
 
-    // Следим за кнопкой активации
-    function watchAuth() {
-        const authBtn = document.querySelector('#auth-screen .btn-blue');
-        const nameInput = document.getElementById('work-name');
-
-        if (authBtn && nameInput) {
-            // Добавляем свое действие на клик
-            authBtn.addEventListener('click', () => {
-                const name = nameInput.value.trim();
-                const key = document.getElementById('lic-key').value.trim();
-                
-                // Если поля заполнены, здороваемся (с небольшой задержкой для эффекта)
-                if (name && key) {
-                    setTimeout(() => sayWelcome(name), 1000);
-                }
-            });
-            console.log("✅ Голос привязан к кнопке активации");
+    // Ждем, пока пользователь кликнет первый раз (браузеры запрещают звук без клика)
+    document.addEventListener('click', function() {
+        if (!window.wasGreeted) {
+            welcomeTalk("Система мерчендайзинга запущена. Удачной смены!");
+            window.wasGreeted = true;
         }
-    }
+    }, { once: true }); // Сработает только один раз за сессию
 
-    // Проверяем наличие кнопки каждые 2 секунды, пока экран авторизации виден
-    const authTimer = setInterval(() => {
-        if (document.getElementById('auth-screen').style.display !== 'none') {
-            watchAuth();
-            clearInterval(authTimer);
-        }
-    }, 1000);
+    console.log("✅ Ожидание первого клика для приветствия...");
 })();
