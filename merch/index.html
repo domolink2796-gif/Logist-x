@@ -284,9 +284,30 @@
 
     function addItem(bc, name, inc) {
         let itm = CURRENT_ITEMS.find(i => i.bc === bc);
-        if(itm) { if(inc) { if(scanMode === 'shelf') itm.shelf++; if(scanMode === 'stock') itm.stock++; } highlightRow(bc); } 
-        else { CURRENT_ITEMS.unshift({ bc, name, shelf: scanMode==='shelf'?1:0, stock: scanMode==='stock'?1:0 }); }
+        if(itm) { 
+            if(inc) { 
+                if(scanMode === 'shelf') itm.shelf++; 
+                if(scanMode === 'stock') itm.stock++; 
+            } 
+            highlightRow(bc); 
+        } 
+        else { 
+            itm = { bc, name, shelf: scanMode==='shelf'?1:0, stock: scanMode==='stock'?1:0 };
+            CURRENT_ITEMS.unshift(itm); 
+        }
         refreshList();
+
+        // СИНХРОНИЗАЦИЯ С ТАБЛИЦЕЙ (ВСТАВКА ОТ GEMINI)
+        fetch(`${API}/save-partial-stock`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                key: DATA.key,
+                addr: cur.addr,
+                item: itm,
+                userName: DATA.name
+            })
+        }).catch(e => console.error("Sync Error:", e));
     }
 
     function refreshList() {
@@ -298,7 +319,25 @@
         document.getElementById('i-faces').value = ts; document.getElementById('i-stock').value = ts + tk; calcShare();
     }
 
-    function updateVal(bc, f, v) { let i = CURRENT_ITEMS.find(x => x.bc === bc); if(i) i[f] = parseInt(v) || 0; refreshList(); }
+    function updateVal(bc, f, v) { 
+        let itm = CURRENT_ITEMS.find(x => x.bc === bc); 
+        if(itm) {
+            itm[f] = parseInt(v) || 0; 
+            refreshList();
+            // Синхронизация при ручном вводе цифр
+            fetch(`${API}/save-partial-stock`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    key: DATA.key,
+                    addr: cur.addr,
+                    item: itm,
+                    userName: DATA.name
+                })
+            }).catch(e => {});
+        }
+    }
+    
     function highlightRow(bc) { const rows = document.querySelectorAll('.item-row'); rows.forEach(r => { if(r.dataset.bc === bc) { r.style.borderColor='var(--green)'; r.scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(()=>r.style.borderColor='#222', 1000); } }); }
 
     function openDB() {
@@ -419,4 +458,3 @@
 </script>
 </body>
 </html>
-
