@@ -485,20 +485,81 @@
         }, 200);
     };
 
-    const originalUpdate = window.updateVal;
+<script>
+// Ждем полной загрузки страницы, чтобы кнопки точно были готовы
+window.addEventListener('load', function() {
+    console.log("🚀 [SYSTEM] Активация связи с сервером...");
+
+    // Функция вывода уведомлений на экран телефона
+    function showStatus(text, color) {
+        let box = document.getElementById('sync-status-popup');
+        if(!box) {
+            box = document.createElement('div');
+            box.id = 'sync-status-popup';
+            box.style = 'position:fixed; bottom:100px; left:50%; transform:translateX(-50%); padding:12px 20px; border-radius:15px; font-size:12px; font-weight:900; z-index:10000; color:#000; transition:0.3s; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.5);';
+            document.body.appendChild(box);
+        }
+        box.innerText = text;
+        box.style.background = color;
+        box.style.display = 'block';
+        box.style.opacity = '1';
+        setTimeout(() => box.style.opacity = '0', 2000);
+    }
+
+    // Главная функция отправки данных на сервер
+    window.syncToGoogle = async function(itm) {
+        if (!window.cur || !window.DATA || !window.DATA.key) return;
+        
+        showStatus("📡 СОХРАНЯЮ В ТАБЛИЦУ...", "#ffffff");
+
+        try {
+            const res = await fetch('https://logist-x-server-production.up.railway.app/save-partial-stock', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    key: window.DATA.key, 
+                    addr: window.cur.addr, 
+                    item: itm, 
+                    userName: window.DATA.name 
+                })
+            });
+            
+            if(res.ok) {
+                showStatus("✅ СОХРАНЕНО", "#00ff00");
+                console.log("✅ Данные ушли на сервер");
+            } else {
+                showStatus("⚠️ ОШИБКА СЕРВЕРА", "#f59e0b");
+            }
+        } catch (e) {
+            showStatus("🚫 НЕТ СВЯЗИ", "#ff3b30");
+        }
+    };
+
+    // Внедряемся в функцию добавления товара
+    const oldAddItem = window.addItem;
+    window.addItem = function(bc, name, inc) {
+        if(oldAddItem) oldAddItem.apply(this, arguments);
+        // Сразу после добавления — отправляем на сервер
+        setTimeout(() => {
+            const itm = (window.CURRENT_ITEMS || []).find(i => i.bc === bc);
+            if (itm) window.syncToGoogle(itm);
+        }, 500);
+    };
+
+    // Внедряемся в функцию изменения цифр вручную
+    const oldUpdateVal = window.updateVal;
     window.updateVal = function(bc, f, v) {
-        if(originalUpdate) originalUpdate.apply(this, arguments);
-        if (window.syncTimeout) clearTimeout(window.syncTimeout);
-        window.syncTimeout = setTimeout(() => {
+        if(oldUpdateVal) oldUpdateVal.apply(this, arguments);
+        // Ждем секунду, пока человек закончит ввод, и отправляем
+        if (window.syncT) clearTimeout(window.syncT);
+        window.syncT = setTimeout(() => {
             const itm = (window.CURRENT_ITEMS || []).find(x => x.bc === bc);
             if (itm) window.syncToGoogle(itm);
-        }, 1000);
+        }, 1500);
     };
     
-    console.log("🚀 [INTERNAL PLUGIN] Успешно внедрен!");
-
-})();
+    console.log("✅ [SYSTEM] Связь настроена!");
+});
 </script>
-
 </body>
 </html>
