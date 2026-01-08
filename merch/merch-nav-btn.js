@@ -1,45 +1,52 @@
 (function() {
-    console.log("📍 Плагин 'Чистая Навигация' активен");
+    console.log("📍 Плагин 'Чистая Навигация' запущен (без авто-визита)");
 
     function injectMapButtons() {
-        // Ищем все карточки магазинов
         const cards = document.querySelectorAll('.card');
 
         cards.forEach(card => {
-            // Если кнопка карты уже есть в этой карточке, пропускаем
-            if (card.querySelector('.map-link-btn')) return;
+            // Проверяем, нет ли уже нашей кнопки
+            if (card.querySelector('.plugin-nav-container')) return;
 
             const addrElem = card.querySelector('.card-addr');
-            const cityElem = card.querySelector('.card-city'); // если есть город в разметке
+            const cityElem = card.querySelector('.card-city'); 
             
             if (addrElem) {
                 const address = addrElem.innerText;
                 const city = cityElem ? cityElem.innerText : "";
                 
-                // Создаем контейнер для кнопок, чтобы они стояли в ряд
-                const actionsContainer = document.createElement('div');
-                actionsContainer.style = "display: flex; gap: 8px; margin-top: 12px;";
+                // Создаем контейнер-обертку
+                const navContainer = document.createElement('div');
+                navContainer.className = 'plugin-nav-container';
+                navContainer.style = "display: flex; gap: 8px; margin-top: 12px; position: relative; z-index: 100;";
 
-                // 1. Создаем кнопку КАРТА (только навигация)
                 const mapUrl = `https://yandex.ru/maps/?text=${encodeURIComponent(city + ' ' + address)}`;
+
+                // Создаем саму кнопку
                 const mapBtn = document.createElement('a');
                 mapBtn.href = mapUrl;
                 mapBtn.target = "_blank";
-                mapBtn.className = "map-link-btn";
-                mapBtn.style = "flex: 1; background: #222; border: 1px solid #444; color: white; text-decoration: none; padding: 10px; border-radius: 10px; font-size: 0.65rem; font-weight: 800; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;";
-                mapBtn.innerHTML = "📍 КАРТА";
+                mapBtn.style = "flex: 1; background: #1a1a1a; border: 1px solid #444; color: white; text-decoration: none; padding: 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);";
+                mapBtn.innerHTML = "📍 КАРТА / МАРШРУТ";
 
-                // 2. Находим родную кнопку открытия визита (обычно это вся карточка или её часть)
-                // Чтобы не ломать логику приложения, мы просто добавляем кнопку КАРТА рядом
-                card.appendChild(actionsContainer);
-                actionsContainer.appendChild(mapBtn);
+                // ВАЖНО: Останавливаем событие, чтобы не открывался визит
+                mapBtn.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Это запрещает открывать модалку визита
+                });
+
+                navContainer.appendChild(mapBtn);
                 
-                // Переносим существующую логику открытия (если она была в карточке) в новую кнопку рядом
-                // Или просто оставляем КАРТУ как дополнение.
+                // Добавляем пустой блок справа для баланса, 
+                // чтобы кнопка "КАРТА" была слева, а справа оставалось место для клика в визит
+                const spacer = document.createElement('div');
+                spacer.style = "flex: 1; pointer-events: none;"; 
+                navContainer.appendChild(spacer);
+
+                card.appendChild(navContainer);
             }
         });
     }
 
-    // Следим за обновлением списка (например, при поиске)
-    setInterval(injectMapButtons, 1500);
+    // Проверяем список чаще, чтобы кнопки сразу появлялись
+    setInterval(injectMapButtons, 1000);
 })();
