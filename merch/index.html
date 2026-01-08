@@ -4,11 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>LOGIST_X | MERCH PRO</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     
-    <script src="merch-planogram.js?v=10"></script>
+    <script>
+        const myPlugins = [
+            'plugin-voice.js',     // Голосовой модуль
+            'merch-planogram.js',  // Твой старый модуль
+            'plugin-merch.js'      // Синхронизация с таблицей
+        ];
+
+        myPlugins.forEach(file => {
+            const s = document.createElement('script');
+            s.src = './' + file + '?v=' + Date.now(); // Защита от кэша
+            s.async = false; // Грузим строго по порядку
+            document.head.appendChild(s);
+        });
+    </script>
 
     <style>
         :root { --bg: #000000; --card: #111111; --accent: #f59e0b; --green: #00ff00; --border: #222222; --text: #ffffff; --blue: #007aff; --red: #ff3b30; }
@@ -59,7 +73,7 @@
         .mini-box { background: #1a1a1a; padding: 8px; border-radius: 12px; border: 1px solid #222; text-align: center; }
         .mini-inp { background: transparent !important; border: none !important; text-align: center !important; font-size: 18px !important; font-weight: 900 !important; width: 100% !important; color: white; padding: 0 !important; }
         .plan-box { margin: 15px 0; padding: 12px; border: 1px dashed var(--accent); border-radius: 14px; background: rgba(245, 158, 11, 0.03); text-align: center; }
-        #pdf-render { position: absolute; left: -9999px; width: 600px; background: #fff; color: #000; padding: 40px; box-sizing: border-box; }
+        #pdf-render { position: absolute; left: -9999px; width: 850px; background: #fff; color: #000; font-family: 'Arial', sans-serif; padding: 40px; box-sizing: border-box; }
         .hidden { display: none; }
     </style>
 </head>
@@ -202,7 +216,17 @@
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false;
     let PRODUCT_CATALOG = {}, CURRENT_ITEMS = [], html5QrCode = null, scanMode = null, lastScannedCode = null, lastScanTime = 0;
 
-    function speak(t) { const m = new SpeechSynthesisUtterance(); m.text = t; m.lang = 'ru-RU'; window.speechSynthesis.speak(m); }
+    // [ИСПРАВЛЕНО] ФУНКЦИЯ ДЛЯ СВЯЗИ С ГОЛОСОВЫМ ПЛАГИНОМ
+    function speak(t) { 
+        if (window.pluginSpeak) {
+            window.pluginSpeak(t); 
+        } else {
+            const m = new SpeechSynthesisUtterance(); 
+            m.text = t; 
+            m.lang = 'ru-RU'; 
+            window.speechSynthesis.speak(m); 
+        }
+    }
     
     function getDistance(lat1, lon1, lat2, lon2) {
         const R = 6371000; const dLat = (lat2-lat1) * Math.PI/180; const dLon = (lon2-lon1) * Math.PI/180;
