@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<link rel="manifest" href="/merch/manifest.json">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MERCH_X | О системе</title>
@@ -205,10 +207,10 @@
                 window.wasGreeted = true;
             }
         }, { once: false });
-
-        function handleInstall() {
-            speak('Нажмите кнопку поделиться и выберите на экран домой для установки приложения');
-            alert('Для установки:\n1. Нажмите кнопку "Поделиться" (квадрат со стрелкой)\n2. Выберите "На экран Домой"');
+                function handleInstall() {
+            speak('Перехожу к установке рабочей версии. Нажмите кнопку поделиться и выберите на экран домой.');
+            // Перенаправляем прямо в рабочую папку
+            window.location.href = "/merch/index.html"; 
         }
     </script>
 </body>
