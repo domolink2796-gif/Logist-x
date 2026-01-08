@@ -2,15 +2,18 @@
   "name": "Logist X Merch",
   "short_name": "Merch X",
   "description": "Система аналитики ритейла и контроля выкладки",
-  "start_url": "/merch/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#010409",
   "theme_color": "#f59e0b",
   "icons": [
     {
-      "src": "/app/icon-1024.png",
+      "src": "https://logist-x.ru/app/icon-1024.png",
       "sizes": "1024x1024",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "scope": "./",
+  "orientation": "portrait"
 }
