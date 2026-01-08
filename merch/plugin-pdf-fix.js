@@ -1,102 +1,113 @@
-(function() {
-    console.log("🛠️ Plugin PDF-Fix: Командная синхронизация + PDF контроль");
+const { google } = require('googleapis'); // ЭТОГО НЕ ХВАТАЛО
 
-    // --- БЛОК 1: СИНХРОНИЗАЦИЯ (Катя + Ваня + Семён) ---
+module.exports = function(app, googleSheets, auth, db) {
+    console.log("📂 Плагин: Интеграция остатков в личные папки клиентов запущен");
 
-    // Загрузка данных всей команды с сервера
-    window.fetchShopStock = async function(addr) { 
-        if(!DATA.key) return; 
-        try { 
-            const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); 
-            if(res.ok) { 
-                const teamData = await res.json(); 
-                if (teamData && teamData.length > 0) {
-                    window.CURRENT_ITEMS = teamData.map(i => ({ 
-                        bc: i.bc, 
-                        name: i.name, 
-                        shelf: parseInt(i.shelf) || 0, 
-                        stock: parseInt(i.stock) || 0 
-                    })); 
-                }
-                if (typeof refreshList === 'function') refreshList(); 
-            } 
-        } catch(e) { console.error("Ошибка загрузки командных данных"); } 
-    };
+    let clientTables = {};
 
-    // Моментальная отправка каждой правки в облако (создает таблицу при первом вводе)
-    const originalUpdateVal = window.updateVal;
-    window.updateVal = function(bc, f, v) {
-        if (originalUpdateVal) originalUpdateVal.apply(this, arguments);
-        const itm = CURRENT_ITEMS.find(x => x.bc === bc);
-        if (itm && window.cur) {
-            fetch(`${API}/save-partial-stock`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    key: DATA.key, 
-                    addr: window.cur.addr, 
-                    item: itm,
-                    userName: DATA.name // Передаем имя, чтобы хозяин видел кто внес
-                })
-            }).catch(e => console.warn("Облако временно недоступно"));
-        }
-    };
+    async function getClientTable(key) {
+        if (clientTables[key]) return clientTables[key];
 
-    // Перехват сканера: создание таблицы при первом "пике"
-    const originalAddItem = window.addItem;
-    window.addItem = function(bc, name, inc) {
-        if (originalAddItem) originalAddItem.apply(this, arguments);
-        const itm = CURRENT_ITEMS.find(i => i.bc === bc);
-        if (itm && window.cur && !window.cur.done) {
-            // Сразу шлем данные на сервер, чтобы создать таблицу в папке
-            fetch(`${API}/save-partial-stock`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    key: DATA.key, 
-                    addr: window.cur.addr, 
-                    item: itm,
-                    userName: DATA.name 
-                })
+        try {
+            const drive = google.drive({ version: 'v3', auth });
+            
+            // 1. Ищем ID папки клиента
+            // ПРОВЕРЬ: Названия таблицы (licenses) и колонки (folder_id) должны быть как в твоей БД
+            const result = await db.query("SELECT folder_id FROM licenses WHERE lic_key = $1", [key]);
+            const folderId = (result.rows && result.rows.length > 0) ? result.rows[0].folder_id : null;
+
+            if (!folderId) {
+                console.log(`⚠️ Предупреждение: Для ключа ${key} не найден folder_id в базе.`);
+            }
+
+            const fileName = `ОСТАТКИ_КОМАНДЫ_${key}`;
+
+            // 2. Ищем файл в папке
+            const query = folderId 
+                ? `'${folderId}' in parents and name = '${fileName}' and trashed = false`
+                : `name = '${fileName}' and trashed = false`;
+
+            const search = await drive.files.list({ q: query, fields: 'files(id)' });
+
+            if (search.data.files && search.data.files.length > 0) {
+                clientTables[key] = search.data.files[0].id;
+                return clientTables[key];
+            }
+
+            // 3. Создаем таблицу, если не нашли
+            const spreadsheet = await googleSheets.spreadsheets.create({
+                resource: {
+                    properties: { title: fileName },
+                    parents: folderId ? [folderId] : []
+                },
+                fields: 'spreadsheetId',
             });
+            const newId = spreadsheet.data.spreadsheetId;
+
+            // 4. Доступ "для всех по ссылке"
+            await drive.permissions.create({
+                fileId: newId,
+                resource: { type: 'anyone', role: 'writer' }
+            });
+
+            // 5. Создаем заголовки
+            await googleSheets.spreadsheets.values.update({
+                spreadsheetId: newId,
+                range: "Sheet1!A1:G1",
+                valueInputOption: "USER_ENTERED",
+                resource: { values: [["Магазин", "Штрихкод", "Товар", "Полка", "Склад", "Дата/Время", "Сотрудник"]] }
+            });
+
+            clientTables[key] = newId;
+            console.log(`✅ Создана новая таблица для ${key}: ${newId}`);
+            return newId;
+        } catch (e) {
+            console.error("❌ Ошибка в getClientTable:", e.message);
+            return null;
         }
-    };
+    }
 
-    // Перехват открытия окна (обновляем данные при входе)
-    const originalOpenModal = window.openModal;
-    window.openModal = function(id) {
-        originalOpenModal.apply(this, arguments);
-        if (window.cur && !window.cur.done) {
-            window.fetchShopStock(window.cur.addr);
+    // Прием данных от мерча
+    app.post('/save-partial-stock', async (req, res) => {
+        const { key, addr, item, userName } = req.body;
+        console.log(`📥 Получен запрос на сохранение от ${userName} (${key})`);
+        
+        const tableId = await getClientTable(key);
+        if (!tableId) return res.status(500).send("Ошибка поиска таблицы");
+
+        try {
+            await googleSheets.spreadsheets.values.append({
+                spreadsheetId: tableId,
+                range: "Sheet1!A:G",
+                valueInputOption: "USER_ENTERED",
+                resource: { values: [[addr, item.bc, item.name, item.shelf, item.stock, new Date().toLocaleString('ru-RU'), userName || 'Сотрудник']] }
+            });
+            console.log(`💾 Данные записаны: ${item.name} (${addr})`);
+            res.sendStatus(200);
+        } catch (e) { 
+            console.error("❌ Ошибка записи в Google:", e.message);
+            res.sendStatus(500); 
         }
-    };
+    });
 
-    // --- БЛОК 2: ФОРМИРОВАНИЕ PDF ---
+    // Выдача данных для команды
+    app.get('/get-shop-stock', async (req, res) => {
+        const { key, addr } = req.query;
+        const tableId = await getClientTable(key);
+        if (!tableId) return res.json([]);
 
-    const originalSaveToQueue = window.saveToQueue;
-    window.saveToQueue = async function() {
-        console.log("📸 Подготовка PDF из командных данных...");
-        
-        let totalShelf = 0;
-        let totalStock = 0;
-        CURRENT_ITEMS.forEach(i => {
-            totalShelf += (parseInt(i.shelf) || 0);
-            totalStock += (parseInt(i.stock) || 0);
-        });
-
-        document.getElementById('p-faces-val').innerText = totalShelf;
-        document.getElementById('p-stock-val').innerText = totalStock;
-        document.getElementById('p-share-big').innerText = document.getElementById('share-val').innerText + "%";
-        
-        const listContainer = document.getElementById('p-items-list');
-        listContainer.innerHTML = CURRENT_ITEMS.map((i, idx) => `
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:2px 0; font-size:11px;">
-                <span>${idx+1}. <b>${i.name}</b></span>
-                <span>П: ${i.shelf} / С: ${i.stock}</span>
-            </div>`).join('');
-
-        return originalSaveToQueue.apply(this, arguments);
-    };
-
-    console.log("✅ Плагин PDF-Fix успешно обновлен: Командный режим активен");
-})();
+        try {
+            const result = await googleSheets.spreadsheets.values.get({
+                spreadsheetId: tableId,
+                range: "Sheet1!A:G",
+            });
+            const rows = result.data.values || [];
+            const filtered = rows.slice(1).filter(r => r[0] === addr);
+            const lastState = {};
+            filtered.forEach(r => {
+                lastState[r[1]] = { bc: r[1], name: r[2], shelf: r[3], stock: r[4] };
+            });
+            res.json(Object.values(lastState));
+        } catch (e) { res.json([]); }
+    });
+};
