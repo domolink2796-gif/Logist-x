@@ -1,41 +1,45 @@
-// Плагин для добавления кнопки "МАРШРУТ" в Merch_X
 (function() {
-    console.log("📍 Плагин Навигации запущен");
+    console.log("📍 Плагин 'Чистая Навигация' активен");
 
-    function injectNavButtons() {
+    function injectMapButtons() {
+        // Ищем все карточки магазинов
         const cards = document.querySelectorAll('.card');
-        
-        cards.forEach((card, index) => {
-            // Проверяем, не добавили ли мы уже кнопку, чтобы не дублировать
-            if (card.querySelector('.plugin-nav-btn')) return;
+
+        cards.forEach(card => {
+            // Если кнопка карты уже есть в этой карточке, пропускаем
+            if (card.querySelector('.map-link-btn')) return;
 
             const addrElem = card.querySelector('.card-addr');
-            const netElem = card.querySelector('.card-net');
+            const cityElem = card.querySelector('.card-city'); // если есть город в разметке
             
             if (addrElem) {
                 const address = addrElem.innerText;
-                const network = netElem ? netElem.innerText : "";
+                const city = cityElem ? cityElem.innerText : "";
                 
-                // Создаем контейнер для кнопок
-                const btnContainer = document.createElement('div');
-                btnContainer.className = 'plugin-nav-btn';
-                btnContainer.style = "display: flex; gap: 8px; margin-top: 12px;";
+                // Создаем контейнер для кнопок, чтобы они стояли в ряд
+                const actionsContainer = document.createElement('div');
+                actionsContainer.style = "display: flex; gap: 8px; margin-top: 12px;";
 
-                const mapUrl = `https://yandex.ru/maps/?text=${encodeURIComponent(address)}`;
+                // 1. Создаем кнопку КАРТА (только навигация)
+                const mapUrl = `https://yandex.ru/maps/?text=${encodeURIComponent(city + ' ' + address)}`;
+                const mapBtn = document.createElement('a');
+                mapBtn.href = mapUrl;
+                mapBtn.target = "_blank";
+                mapBtn.className = "map-link-btn";
+                mapBtn.style = "flex: 1; background: #222; border: 1px solid #444; color: white; text-decoration: none; padding: 10px; border-radius: 10px; font-size: 0.65rem; font-weight: 800; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;";
+                mapBtn.innerHTML = "📍 КАРТА";
 
-                btnContainer.innerHTML = `
-                    <a href="${mapUrl}" target="_blank" style="flex: 1; background: #1a1a1a; border: 1px solid #333; color: white; text-decoration: none; padding: 10px; border-radius: 12px; font-size: 0.65rem; font-weight: 800; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;">
-                        <span>📍</span> КАРТА
-                    </a>
-                    <div style="flex: 2;"></div> 
-                `;
-
-                // Вставляем кнопку в карточку
-                card.appendChild(btnContainer);
+                // 2. Находим родную кнопку открытия визита (обычно это вся карточка или её часть)
+                // Чтобы не ломать логику приложения, мы просто добавляем кнопку КАРТА рядом
+                card.appendChild(actionsContainer);
+                actionsContainer.appendChild(mapBtn);
+                
+                // Переносим существующую логику открытия (если она была в карточке) в новую кнопку рядом
+                // Или просто оставляем КАРТУ как дополнение.
             }
         });
     }
 
-    // Запускаем проверку каждые 2 секунды, чтобы кнопки появлялись при поиске или обновлении списка
-    setInterval(injectNavButtons, 2000);
+    // Следим за обновлением списка (например, при поиске)
+    setInterval(injectMapButtons, 1500);
 })();
