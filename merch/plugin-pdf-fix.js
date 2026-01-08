@@ -1,113 +1,64 @@
-const { google } = require('googleapis'); // ЭТОГО НЕ ХВАТАЛО
+(function() {
+    console.log("🚀 Клиентский плагин: Синхронизация папок ВКЛЮЧЕНА");
 
-module.exports = function(app, googleSheets, auth, db) {
-    console.log("📂 Плагин: Интеграция остатков в личные папки клиентов запущен");
+    // 1. Функция получения данных (чтобы Ваня видел данные Кати)
+    window.fetchShopStock = async function(addr) { 
+        if(!DATA.key || !addr) return; 
+        try { 
+            const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); 
+            if(res.ok) { 
+                const teamData = await res.json(); 
+                if (teamData && teamData.length > 0) {
+                    window.CURRENT_ITEMS = teamData.map(i => ({ 
+                        bc: i.bc, name: i.name, shelf: parseInt(i.shelf) || 0, stock: parseInt(i.stock) || 0 
+                    })); 
+                }
+                if (typeof refreshList === 'function') refreshList(); 
+            } 
+        } catch(e) { console.error("Ошибка загрузки данных команды"); } 
+    };
 
-    let clientTables = {};
-
-    async function getClientTable(key) {
-        if (clientTables[key]) return clientTables[key];
-
-        try {
-            const drive = google.drive({ version: 'v3', auth });
-            
-            // 1. Ищем ID папки клиента
-            // ПРОВЕРЬ: Названия таблицы (licenses) и колонки (folder_id) должны быть как в твоей БД
-            const result = await db.query("SELECT folder_id FROM licenses WHERE lic_key = $1", [key]);
-            const folderId = (result.rows && result.rows.length > 0) ? result.rows[0].folder_id : null;
-
-            if (!folderId) {
-                console.log(`⚠️ Предупреждение: Для ключа ${key} не найден folder_id в базе.`);
-            }
-
-            const fileName = `ОСТАТКИ_КОМАНДЫ_${key}`;
-
-            // 2. Ищем файл в папке
-            const query = folderId 
-                ? `'${folderId}' in parents and name = '${fileName}' and trashed = false`
-                : `name = '${fileName}' and trashed = false`;
-
-            const search = await drive.files.list({ q: query, fields: 'files(id)' });
-
-            if (search.data.files && search.data.files.length > 0) {
-                clientTables[key] = search.data.files[0].id;
-                return clientTables[key];
-            }
-
-            // 3. Создаем таблицу, если не нашли
-            const spreadsheet = await googleSheets.spreadsheets.create({
-                resource: {
-                    properties: { title: fileName },
-                    parents: folderId ? [folderId] : []
-                },
-                fields: 'spreadsheetId',
-            });
-            const newId = spreadsheet.data.spreadsheetId;
-
-            // 4. Доступ "для всех по ссылке"
-            await drive.permissions.create({
-                fileId: newId,
-                resource: { type: 'anyone', role: 'writer' }
-            });
-
-            // 5. Создаем заголовки
-            await googleSheets.spreadsheets.values.update({
-                spreadsheetId: newId,
-                range: "Sheet1!A1:G1",
-                valueInputOption: "USER_ENTERED",
-                resource: { values: [["Магазин", "Штрихкод", "Товар", "Полка", "Склад", "Дата/Время", "Сотрудник"]] }
-            });
-
-            clientTables[key] = newId;
-            console.log(`✅ Создана новая таблица для ${key}: ${newId}`);
-            return newId;
-        } catch (e) {
-            console.error("❌ Ошибка в getClientTable:", e.message);
-            return null;
-        }
-    }
-
-    // Прием данных от мерча
-    app.post('/save-partial-stock', async (req, res) => {
-        const { key, addr, item, userName } = req.body;
-        console.log(`📥 Получен запрос на сохранение от ${userName} (${key})`);
+    // 2. Функция отправки (создает таблицу в папке ПРИ ПЕРВОМ ИЗМЕНЕНИИ)
+    const originalUpdateVal = window.updateVal;
+    window.updateVal = function(bc, f, v) {
+        if (originalUpdateVal) originalUpdateVal.apply(this, arguments);
         
-        const tableId = await getClientTable(key);
-        if (!tableId) return res.status(500).send("Ошибка поиска таблицы");
-
-        try {
-            await googleSheets.spreadsheets.values.append({
-                spreadsheetId: tableId,
-                range: "Sheet1!A:G",
-                valueInputOption: "USER_ENTERED",
-                resource: { values: [[addr, item.bc, item.name, item.shelf, item.stock, new Date().toLocaleString('ru-RU'), userName || 'Сотрудник']] }
-            });
-            console.log(`💾 Данные записаны: ${item.name} (${addr})`);
-            res.sendStatus(200);
-        } catch (e) { 
-            console.error("❌ Ошибка записи в Google:", e.message);
-            res.sendStatus(500); 
+        const itm = CURRENT_ITEMS.find(x => x.bc === bc);
+        if (itm && window.cur && !window.cur.done) {
+            // Отправляем на сервер сразу, чтобы он создал/обновил таблицу в папке
+            fetch(`${API}/save-partial-stock`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    key: DATA.key, 
+                    addr: window.cur.addr, 
+                    item: itm, 
+                    userName: DATA.name 
+                })
+            }).then(() => console.log("✅ Данные пика ушли на сервер"))
+              .catch(e => console.error("📡 Ошибка отправки:", e));
         }
-    });
+    };
 
-    // Выдача данных для команды
-    app.get('/get-shop-stock', async (req, res) => {
-        const { key, addr } = req.query;
-        const tableId = await getClientTable(key);
-        if (!tableId) return res.json([]);
+    // 3. Перехват сканера (чтобы таблица создалась сразу как только пикнул)
+    const originalAddItem = window.addItem;
+    window.addItem = function(bc, name, inc) {
+        if (originalAddItem) originalAddItem.apply(this, arguments);
+        const itm = CURRENT_ITEMS.find(i => i.bc === bc);
+        if (itm) {
+            // Принудительно вызываем обновление, чтобы сработал fetch к серверу
+            window.updateVal(bc, 'shelf', itm.shelf); 
+        }
+    };
 
-        try {
-            const result = await googleSheets.spreadsheets.values.get({
-                spreadsheetId: tableId,
-                range: "Sheet1!A:G",
-            });
-            const rows = result.data.values || [];
-            const filtered = rows.slice(1).filter(r => r[0] === addr);
-            const lastState = {};
-            filtered.forEach(r => {
-                lastState[r[1]] = { bc: r[1], name: r[2], shelf: r[3], stock: r[4] };
-            });
-            res.json(Object.values(lastState));
-        } catch (e) { res.json([]); }
-    });
-};
+    // 4. Загрузка данных при входе в магазин
+    const originalOpenModal = window.openModal;
+    window.openModal = function(id) {
+        originalOpenModal.apply(this, arguments);
+        if (window.cur && !window.cur.done) {
+            window.fetchShopStock(window.cur.addr);
+        }
+    };
+
+    console.log("✅ Клиентский плагин полностью готов");
+})();
