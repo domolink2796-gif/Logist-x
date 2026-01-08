@@ -23,7 +23,7 @@
         } catch(e) { console.error("Ошибка загрузки командных данных"); } 
     };
 
-    // Моментальная отправка каждой правки в облако
+    // Моментальная отправка каждой правки в облако (создает таблицу при первом вводе)
     const originalUpdateVal = window.updateVal;
     window.updateVal = function(bc, f, v) {
         if (originalUpdateVal) originalUpdateVal.apply(this, arguments);
@@ -32,8 +32,33 @@
             fetch(`${API}/save-partial-stock`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ key: DATA.key, addr: window.cur.addr, item: itm })
+                body: JSON.stringify({ 
+                    key: DATA.key, 
+                    addr: window.cur.addr, 
+                    item: itm,
+                    userName: DATA.name // Передаем имя, чтобы хозяин видел кто внес
+                })
             }).catch(e => console.warn("Облако временно недоступно"));
+        }
+    };
+
+    // Перехват сканера: создание таблицы при первом "пике"
+    const originalAddItem = window.addItem;
+    window.addItem = function(bc, name, inc) {
+        if (originalAddItem) originalAddItem.apply(this, arguments);
+        const itm = CURRENT_ITEMS.find(i => i.bc === bc);
+        if (itm && window.cur && !window.cur.done) {
+            // Сразу шлем данные на сервер, чтобы создать таблицу в папке
+            fetch(`${API}/save-partial-stock`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    key: DATA.key, 
+                    addr: window.cur.addr, 
+                    item: itm,
+                    userName: DATA.name 
+                })
+            });
         }
     };
 
@@ -52,7 +77,6 @@
     window.saveToQueue = async function() {
         console.log("📸 Подготовка PDF из командных данных...");
         
-        // Принудительно пересчитываем суммы перед снимком
         let totalShelf = 0;
         let totalStock = 0;
         CURRENT_ITEMS.forEach(i => {
@@ -60,12 +84,10 @@
             totalStock += (parseInt(i.stock) || 0);
         });
 
-        // Заполняем шаблон PDF данными из CURRENT_ITEMS (теперь там точно не 0)
         document.getElementById('p-faces-val').innerText = totalShelf;
         document.getElementById('p-stock-val').innerText = totalStock;
         document.getElementById('p-share-big').innerText = document.getElementById('share-val').innerText + "%";
         
-        // Список товаров для PDF
         const listContainer = document.getElementById('p-items-list');
         listContainer.innerHTML = CURRENT_ITEMS.map((i, idx) => `
             <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:2px 0; font-size:11px;">
@@ -73,7 +95,6 @@
                 <span>П: ${i.shelf} / С: ${i.stock}</span>
             </div>`).join('');
 
-        // Вызываем основной процесс генерации PDF и отправки
         return originalSaveToQueue.apply(this, arguments);
     };
 
