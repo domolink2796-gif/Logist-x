@@ -1,57 +1,59 @@
 (function() {
-    console.log("📄 Плагин PDF-Fix: Настройка красивого отчета запущена");
+    console.log("📦 Плагин Stock-Fix: Режим восстановления данных активен");
 
-    // Перехватываем функцию сохранения, чтобы сначала заполнить PDF-форму
-    const originalSave = window.saveToQueue;
+    // Перехватываем открытие модалки, чтобы восстановить данные при повторном входе
+    const originalOpenModal = window.openModal;
 
-    window.saveToQueue = async function() {
-        console.log("📝 Заполнение данных в PDF-шаблон...");
+    window.openModal = async function(id) {
+        // Сначала вызываем родную функцию, чтобы открылись окна
+        originalOpenModal.apply(this, arguments);
 
-        // 1. Проверяем фотки (это у тебя уже есть, но продублируем для надежности)
-        if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужны все 3 фото для отчета!");
+        // Если визит уже был начат (повторный вход)
+        if (cur.start && !cur.done) {
+            console.log("🔄 Повторный вход в точку. Восстанавливаю насканированные данные...");
+            
+            // Если массив пуст, пробуем достать данные из архива IndexedDB
+            if (window.db && (!window.CURRENT_ITEMS || window.CURRENT_ITEMS.length === 0)) {
+                const tx = db.transaction("archive", "readonly");
+                const store = tx.objectStore("archive");
+                const request = store.get(cur.addr);
 
-        const now = Date.now();
-        const startT = new Date(cur.start).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        const endT = new Date(now).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        let dur = Math.round((now - cur.start) / 60000); if(dur < 1) dur = 1;
-
-        // 2. ВПИСЫВАЕМ ДАННЫЕ В PDF-RENDER (ТО, ЧЕГО НЕ ХВАТАЛО)
-        document.getElementById('p-net-addr').innerText = `${cur.net} | ${cur.addr}`;
-        document.getElementById('p-worker-val').innerText = DATA.name;
-        document.getElementById('p-date-full').innerText = new Date().toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        
-        document.getElementById('p-time-start').innerText = startT;
-        document.getElementById('p-time-end').innerText = endT;
-        document.getElementById('p-duration').innerText = dur;
-
-        // Цифры
-        document.getElementById('p-stock-val').innerText = document.getElementById('i-stock').value;
-        document.getElementById('p-faces-val').innerText = document.getElementById('i-faces').value;
-        document.getElementById('p-share-big').innerText = document.getElementById('share-val').innerText + "%";
-        document.getElementById('p-our-price-val').innerText = document.getElementById('i-our-price').value + " ₽";
-        document.getElementById('p-comp-price-val').innerText = document.getElementById('i-comp-price').value + " ₽";
-        document.getElementById('p-exp-date-val').innerText = document.getElementById('i-exp-date').value || "—";
-
-        // Список товаров (делаем красиво с проверкой)
-        const listContainer = document.getElementById('p-items-list');
-        if (window.CURRENT_ITEMS && CURRENT_ITEMS.length > 0) {
-            listContainer.innerHTML = CURRENT_ITEMS.map((i, idx) => 
-                `<div style="border-bottom:1px solid #eee; padding:2px 0;">${idx+1}. <b>${i.name}</b> <span style="float:right;">П: ${i.shelf} / С: ${i.stock}</span></div>`
-            ).join('');
-        } else {
-            listContainer.innerHTML = "<i style='color:red;'>Товары не были отсканированы</i>";
+                request.onsuccess = (e) => {
+                    const savedData = e.target.result;
+                    if (savedData && savedData.items) {
+                        window.CURRENT_ITEMS = savedData.items;
+                        console.log("✅ Данные восстановлены из архива:", window.CURRENT_ITEMS);
+                        if (typeof refreshList === 'function') refreshList();
+                    } else {
+                        // Если в архиве нет, тянем с сервера последние сохраненные
+                        fetchShopStock(cur.addr);
+                    }
+                };
+            }
         }
-
-        // Фотографии в PDF
-        document.getElementById('p-i1').src = IMGS.pre;
-        document.getElementById('p-i2').src = IMGS.post;
-        document.getElementById('p-i3').src = IMGS.price;
-
-        console.log("✅ PDF-шаблон готов. Запускаю стандартное сохранение...");
-
-        // Теперь вызываем родную функцию, которая сделает скриншот этого блока
-        return originalSave.apply(this, arguments);
     };
 
-    console.log("✅ Плагин PDF-Fix успешно перехватил управление");
+    // Оставляем исправление функции загрузки с сервера (чтобы не было нулей)
+    const originalFetch = window.fetchShopStock;
+    window.fetchShopStock = async function(addr) {
+        if(!DATA.key) return;
+        try {
+            const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`);
+            if(res.ok) {
+                const prev = await res.json();
+                // ВАЖНО: берем реальные цифры из базы сервера
+                window.CURRENT_ITEMS = prev.map(i => ({
+                    bc: i.bc,
+                    name: i.name,
+                    shelf: parseInt(i.shelf) || 0,
+                    stock: parseInt(i.stock) || 0
+                }));
+                if (typeof refreshList === 'function') refreshList();
+            }
+        } catch(e) {
+            console.error("Ошибка Stock-Fix:", e);
+        }
+    };
+
+    console.log("✅ Плагин Stock-Fix: Теперь данные сохраняются при повторном входе.");
 })();
