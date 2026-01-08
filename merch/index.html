@@ -174,7 +174,7 @@
     </div>
 </div>
 
-<div id="pdf-render" style="position: absolute; left: -9999px; width: 850px; background: #fff; color: #000; font-family: 'Arial', sans-serif; padding: 40px; box-sizing: border-box;">
+<div id="pdf-render">
     <div style="margin-bottom: 25px;">
         <div id="p-net-addr" style="font-size: 32px; font-weight: 900; text-transform: uppercase; line-height: 1.1;"></div>
         <div style="font-size: 16px; margin-top: 10px; color: #333;">Сотрудник: <b id="p-worker-val" style="color:#000;"></b></div>
@@ -214,6 +214,10 @@
     const API = 'https://logist-x-server-production.up.railway.app';
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false;
     let PRODUCT_CATALOG = {}, CURRENT_ITEMS = [], html5QrCode = null, scanMode = null, lastScannedCode = null, lastScanTime = 0;
+
+    // Сделаем DATA и cur глобально доступными для модулей синхронизации
+    window.GLOBAL_DATA = DATA;
+    window.GLOBAL_CUR = null;
 
     function speak(t) { 
         if (window.pluginSpeak) { window.pluginSpeak(t); } 
@@ -301,6 +305,7 @@
         if(itm) { if(inc) { if(scanMode === 'shelf') itm.shelf++; if(scanMode === 'stock') itm.stock++; } highlightRow(bc); } 
         else { CURRENT_ITEMS.unshift({ bc, name, shelf: scanMode==='shelf'?1:0, stock: scanMode==='stock'?1:0 }); }
         refreshList();
+        // Прямой вызов синхронизации
         if (typeof window.syncToGoogle === 'function') {
             let syncItm = CURRENT_ITEMS.find(i => i.bc === bc);
             if(syncItm) window.syncToGoogle(syncItm);
@@ -331,7 +336,7 @@
     function highlightRow(bc) { const rows = document.querySelectorAll('.item-row'); rows.forEach(r => { if(r.dataset.bc === bc) { r.style.borderColor='var(--green)'; r.scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(()=>r.style.borderColor='#222', 1000); } }); }
 
     function openDB() {
-        const req = indexedDB.open("MerchX_Final_Sync", 7);
+        const req = indexedDB.open("MerchX_Final_Sync", 9); // Повысил версию для сброса кеша IDB
         req.onsuccess = (e) => { db = e.target.result; updateUI(); setInterval(sync, 8000); };
         req.onupgradeneeded = (e) => { const d = e.target.result; if(!d.objectStoreNames.contains("reports")) d.createObjectStore("reports", {keyPath:"id", autoIncrement:true}); if(!d.objectStoreNames.contains("archive")) d.createObjectStore("archive", {keyPath:"shop_addr"}); };
     }
@@ -365,6 +370,7 @@
 
     function openModal(id) {
         cur = DATA.shops.find(x => x.id === id); 
+        window.GLOBAL_CUR = cur; // Делаем текущий магазин видимым для синхронизатора
         document.getElementById('m-net').innerText = cur.net; document.getElementById('task-modal').style.display = 'flex';
         if (typeof checkPlanogram === 'function') checkPlanogram(cur.addr);
         if(cur.done) {
@@ -448,7 +454,7 @@
 </script>
 
 <script>
-// --- МОДУЛЬ СИНХРОНИЗАЦИИ ---
+// --- УЛУЧШЕННЫЙ МОДУЛЬ СИНХРОНИЗАЦИИ ---
 (function() {
     function showStatus(text, color) {
         let box = document.getElementById('sync-status-popup');
@@ -463,17 +469,34 @@
     }
 
     window.syncToGoogle = async function(itm) {
-        if (!window.cur || !window.DATA || !window.DATA.key) return;
+        // Теперь мы берем данные из window.GLOBAL_... которые обновляются в основном коде
+        const key = window.GLOBAL_DATA ? window.GLOBAL_DATA.key : null;
+        const addr = window.GLOBAL_CUR ? window.GLOBAL_CUR.addr : null;
+        const worker = window.GLOBAL_DATA ? window.GLOBAL_DATA.name : "Unknown";
+
+        if (!key || !addr) {
+            console.warn("Sync: No key or address found", {key, addr});
+            return;
+        }
+
         showStatus("📡 СОХРАНЯЮ...", "#ffffff");
         try {
             const res = await fetch('https://logist-x-server-production.up.railway.app/save-partial-stock', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ key: window.DATA.key, addr: window.cur.addr, item: itm, userName: window.DATA.name })
+                body: JSON.stringify({ key: key, addr: addr, item: itm, userName: worker })
             });
-            if(res.ok) showStatus("✅ СОХРАНЕНО", "#00ff00");
-            else showStatus("⚠️ ОШИБКА СЕРВЕРА", "#f59e0b");
-        } catch (e) { showStatus("🚫 НЕТ СВЯЗИ", "#ff3b30"); }
+            if(res.ok) {
+                showStatus("✅ СОХРАНЕНО", "#00ff00");
+            } else {
+                const errText = await res.text();
+                console.error("Server error:", errText);
+                showStatus("⚠️ ОШИБКА СЕРВЕРА", "#f59e0b");
+            }
+        } catch (e) { 
+            console.error("Sync error:", e);
+            showStatus("🚫 НЕТ СВЯЗИ", "#ff3b30"); 
+        }
     };
 })();
 </script>
