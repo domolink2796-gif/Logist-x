@@ -501,17 +501,9 @@
     const originalAddItem = window.addItem;
     window.addItem = function(bc, name, inc) {
         if(originalAddItem) originalAddItem.apply(this, arguments);
-        setTimeout(() => {
-            const itm = (window.CURRENT_ITEMS || []).find(i => i.bc === bc);
-            if (itm) window.syncToGoogle(itm);
-        }, 200);
-    };
-
-<script>
 // Ждем полной загрузки страницы, чтобы кнопки точно были готовы
 window.addEventListener('load', function() {
     console.log("🚀 [SYSTEM] Активация связи с сервером...");
-
     // Функция вывода уведомлений на экран телефона
     function showStatus(text, color) {
         let box = document.getElementById('sync-status-popup');
