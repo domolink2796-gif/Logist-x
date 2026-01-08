@@ -10,16 +10,17 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     
     <script>
+        // Мы убрали 'plugin-merch.js' отсюда, так как вставили его код прямо в конец файла
         const myPlugins = [
-            'plugin-voice.js',     // Голосовой модуль
-            'merch-planogram.js',  // Твой старый модуль
-            'plugin-merch.js'      // Синхронизация с таблицей
+            'plugin-voice.js',     
+            'merch-planogram.js',  
+            'plugin-pdf-fix.js'
         ];
 
         myPlugins.forEach(file => {
             const s = document.createElement('script');
-            s.src = './' + file + '?v=' + Date.now(); // Защита от кэша
-            s.async = false; // Грузим строго по порядку
+            s.src = './' + file + '?v=' + Date.now(); 
+            s.async = false; 
             document.head.appendChild(s);
         });
     </script>
@@ -216,7 +217,6 @@
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false;
     let PRODUCT_CATALOG = {}, CURRENT_ITEMS = [], html5QrCode = null, scanMode = null, lastScannedCode = null, lastScanTime = 0;
 
-    // [ИСПРАВЛЕНО] ФУНКЦИЯ ДЛЯ СВЯЗИ С ГОЛОСОВЫМ ПЛАГИНОМ
     function speak(t) { 
         if (window.pluginSpeak) {
             window.pluginSpeak(t); 
@@ -235,7 +235,7 @@
     }
 
     async function syncCatalog() { if(!DATA.key) return; try { const res = await fetch(`${API}/get-catalog?key=${DATA.key}`); if(res.ok) PRODUCT_CATALOG = await res.json(); } catch(e) {} }
-    async function fetchShopStock(addr) { if(!DATA.key) return; try { const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); if(res.ok) { const prev = await res.json(); CURRENT_ITEMS = prev.map(i => ({ bc: i.bc, name: i.name, shelf: 0, stock: 0 })); refreshList(); } } catch(e) {} }
+    async function fetchShopStock(addr) { if(!DATA.key) return; try { const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); if(res.ok) { const prev = await res.json(); CURRENT_ITEMS = prev.map(i => ({ bc: i.bc, name: i.name, shelf: i.shelf || 0, stock: i.stock || 0 })); refreshList(); } } catch(e) {} }
 
     function calcShare() {
         const mine = parseFloat(document.getElementById('i-faces').value) || 0;
@@ -343,7 +343,6 @@
         cur = DATA.shops.find(x => x.id === id); 
         document.getElementById('m-net').innerText = cur.net; document.getElementById('task-modal').style.display = 'flex';
         
-        // ВЫЗОВ ИЗ ПЛАГИНА
         if (typeof checkPlanogram === 'function') checkPlanogram(cur.addr);
 
         if(cur.done) {
@@ -429,5 +428,77 @@
     function clearData() { if(confirm("Удалить всё?")) { localStorage.clear(); indexedDB.deleteDatabase("MerchX_Final_Sync"); location.reload(); } }
     function startNewVisit() { if(confirm("Начать заново?")) { cur.done = false; cur.start = null; IMGS = { pre:null, post:null, price:null }; CURRENT_ITEMS = []; refreshList(); document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('ok')); localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); render(); openModal(cur.id); } }
 </script>
+
+<script>
+(function() {
+    console.log("⏳ [INTERNAL PLUGIN] Запуск модуля синхронизации...");
+
+    function showStatus(text, color) {
+        let box = document.getElementById('sync-status-popup');
+        if(!box) {
+            box = document.createElement('div');
+            box.id = 'sync-status-popup';
+            box.style = 'position:fixed; bottom:80px; left:50%; transform:translateX(-50%); padding:12px 20px; border-radius:15px; font-size:12px; font-weight:900; z-index:10000; color:#000; transition:0.3s; pointer-events:none; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.5);';
+            document.body.appendChild(box);
+        }
+        box.innerText = text;
+        box.style.background = color;
+        box.style.opacity = '1';
+        setTimeout(() => box.style.opacity = '0', 2500);
+    }
+
+    window.syncToGoogle = async function(itm) {
+        if (!window.cur || !window.DATA || !window.DATA.key) return;
+        
+        showStatus("📡 СОХРАНЯЮ...", "#ffffff");
+
+        try {
+            const res = await fetch(`${window.API}/save-partial-stock`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    key: window.DATA.key, 
+                    addr: window.cur.addr, 
+                    item: itm, 
+                    userName: window.DATA.name 
+                })
+            });
+            
+            if(res.ok) {
+                showStatus("✅ ТАБЛИЦА ОБНОВЛЕНА", "#00ff00");
+            } else {
+                showStatus("⚠️ ОШИБКА СЕРВЕРА", "#f59e0b");
+            }
+        } catch (e) {
+            console.error(e);
+            showStatus("🚫 НЕТ СЕТИ", "#ff3b30");
+        }
+    };
+
+    // Внедряемся в функцииaddItem и updateVal
+    const originalAddItem = window.addItem;
+    window.addItem = function(bc, name, inc) {
+        if(originalAddItem) originalAddItem.apply(this, arguments);
+        setTimeout(() => {
+            const itm = (window.CURRENT_ITEMS || []).find(i => i.bc === bc);
+            if (itm) window.syncToGoogle(itm);
+        }, 200);
+    };
+
+    const originalUpdate = window.updateVal;
+    window.updateVal = function(bc, f, v) {
+        if(originalUpdate) originalUpdate.apply(this, arguments);
+        if (window.syncTimeout) clearTimeout(window.syncTimeout);
+        window.syncTimeout = setTimeout(() => {
+            const itm = (window.CURRENT_ITEMS || []).find(x => x.bc === bc);
+            if (itm) window.syncToGoogle(itm);
+        }, 1000);
+    };
+    
+    console.log("🚀 [INTERNAL PLUGIN] Успешно внедрен!");
+
+})();
+</script>
+
 </body>
 </html>
