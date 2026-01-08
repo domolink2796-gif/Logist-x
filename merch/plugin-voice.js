@@ -1,63 +1,46 @@
 (function() {
-    console.log("🎤 Плагин Voice: Проверка связи...");
+    console.log("🎤 Плагин Voice: Приветствие при активации активно");
 
-    // Функция, которая ищет поле поиска и вешает на него микрофон
-    function injectVoice() {
-        // Ищем поле поиска (в твоем мерче это обычно 'shop-search' или 'search-input')
-        const searchInput = document.getElementById('shop-search') || document.querySelector('input[placeholder*="Поиск"]');
+    // Функция приветствия
+    function sayWelcome(name) {
+        if (!name) return;
+        const text = `Приветствую, ${name}. Лицензия подтверждена. Система Логист Икс готова к работе.`;
         
-        if (searchInput && !document.getElementById('voice-btn')) {
-            console.log("🎤 Поле найдено! Добавляю кнопку...");
-            
-            const micBtn = document.createElement('button');
-            micBtn.id = 'voice-btn';
-            micBtn.innerHTML = '🎤';
-            micBtn.style = "margin-left: -35px; background: none; border: none; font-size: 18px; cursor: pointer; position: relative; z-index: 10;";
-            
-            // Вставляем кнопку сразу после поля поиска
-            searchInput.after(micBtn);
-
-            micBtn.onclick = (e) => {
-                e.preventDefault();
-                const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                
-                if (!Recognition) {
-                    alert("Голосовой ввод не поддерживается в этом браузере");
-                    return;
-                }
-
-                const rec = new Recognition();
-                rec.lang = 'ru-RU';
-                
-                micBtn.style.filter = "drop-shadow(0 0 5px red)"; // Подсветка при записи
-
-                rec.onresult = (event) => {
-                    const text = event.results[0][0].transcript;
-                    searchInput.value = text;
-                    // Вызываем событие ввода, чтобы список магазинов сразу отфильтровался
-                    searchInput.dispatchEvent(new Event('input'));
-                    micBtn.style.filter = "";
-                };
-
-                rec.onerror = () => {
-                    micBtn.style.filter = "";
-                    console.log("Ошибка записи");
-                };
-
-                rec.onend = () => {
-                    micBtn.style.filter = "";
-                };
-
-                rec.start();
-            };
+        // Используем твою функцию speak
+        if (typeof speak === 'function') {
+            speak(text);
+        } else {
+            const m = new SpeechSynthesisUtterance(text);
+            m.lang = 'ru-RU';
+            window.speechSynthesis.speak(m);
         }
     }
 
-    // Запускаем проверку каждые 2 секунды (на случай, если список магазинов еще грузится)
-    const checkExist = setInterval(() => {
-        injectVoice();
-    }, 2000);
+    // Следим за кнопкой активации
+    function watchAuth() {
+        const authBtn = document.querySelector('#auth-screen .btn-blue');
+        const nameInput = document.getElementById('work-name');
 
-    // Остановим проверку через 20 секунд, чтобы не грузить телефон
-    setTimeout(() => clearInterval(checkExist), 20000);
+        if (authBtn && nameInput) {
+            // Добавляем свое действие на клик
+            authBtn.addEventListener('click', () => {
+                const name = nameInput.value.trim();
+                const key = document.getElementById('lic-key').value.trim();
+                
+                // Если поля заполнены, здороваемся (с небольшой задержкой для эффекта)
+                if (name && key) {
+                    setTimeout(() => sayWelcome(name), 1000);
+                }
+            });
+            console.log("✅ Голос привязан к кнопке активации");
+        }
+    }
+
+    // Проверяем наличие кнопки каждые 2 секунды, пока экран авторизации виден
+    const authTimer = setInterval(() => {
+        if (document.getElementById('auth-screen').style.display !== 'none') {
+            watchAuth();
+            clearInterval(authTimer);
+        }
+    }, 1000);
 })();
