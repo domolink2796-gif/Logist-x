@@ -10,13 +10,11 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     
     <script>
-        // Мы убрали 'plugin-merch.js' отсюда, так как вставили его код прямо в конец файла
         const myPlugins = [
             'plugin-voice.js',     
             'merch-planogram.js',  
             'plugin-pdf-fix.js'
         ];
-
         myPlugins.forEach(file => {
             const s = document.createElement('script');
             s.src = './' + file + '?v=' + Date.now(); 
@@ -153,7 +151,6 @@
                 <div style="text-align:center;"><span class="f-label">Доля %</span><div style="color:var(--accent); font-weight:900; font-size:1.4rem; margin-top:8px;"><span id="share-val">0</span>%</div></div>
             </div>
             <span class="f-label">Срок годности</span><input type="date" id="i-exp-date">
-            <span class="f-label">Фотоотчет (обязательно 3 шт)</span>
             <div class="photo-grid">
                 <label class="cam-btn" id="l-p1" for="c-p1"><i>📸</i><span>ДО</span></label>
                 <input type="file" id="c-p1" accept="image/*" capture="camera" class="hidden" onchange="cam(this, 'pre')">
@@ -218,14 +215,8 @@
     let PRODUCT_CATALOG = {}, CURRENT_ITEMS = [], html5QrCode = null, scanMode = null, lastScannedCode = null, lastScanTime = 0;
 
     function speak(t) { 
-        if (window.pluginSpeak) {
-            window.pluginSpeak(t); 
-        } else {
-            const m = new SpeechSynthesisUtterance(); 
-            m.text = t; 
-            m.lang = 'ru-RU'; 
-            window.speechSynthesis.speak(m); 
-        }
+        if (window.pluginSpeak) { window.pluginSpeak(t); } 
+        else { const m = new SpeechSynthesisUtterance(); m.text = t; m.lang = 'ru-RU'; window.speechSynthesis.speak(m); }
     }
     
     function getDistance(lat1, lon1, lat2, lon2) {
@@ -235,29 +226,18 @@
     }
 
     async function syncCatalog() { if(!DATA.key) return; try { const res = await fetch(`${API}/get-catalog?key=${DATA.key}`); if(res.ok) PRODUCT_CATALOG = await res.json(); } catch(e) {} }
+    
     async function fetchShopStock(addr) {
-    if(!DATA.key) return;
-    try {
-        // Запрашиваем данные у сервера по адресу магазина
-        const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`);
-        if(res.ok) {
-            const prev = await res.json();
-            // Превращаем данные из таблицы в список товаров для телефона
-            CURRENT_ITEMS = prev.map(i => ({ 
-                bc: i.bc, 
-                name: i.name, 
-                shelf: parseInt(i.shelf) || 0, 
-                stock: parseInt(i.stock) || 0 
-            }));
-            // Обновляем список на экране
-            refreshList();
-            console.log("✅ Остатки загружены из Google Таблицы");
-        }
-    } catch(e) {
-        console.error("❌ Ошибка связи с таблицей:", e);
+        if(!DATA.key) return;
+        try {
+            const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`);
+            if(res.ok) {
+                const prev = await res.json();
+                CURRENT_ITEMS = prev.map(i => ({ bc: i.bc, name: i.name, shelf: parseInt(i.shelf) || 0, stock: parseInt(i.stock) || 0 }));
+                refreshList();
+            }
+        } catch(e) { console.error("❌ Ошибка связи с таблицей:", e); }
     }
-}
-
 
     function calcShare() {
         const mine = parseFloat(document.getElementById('i-faces').value) || 0;
@@ -269,7 +249,6 @@
         const btn = document.getElementById('begin-btn'); const warn = document.getElementById('gps-warn-box');
         btn.innerText = "ПРОВЕРКА GPS..."; btn.disabled = true; warn.style.display = 'none';
         speak(`Проверяю адрес.`);
-
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const myLat = pos.coords.latitude; const myLon = pos.coords.longitude;
             try {
@@ -321,6 +300,10 @@
         if(itm) { if(inc) { if(scanMode === 'shelf') itm.shelf++; if(scanMode === 'stock') itm.stock++; } highlightRow(bc); } 
         else { CURRENT_ITEMS.unshift({ bc, name, shelf: scanMode==='shelf'?1:0, stock: scanMode==='stock'?1:0 }); }
         refreshList();
+        if (typeof window.syncToGoogle === 'function') {
+            let syncItm = CURRENT_ITEMS.find(i => i.bc === bc);
+            if(syncItm) window.syncToGoogle(syncItm);
+        }
     }
 
     function refreshList() {
@@ -332,7 +315,18 @@
         document.getElementById('i-faces').value = ts; document.getElementById('i-stock').value = ts + tk; calcShare();
     }
 
-    function updateVal(bc, f, v) { let i = CURRENT_ITEMS.find(x => x.bc === bc); if(i) i[f] = parseInt(v) || 0; refreshList(); }
+    function updateVal(bc, f, v) { 
+        let i = CURRENT_ITEMS.find(x => x.bc === bc); 
+        if(i) {
+            i[f] = parseInt(v) || 0; 
+            refreshList(); 
+            if (typeof window.syncToGoogle === 'function') {
+                if (window.syncT) clearTimeout(window.syncT);
+                window.syncT = setTimeout(() => { window.syncToGoogle(i); }, 1500);
+            }
+        }
+    }
+
     function highlightRow(bc) { const rows = document.querySelectorAll('.item-row'); rows.forEach(r => { if(r.dataset.bc === bc) { r.style.borderColor='var(--green)'; r.scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(()=>r.style.borderColor='#222', 1000); } }); }
 
     function openDB() {
@@ -350,7 +344,7 @@
     async function saveAuth() {
         const n = document.getElementById('work-name').value.trim(), k = document.getElementById('lic-key').value.trim().toUpperCase();
         if(!n || !k) return;
-        const res = await fetch(`${API}/check-license`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({licenseKey:k, workerName:n}) });
+        const res = await fetch(`${API}/check-license`, { method:'POST', headers:'application/json', body:JSON.stringify({licenseKey:k, workerName:n}) });
         const d = await res.json();
         if(d.status === 'active') { DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); location.reload(); }
     }
@@ -364,9 +358,7 @@
     function openModal(id) {
         cur = DATA.shops.find(x => x.id === id); 
         document.getElementById('m-net').innerText = cur.net; document.getElementById('task-modal').style.display = 'flex';
-        
         if (typeof checkPlanogram === 'function') checkPlanogram(cur.addr);
-
         if(cur.done) {
             document.getElementById('start-block').classList.add('hidden'); document.getElementById('report-block').classList.add('hidden');
             document.getElementById('archive-block').classList.remove('hidden'); loadArchive(cur.addr);
@@ -383,9 +375,7 @@
     async function saveToQueue() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужны все 3 фото!");
         const btn = document.getElementById('finish-btn'); btn.innerText = "СОХРАНЕНИЕ..."; btn.disabled = true;
-
-        const now = Date.now();
-        const startMs = cur.start;
+        const now = Date.now(); const startMs = cur.start;
         const startT = new Date(startMs).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         const endT = new Date(now).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         let dur = Math.round((now - startMs) / 60000); if(dur < 1) dur = 1;
@@ -393,9 +383,7 @@
         document.getElementById('p-net-addr').innerText = `${cur.net} | ${cur.addr}`;
         document.getElementById('p-worker-val').innerText = DATA.name;
         document.getElementById('p-date-full').innerText = new Date().toLocaleDateString('ru-RU');
-        document.getElementById('p-time-start').innerText = startT;
-        document.getElementById('p-time-end').innerText = endT;
-        document.getElementById('p-duration').innerText = dur;
+        document.getElementById('p-time-start').innerText = startT; document.getElementById('p-time-end').innerText = endT; document.getElementById('p-duration').innerText = dur;
         document.getElementById('p-stock-val').innerText = document.getElementById('i-stock').value;
         document.getElementById('p-faces-val').innerText = document.getElementById('i-faces').value;
         document.getElementById('p-share-big').innerText = document.getElementById('share-val').innerText + "%";
@@ -452,131 +440,38 @@
 </script>
 
 <script>
+// --- МОДУЛЬ СИНХРОНИЗАЦИИ ---
 (function() {
-    console.log("⏳ [INTERNAL PLUGIN] Запуск модуля синхронизации...");
-
     function showStatus(text, color) {
         let box = document.getElementById('sync-status-popup');
         if(!box) {
             box = document.createElement('div');
             box.id = 'sync-status-popup';
-            box.style = 'position:fixed; bottom:80px; left:50%; transform:translateX(-50%); padding:12px 20px; border-radius:15px; font-size:12px; font-weight:900; z-index:10000; color:#000; transition:0.3s; pointer-events:none; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.5);';
+            box.style = 'position:fixed; bottom:100px; left:50%; transform:translateX(-50%); padding:12px 20px; border-radius:15px; font-size:12px; font-weight:900; z-index:10000; color:#000; transition:0.3s; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.5); pointer-events:none;';
             document.body.appendChild(box);
         }
-        box.innerText = text;
-        box.style.background = color;
-        box.style.opacity = '1';
-        setTimeout(() => box.style.opacity = '0', 2500);
-    }
-
-    window.syncToGoogle = async function(itm) {
-        if (!window.cur || !window.DATA || !window.DATA.key) return;
-        
-        showStatus("📡 СОХРАНЯЮ...", "#ffffff");
-
-        try {
-            const res = await fetch(`${window.API}/save-partial-stock`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    key: window.DATA.key, 
-                    addr: window.cur.addr, 
-                    item: itm, 
-                    userName: window.DATA.name 
-                })
-            });
-            
-            if(res.ok) {
-                showStatus("✅ ТАБЛИЦА ОБНОВЛЕНА", "#00ff00");
-            } else {
-                showStatus("⚠️ ОШИБКА СЕРВЕРА", "#f59e0b");
-            }
-        } catch (e) {
-            console.error(e);
-            showStatus("🚫 НЕТ СЕТИ", "#ff3b30");
-        }
-    };
-
-    // Внедряемся в функцииaddItem и updateVal
-    const originalAddItem = window.addItem;
-    window.addItem = function(bc, name, inc) {
-            if(originalAddItem) originalAddItem.apply(this, arguments);
-    }; 
-
-    window.addEventListener('load', function() {
-    
-{
-    alert("СИСТЕМА СИНХРОНИЗАЦИИ ПОДКЛЮЧЕНА!");
-    console.log("🚀 Связь с Логистикой X запущена");
-    console.log("🚀 [SYSTEM] Активация связи с сервером...");
-    // Функция вывода уведомлений на экран телефона
-    function showStatus(text, color) {
-        let box = document.getElementById('sync-status-popup');
-        if(!box) {
-            box = document.createElement('div');
-            box.id = 'sync-status-popup';
-            box.style = 'position:fixed; bottom:100px; left:50%; transform:translateX(-50%); padding:12px 20px; border-radius:15px; font-size:12px; font-weight:900; z-index:10000; color:#000; transition:0.3s; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.5);';
-            document.body.appendChild(box);
-        }
-        box.innerText = text;
-        box.style.background = color;
-        box.style.display = 'block';
-        box.style.opacity = '1';
+        box.innerText = text; box.style.background = color; box.style.display = 'block'; box.style.opacity = '1';
         setTimeout(() => box.style.opacity = '0', 2000);
     }
 
-    // Главная функция отправки данных на сервер
     window.syncToGoogle = async function(itm) {
         if (!window.cur || !window.DATA || !window.DATA.key) return;
-        
-        showStatus("📡 СОХРАНЯЮ В ТАБЛИЦУ...", "#ffffff");
-
+        showStatus("📡 СОХРАНЯЮ...", "#ffffff");
         try {
             const res = await fetch('https://logist-x-server-production.up.railway.app/save-partial-stock', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    key: window.DATA.key, 
-                    addr: window.cur.addr, 
-                    item: itm, 
-                    userName: window.DATA.name 
-                })
+                body: JSON.stringify({ key: window.DATA.key, addr: window.cur.addr, item: itm, userName: window.DATA.name })
             });
-            
-            if(res.ok) {
-                showStatus("✅ СОХРАНЕНО", "#00ff00");
-                console.log("✅ Данные ушли на сервер");
-            } else {
-                showStatus("⚠️ ОШИБКА СЕРВЕРА", "#f59e0b");
-            }
-        } catch (e) {
-            showStatus("🚫 НЕТ СВЯЗИ", "#ff3b30");
-        }
+            if(res.ok) showStatus("✅ СОХРАНЕНО", "#00ff00");
+            else showStatus("⚠️ ОШИБКА СЕРВЕРА", "#f59e0b");
+        } catch (e) { showStatus("🚫 НЕТ СВЯЗИ", "#ff3b30"); }
     };
 
-    // Внедряемся в функцию добавления товара
-    const oldAddItem = window.addItem;
-    window.addItem = function(bc, name, inc) {
-        if(oldAddItem) oldAddItem.apply(this, arguments);
-        // Сразу после добавления — отправляем на сервер
-        setTimeout(() => {
-            const itm = (window.CURRENT_ITEMS || []).find(i => i.bc === bc);
-            if (itm) window.syncToGoogle(itm);
-        }, 500);
-    };
-
-    // Внедряемся в функцию изменения цифр вручную
-    const oldUpdateVal = window.updateVal;
-    window.updateVal = function(bc, f, v) {
-        if(oldUpdateVal) oldUpdateVal.apply(this, arguments);
-        // Ждем секунду, пока человек закончит ввод, и отправляем
-        if (window.syncT) clearTimeout(window.syncT);
-        window.syncT = setTimeout(() => {
-            const itm = (window.CURRENT_ITEMS || []).find(x => x.bc === bc);
-            if (itm) window.syncToGoogle(itm);
-        }, 1500);
-    };    
-});
+    window.addEventListener('load', function() {
+        console.log("🚀 Связь с Логистикой X запущена");
+    });
+})();
 </script>
 </body>
 </html>
