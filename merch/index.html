@@ -500,9 +500,14 @@
     // Внедряемся в функцииaddItem и updateVal
     const originalAddItem = window.addItem;
     window.addItem = function(bc, name, inc) {
-        if(originalAddItem) originalAddItem.apply(this, arguments);
-// Ждем полной загрузки страницы, чтобы кнопки точно были готовы
-window.addEventListener('load', function() {
+            if(originalAddItem) originalAddItem.apply(this, arguments);
+    }; 
+
+    window.addEventListener('load', function() {
+    
+{
+    alert("СИСТЕМА СИНХРОНИЗАЦИИ ПОДКЛЮЧЕНА!");
+    console.log("🚀 Связь с Логистикой X запущена");
     console.log("🚀 [SYSTEM] Активация связи с сервером...");
     // Функция вывода уведомлений на экран телефона
     function showStatus(text, color) {
