@@ -1,19 +1,17 @@
 {
   "name": "Logist X Merch",
   "short_name": "Merch X",
-  "description": "Система аналитики ритейла и контроля выкладки",
-  "start_url": "./index.html",
+  "description": "Рабочее пространство мерчендайзера",
+  "start_url": "https://logist-x.ru/merch/index.html",
   "display": "standalone",
-  "background_color": "#010409",
+  "background_color": "#000000",
   "theme_color": "#f59e0b",
+  "scope": "/merch/",
   "icons": [
     {
       "src": "https://logist-x.ru/app/icon-1024.png",
       "sizes": "1024x1024",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
-  ],
-  "scope": "./",
-  "orientation": "portrait"
+  ]
 }
