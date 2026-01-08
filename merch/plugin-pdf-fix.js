@@ -1,13 +1,15 @@
 (function() {
-    console.log("🚀 Клиентский плагин: СУПЕР-СИНХРОНИЗАЦИЯ С КОНТРОЛЕМ");
+    console.log("🚀 Запуск прямого контроля таблицы...");
 
-    // Функция для уведомлений на экране телефона
+    let lastDataHash = ""; // Для слежки за изменениями
+
+    // Всплывающее окно статуса
     function showStatus(text, color) {
         let box = document.getElementById('sync-status-popup');
         if(!box) {
             box = document.createElement('div');
             box.id = 'sync-status-popup';
-            box.style = 'position:fixed; top:10px; right:10px; padding:8px 15px; border-radius:10px; font-size:10px; font-weight:800; z-index:9999; color:#000; transition:all 0.3s;';
+            box.style = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:12px 20px; border-radius:15px; font-size:12px; font-weight:900; z-index:10000; color:#000; transition:0.3s; pointer-events:none; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.5);';
             document.body.appendChild(box);
         }
         box.innerText = text;
@@ -16,72 +18,49 @@
         setTimeout(() => box.style.opacity = '0', 2000);
     }
 
-    // Основная функция отправки с контролем ошибки
-    window.sendToTableDirectly = async function(itm, retry = 0) {
-        if (!itm || !window.cur || window.cur.done) return;
+    // Функция принудительной отправки всей текущей корзины магазина
+    window.forceSyncToTable = async function() {
+        if (!window.cur || !window.CURRENT_ITEMS || window.CURRENT_ITEMS.length === 0) return;
         
+        // Считаем "отпечаток" данных, чтобы не слать одно и то же 100 раз
+        const currentHash = JSON.stringify(window.CURRENT_ITEMS);
+        if (currentHash === lastDataHash) return; 
+
         try {
-            const res = await fetch(`${API}/save-partial-stock`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    key: DATA.key, 
-                    addr: window.cur.addr, 
-                    item: itm, 
-                    userName: DATA.name 
-                })
-            });
-
-            if(res.ok) {
-                console.log("✅ Таблица обновлена");
-                showStatus("ТАБЛИЦА ОБНОВЛЕНА", "#00ff00"); // Зеленый
-            } else {
-                throw new Error("Ошибка сервера");
+            // Отправляем массив товаров целиком или по одному
+            for (let itm of window.CURRENT_ITEMS) {
+                await fetch(`${API}/save-partial-stock`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        key: DATA.key, 
+                        addr: window.cur.addr, 
+                        item: itm, 
+                        userName: DATA.name 
+                    })
+                });
             }
+            lastDataHash = currentHash;
+            showStatus("✅ ТАБЛИЦА ОБНОВЛЕНА", "#00ff00");
         } catch (e) {
-            console.error("📡 Ошибка связи:", e);
-            showStatus("ОШИБКА СВЯЗИ...", "#ff3b30"); // Красный
-            
-            // Если не дошло, пробуем еще раз 1 раз через 3 секунды
-            if (retry < 1) {
-                setTimeout(() => window.sendToTableDirectly(itm, retry + 1), 3000);
-            }
+            console.error("Sync error:", e);
+            showStatus("📡 ОШИБКА СЕТИ", "#ff3b30");
         }
     };
 
-    // Перехват ручного изменения
-    const originalUpdateVal = window.updateVal;
-    window.updateVal = function(bc, f, v) {
-        if (originalUpdateVal) originalUpdateVal.apply(this, arguments);
-        const itm = CURRENT_ITEMS.find(x => x.bc === bc);
-        if (itm) window.sendToTableDirectly(itm);
-    };
-
-    // Перехват сканирования
-    const originalAddItem = window.addItem;
-    window.addItem = function(bc, name, inc) {
-        if (originalAddItem) originalAddItem.apply(this, arguments);
-        const itm = CURRENT_ITEMS.find(i => i.bc === bc);
-        if (itm) window.sendToTableDirectly(itm);
-    };
-
-    // Загрузка данных команды
-    const originalOpenModal = window.openModal;
-    window.openModal = function(id) {
-        if (originalOpenModal) originalOpenModal.apply(this, arguments);
+    // Запускаем "авто-пульс" — проверяем изменения каждые 5 секунд
+    setInterval(() => {
         if (window.cur && !window.cur.done) {
-            // Подгружаем, что насканировали другие мерчи в этой точке
-            fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(window.cur.addr)}`)
-                .then(r => r.json())
-                .then(data => {
-                    if(data.length > 0) {
-                        window.CURRENT_ITEMS = data.map(i => ({bc:i.bc, name:i.name, shelf:i.shelf, stock:i.stock}));
-                        if(typeof refreshList === 'function') refreshList();
-                        showStatus("ДАННЫЕ ОБНОВЛЕНЫ", "#007aff"); // Синий
-                    }
-                }).catch(e => {});
+            window.forceSyncToTable();
         }
+    }, 5000);
+
+    // Дополнительно вешаем на кнопку "Закрыть", чтобы точно ушло при выходе из карточки
+    const originalClose = window.closeModal;
+    window.closeModal = function() {
+        window.forceSyncToTable();
+        if (originalClose) originalClose.apply(this, arguments);
     };
 
-    console.log("✅ Мобильный плагин с контролем связи готов");
+    console.log("✅ Авто-синхронизация активна");
 })();
