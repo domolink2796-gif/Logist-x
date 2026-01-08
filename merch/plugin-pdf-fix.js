@@ -1,59 +1,50 @@
 (function() {
-    console.log("📦 Плагин Stock-Fix: Режим восстановления данных активен");
+    console.log("📡 Плагин Stock-Fix: Связь с сервером установлена");
 
-    // Перехватываем открытие модалки, чтобы восстановить данные при повторном входе
+    // 1. ФУНКЦИЯ ЗАПРОСА ДАННЫХ С СЕРВЕРА
+    window.fetchShopStock = async function(addr) { 
+        if(!DATA.key) return; 
+        
+        console.log("📥 Запрос последних данных с сервера для:", addr);
+        
+        try { 
+            // Запрашиваем данные именно по этому адресу
+            const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); 
+            
+            if(res.ok) { 
+                const serverData = await res.json(); 
+                
+                if (serverData && serverData.length > 0) {
+                    // Заполняем массив данными с сервера
+                    window.CURRENT_ITEMS = serverData.map(i => ({ 
+                        bc: i.bc, 
+                        name: i.name, 
+                        shelf: parseInt(i.shelf) || 0, 
+                        stock: parseInt(i.stock) || 0 
+                    })); 
+                    console.log("✅ Данные получены:", window.CURRENT_ITEMS);
+                } else {
+                    console.log("ℹ️ На сервере пока нет данных по этой точке.");
+                }
+
+                // Перерисовываем список на экране
+                if (typeof refreshList === 'function') refreshList(); 
+            } 
+        } catch(e) { 
+            console.error("❌ Ошибка связи с сервером:", e); 
+        } 
+    };
+
+    // 2. ПЕРЕХВАТ ОТКРЫТИЯ МОДАЛКИ
+    // Как только ты нажимаешь на магазин - плагин сразу бежит на сервер за данными
     const originalOpenModal = window.openModal;
-
-    window.openModal = async function(id) {
-        // Сначала вызываем родную функцию, чтобы открылись окна
+    window.openModal = function(id) {
+        // Вызываем стандартное открытие
         originalOpenModal.apply(this, arguments);
 
-        // Если визит уже был начат (повторный вход)
-        if (cur.start && !cur.done) {
-            console.log("🔄 Повторный вход в точку. Восстанавливаю насканированные данные...");
-            
-            // Если массив пуст, пробуем достать данные из архива IndexedDB
-            if (window.db && (!window.CURRENT_ITEMS || window.CURRENT_ITEMS.length === 0)) {
-                const tx = db.transaction("archive", "readonly");
-                const store = tx.objectStore("archive");
-                const request = store.get(cur.addr);
-
-                request.onsuccess = (e) => {
-                    const savedData = e.target.result;
-                    if (savedData && savedData.items) {
-                        window.CURRENT_ITEMS = savedData.items;
-                        console.log("✅ Данные восстановлены из архива:", window.CURRENT_ITEMS);
-                        if (typeof refreshList === 'function') refreshList();
-                    } else {
-                        // Если в архиве нет, тянем с сервера последние сохраненные
-                        fetchShopStock(cur.addr);
-                    }
-                };
-            }
+        // Если это не архивный (уже закрытый) визит, то тянем свежие данные
+        if (window.cur && !window.cur.done) {
+            window.fetchShopStock(window.cur.addr);
         }
     };
-
-    // Оставляем исправление функции загрузки с сервера (чтобы не было нулей)
-    const originalFetch = window.fetchShopStock;
-    window.fetchShopStock = async function(addr) {
-        if(!DATA.key) return;
-        try {
-            const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`);
-            if(res.ok) {
-                const prev = await res.json();
-                // ВАЖНО: берем реальные цифры из базы сервера
-                window.CURRENT_ITEMS = prev.map(i => ({
-                    bc: i.bc,
-                    name: i.name,
-                    shelf: parseInt(i.shelf) || 0,
-                    stock: parseInt(i.stock) || 0
-                }));
-                if (typeof refreshList === 'function') refreshList();
-            }
-        } catch(e) {
-            console.error("Ошибка Stock-Fix:", e);
-        }
-    };
-
-    console.log("✅ Плагин Stock-Fix: Теперь данные сохраняются при повторном входе.");
 })();
