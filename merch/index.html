@@ -4,20 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>LOGIST_X | MERCH PRO</title>
-    <link rel="manifest" href="/merch/manifest.json?v=2026_final">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     
-    <script>
-        const plugins = ['merch-planogram.js', 'plugin-voice.js', 'plugin-merch.js'];
-        plugins.forEach(file => {
-            const s = document.createElement('script');
-            s.src = file + '?v=' + Date.now();
-            document.head.appendChild(s);
-        });
-    </script>
+    <script src="merch-planogram.js?v=10"></script>
 
     <style>
         :root { --bg: #000000; --card: #111111; --accent: #f59e0b; --green: #00ff00; --border: #222222; --text: #ffffff; --blue: #007aff; --red: #ff3b30; }
@@ -68,7 +59,7 @@
         .mini-box { background: #1a1a1a; padding: 8px; border-radius: 12px; border: 1px solid #222; text-align: center; }
         .mini-inp { background: transparent !important; border: none !important; text-align: center !important; font-size: 18px !important; font-weight: 900 !important; width: 100% !important; color: white; padding: 0 !important; }
         .plan-box { margin: 15px 0; padding: 12px; border: 1px dashed var(--accent); border-radius: 14px; background: rgba(245, 158, 11, 0.03); text-align: center; }
-        #pdf-render { position: absolute; left: -9999px; width: 850px; background: #fff; color: #000; padding: 40px; box-sizing: border-box; }
+        #pdf-render { position: absolute; left: -9999px; width: 600px; background: #fff; color: #000; padding: 40px; box-sizing: border-box; }
         .hidden { display: none; }
     </style>
 </head>
@@ -83,7 +74,7 @@
     </div>
 </div>
 
-<div class="header" id="main-ui">
+<div class="header">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="logo">LOGIST_X <span>MERCH</span></div>
         <button id="syncIndicator" onclick="checkQueue()" style="background:none; border:none; color:white; display:none;">📦 <span id="qCount">0</span></button>
@@ -212,21 +203,15 @@
     let PRODUCT_CATALOG = {}, CURRENT_ITEMS = [], html5QrCode = null, scanMode = null, lastScannedCode = null, lastScanTime = 0;
 
     function speak(t) { const m = new SpeechSynthesisUtterance(); m.text = t; m.lang = 'ru-RU'; window.speechSynthesis.speak(m); }
-
-    // ЖИВАЯ СИНХРОНИЗАЦИЯ (GEMINI FIX)
-    async function syncToLiveTable(itm) {
-        if (!itm || !cur || cur.done) return;
-        try {
-            await fetch(`${API}/save-partial-stock`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ key: DATA.key, addr: cur.addr, item: itm, userName: DATA.name })
-            });
-        } catch(e) {}
+    
+    function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371000; const dLat = (lat2-lat1) * Math.PI/180; const dLon = (lon2-lon1) * Math.PI/180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
     async function syncCatalog() { if(!DATA.key) return; try { const res = await fetch(`${API}/get-catalog?key=${DATA.key}`); if(res.ok) PRODUCT_CATALOG = await res.json(); } catch(e) {} }
-    async function fetchShopStock(addr) { if(!DATA.key) return; try { const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); if(res.ok) { const prev = await res.json(); CURRENT_ITEMS = prev.map(i => ({ bc: i.bc, name: i.name, shelf: parseInt(i.shelf)||0, stock: parseInt(i.stock)||0 })); refreshList(); } } catch(e) {} }
+    async function fetchShopStock(addr) { if(!DATA.key) return; try { const res = await fetch(`${API}/get-shop-stock?key=${DATA.key}&addr=${encodeURIComponent(addr)}`); if(res.ok) { const prev = await res.json(); CURRENT_ITEMS = prev.map(i => ({ bc: i.bc, name: i.name, shelf: 0, stock: 0 })); refreshList(); } } catch(e) {} }
 
     function calcShare() {
         const mine = parseFloat(document.getElementById('i-faces').value) || 0;
@@ -235,19 +220,27 @@
     }
 
     async function beginVisit() {
-        const btn = document.getElementById('begin-btn');
-        btn.innerText = "ПРОВЕРКА..."; btn.disabled = true;
+        const btn = document.getElementById('begin-btn'); const warn = document.getElementById('gps-warn-box');
+        btn.innerText = "ПРОВЕРКА GPS..."; btn.disabled = true; warn.style.display = 'none';
+        speak(`Проверяю адрес.`);
+
         navigator.geolocation.getCurrentPosition(async (pos) => {
-            speak("Визит открыт"); cur.start = Date.now();
-            localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
-            await fetchShopStock(cur.addr);
-            openModal(cur.id);
-            btn.disabled = false; btn.innerText = "ОТКРЫТЬ ВИЗИТ";
-        }, () => {
-            speak("GPS не найден, вход без проверки");
-            cur.start = Date.now(); openModal(cur.id);
-            btn.disabled = false; btn.innerText = "ОТКРЫТЬ ВИЗИТ";
-        });
+            const myLat = pos.coords.latitude; const myLon = pos.coords.longitude;
+            try {
+                const res = await fetch(`${API}/get-coords?addr=${encodeURIComponent((cur.city||'') + " " + cur.addr)}`); const target = await res.json();
+                if (target.lat) {
+                    const dist = getDistance(myLat, myLon, target.lat, target.lon);
+                    if (dist > 600) {
+                        const msg = `Доступ запрещен. Вы далеко.`; speak(msg);
+                        warn.innerText = msg; warn.style.display = 'block'; btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false; return;
+                    }
+                }
+                speak("Адрес подтверждён."); cur.start = Date.now(); localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
+                await fetchShopStock(cur.addr); openModal(cur.id); btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
+            } catch (e) {
+                speak("Сбой карт. Вхожу без проверки."); cur.start = Date.now(); await fetchShopStock(cur.addr); openModal(cur.id); btn.innerText = "ОТКРЫТЬ ВИЗИТ"; btn.disabled = false;
+            }
+        }, () => { speak("Включите GPS."); btn.disabled = false; btn.innerText = "ОТКРЫТЬ ВИЗИТ"; });
     }
 
     function toggleScanner(mode) {
@@ -269,6 +262,7 @@
         let product = PRODUCT_CATALOG[bc]; const isCountMode = document.getElementById('count-mode-toggle').checked;
         if(product) {
             const p = document.getElementById('scan-popup'); p.innerText = product.name; p.style.display = 'block'; setTimeout(() => p.style.display = 'none', 1500);
+            if (!isCountMode) { let itm = CURRENT_ITEMS.find(i => i.bc === bc); speak(product.name + ". " + (itm ? itm.stock : 0)); } else { speak(product.name); }
             addItem(bc, product.name, isCountMode);
         } else {
             stopScanner(); speak("Новый товар"); let name = prompt(`Новый товар (${bc})! Название:`);
@@ -278,14 +272,9 @@
 
     function addItem(bc, name, inc) {
         let itm = CURRENT_ITEMS.find(i => i.bc === bc);
-        if(itm) {
-            if(inc) { if(scanMode === 'shelf') itm.shelf++; if(scanMode === 'stock') itm.stock++; }
-            highlightRow(bc);
-        } else {
-            itm = { bc, name, shelf: scanMode==='shelf'?1:0, stock: scanMode==='stock'?1:0 };
-            CURRENT_ITEMS.unshift(itm);
-        }
-        refreshList(); syncToLiveTable(itm);
+        if(itm) { if(inc) { if(scanMode === 'shelf') itm.shelf++; if(scanMode === 'stock') itm.stock++; } highlightRow(bc); } 
+        else { CURRENT_ITEMS.unshift({ bc, name, shelf: scanMode==='shelf'?1:0, stock: scanMode==='stock'?1:0 }); }
+        refreshList();
     }
 
     function refreshList() {
@@ -297,11 +286,7 @@
         document.getElementById('i-faces').value = ts; document.getElementById('i-stock').value = ts + tk; calcShare();
     }
 
-    function updateVal(bc, f, v) {
-        let itm = CURRENT_ITEMS.find(x => x.bc === bc);
-        if(itm) { itm[f] = parseInt(v) || 0; refreshList(); syncToLiveTable(itm); }
-    }
-
+    function updateVal(bc, f, v) { let i = CURRENT_ITEMS.find(x => x.bc === bc); if(i) i[f] = parseInt(v) || 0; refreshList(); }
     function highlightRow(bc) { const rows = document.querySelectorAll('.item-row'); rows.forEach(r => { if(r.dataset.bc === bc) { r.style.borderColor='var(--green)'; r.scrollIntoView({behavior:'smooth', block:'center'}); setTimeout(()=>r.style.borderColor='#222', 1000); } }); }
 
     function openDB() {
@@ -316,9 +301,12 @@
         DATA.shops = JSON.parse(localStorage.getItem('m_shops') || "[]"); openDB(); render();
     };
 
-    function saveAuth() {
+    async function saveAuth() {
         const n = document.getElementById('work-name').value.trim(), k = document.getElementById('lic-key').value.trim().toUpperCase();
-        if(n && k) { localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); location.reload(); }
+        if(!n || !k) return;
+        const res = await fetch(`${API}/check-license`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({licenseKey:k, workerName:n}) });
+        const d = await res.json();
+        if(d.status === 'active') { DATA.name = n; DATA.key = k; localStorage.setItem('m_name', n); localStorage.setItem('m_key', k); location.reload(); }
     }
 
     function render() {
@@ -328,8 +316,12 @@
     }
 
     function openModal(id) {
-        cur = DATA.shops.find(x => x.id === id);
+        cur = DATA.shops.find(x => x.id === id); 
         document.getElementById('m-net').innerText = cur.net; document.getElementById('task-modal').style.display = 'flex';
+        
+        // ВЫЗОВ ИЗ ПЛАГИНА
+        if (typeof checkPlanogram === 'function') checkPlanogram(cur.addr);
+
         if(cur.done) {
             document.getElementById('start-block').classList.add('hidden'); document.getElementById('report-block').classList.add('hidden');
             document.getElementById('archive-block').classList.remove('hidden'); loadArchive(cur.addr);
@@ -345,14 +337,14 @@
 
     async function saveToQueue() {
         if(!IMGS.pre || !IMGS.post || !IMGS.price) return alert("Нужны все 3 фото!");
-        const btn = document.getElementById('finish-btn'); btn.innerText = "ФОРМИРУЮ PDF..."; btn.disabled = true;
+        const btn = document.getElementById('finish-btn'); btn.innerText = "СОХРАНЕНИЕ..."; btn.disabled = true;
+
         const now = Date.now();
         const startMs = cur.start;
         const startT = new Date(startMs).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         const endT = new Date(now).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         let dur = Math.round((now - startMs) / 60000); if(dur < 1) dur = 1;
 
-        // Заполнение PDF шаблона перед рендером
         document.getElementById('p-net-addr').innerText = `${cur.net} | ${cur.addr}`;
         document.getElementById('p-worker-val').innerText = DATA.name;
         document.getElementById('p-date-full').innerText = new Date().toLocaleDateString('ru-RU');
@@ -370,18 +362,12 @@
 
         setTimeout(async () => {
             const canvas = await html2canvas(document.getElementById('pdf-render'), { scale: 1.5 });
-            const report = { key: DATA.key, worker: DATA.name, net: cur.net, city: cur.city, address: cur.addr, stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value, ourPrice: document.getElementById('i-our-price').value, compPrice: document.getElementById('i-comp-price').value, expDate: document.getElementById('i-exp-date').value, share: document.getElementById('share-val').innerText, startTime: startT, endTime: endT, duration: dur, items: CURRENT_ITEMS, pdf: canvas.toDataURL('image/jpeg', 0.7), sending: 0 };
-            
+            const report = { key: DATA.key, worker: DATA.name, net: cur.net, city: cur.city, address: cur.addr, stock: document.getElementById('i-stock').value, faces: document.getElementById('i-faces').value, ourPrice: document.getElementById('i-our-price').value, compPrice: document.getElementById('i-comp-price').value, expDate: document.getElementById('i-exp-date').value, share: document.getElementById('share-val').innerText, startTime: startT, endTime: endT, duration: dur, items: CURRENT_ITEMS, pdf: canvas.toDataURL('image/jpeg', 0.8), sending: 0 };
             const tx = db.transaction(["reports", "archive"], "readwrite");
             tx.objectStore("reports").add(report);
             tx.objectStore("archive").put({ shop_addr: cur.addr, ...report, img_pre: IMGS.pre, img_post: IMGS.post, img_price: IMGS.price });
-            
-            tx.oncomplete = () => {
-                cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops));
-                closeModal(); render(); sync();
-                btn.innerText = "ОТПРАВИТЬ ОТЧЕТ"; btn.disabled = false; speak("Отчет готов");
-            };
-        }, 1000);
+            tx.oncomplete = () => { cur.done = true; localStorage.setItem('m_shops', JSON.stringify(DATA.shops)); closeModal(); render(); sync(); btn.innerText = "ОТПРАВИТЬ ОТЧЕТ"; btn.disabled = false; speak("Отчет готов"); };
+        }, 700);
     }
 
     async function sync() {
