@@ -213,7 +213,7 @@
 </div>
 
 <script>
-    const API = 'https://logist-x-server-production.up.railway.app';
+    const API = 'https://logist-x.store';
     let DATA = { shops: [], name: "", key: "" }, IMGS = { pre: null, post: null, price: null }, cur = null, db, syncing = false;
     let PRODUCT_CATALOG = {}, CURRENT_ITEMS = [], html5QrCode = null, scanMode = null, lastScannedCode = null, lastScanTime = 0;
 
@@ -483,7 +483,7 @@
 
         showStatus("📡 СОХРАНЯЮ...", "#ffffff");
         try {
-            const res = await fetch('https://logist-x-server-production.up.railway.app/save-partial-stock', {
+            const res = await fetch('https://logist-x.store/save-partial-stock', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ key: key, addr: addr, item: itm, userName: worker })
