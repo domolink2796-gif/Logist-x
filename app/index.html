@@ -157,6 +157,15 @@
     /* ЗАЩИТА MASTER_KEY: ТЕПЕРЬ ОН ЗАШИФРОВАН В BASE64 */
     const _MS_ENCRYPTED = "REVWLU1BU1RFUi05OTk="; 
     const MASTER_KEY = atob(_MS_ENCRYPTED);
+    // БЛОКИРОВКА ИНСПЕКТОРА (F12, Контекстное меню)
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) {
+            toast("🔒 ДОСТУП ОГРАНИЧЕН АДМИНИСТРАТОРОМ");
+            e.preventDefault();
+            return false;
+        }
+    });
 
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
