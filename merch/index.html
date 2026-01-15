@@ -81,12 +81,22 @@
 </head>
 <body>
 <script>
- 🛡️ ЗАЩИТА АВТОРСКИХ ПРАВ (Свидетельство РЦИС № 0849-643-137)
+    // 🛡️ ЗАЩИТА АВТОРСКИХ ПРАВ (Свидетельство № 0849-643-137)
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => {
-        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) {
-            if (typeof showStatus === 'function') showStatus("🔒 ДОСТУП ОГРАНИЧЕН АДМИНИСТРАТОРОМ", "#f59e0b");
-            e.preventDefault(); return false;
+        // Проверяем F12, Ctrl+U, Ctrl+Shift+I и Ctrl+P
+        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85) || (e.ctrlKey && e.keyCode == 80)) {
+            
+            // Специально для Merch X: заставляем статус появиться
+            if (typeof showStatus === 'function') {
+                showStatus("🔒 ДОСТУП ОГРАНИЧЕН АДМИНИСТРАТОРОМ", "#f59e0b");
+            } else {
+                // Если вдруг функция не подгрузилась, используем голос (ты же любишь Voice)
+                if (typeof speak === 'function') speak("Доступ ограничен");
+            }
+            
+            e.preventDefault(); 
+            return false;
         }
     });
 </script>
