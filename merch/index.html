@@ -80,6 +80,16 @@
     </style>
 </head>
 <body>
+<script>
+ 🛡️ ЗАЩИТА АВТОРСКИХ ПРАВ (Свидетельство РЦИС № 0849-643-137)
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) {
+            if (typeof showStatus === 'function') showStatus("🔒 ДОСТУП ОГРАНИЧЕН АДМИНИСТРАТОРОМ", "#f59e0b");
+            e.preventDefault(); return false;
+        }
+    });
+</script>
 
 <div id="auth-screen">
     <div style="width:100%;">
