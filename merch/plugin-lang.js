@@ -1,13 +1,19 @@
 (function() {
-    // 1. УМНОЕ ОПРЕДЕЛЕНИЕ ЯЗЫКА ПРИ ЗАГРУЗКЕ
-    let currentLang = localStorage.getItem('app_lang');
+    // 1. ОПРЕДЕЛЕНИЕ ЯЗЫКА (Приоритет: Система телефона -> Память приложения)
+    const getSystemLang = () => {
+        try {
+            const navLang = (navigator.language || navigator.userLanguage || 'ru').toLowerCase();
+            // Если в языке системы есть "en" (en-US, en-GB и т.д.) — выбираем английский
+            return navLang.includes('en') ? 'en' : 'ru';
+        } catch(e) { return 'ru'; }
+    };
+
+    let currentLang = getSystemLang();
     
-    if (!currentLang) {
-        // Если пользователь еще не выбирал язык, смотрим настройки телефона
-        const systemLang = (navigator.language || navigator.userLanguage).substring(0, 2).toLowerCase();
-        currentLang = (systemLang === 'en') ? 'en' : 'ru';
-        // Сохраняем, чтобы интерфейс не "прыгал" при перезагрузке
-        localStorage.setItem('app_lang', currentLang);
+    // Если телефон на русском, проверяем, не выбирал ли пользователь английский вручную раньше
+    if (currentLang === 'ru') {
+        const saved = localStorage.getItem('app_lang');
+        if (saved) currentLang = saved;
     }
 
     const dictionary = {
@@ -52,7 +58,7 @@
             if (langData[t]) el.innerText = langData[t];
         });
 
-        // Перевод текстовых узлов (внутри модального окна)
+        // Перевод текстовых узлов модалки
         const taskModal = document.getElementById('task-modal');
         if (taskModal) {
             const walk = document.createTreeWalker(taskModal, NodeFilter.SHOW_TEXT, null, false);
@@ -71,13 +77,11 @@
         });
     };
 
-    // Слежка за изменениями в модалке (MutationObserver)
     const observer = new MutationObserver(() => {
         if (currentLang === 'en') window.translateUI();
     });
 
     window.addEventListener('load', () => {
-        // Создание переключателя в шапке
         const header = document.querySelector('.header');
         if (header) {
             const btn = document.createElement('div');
@@ -91,11 +95,8 @@
             };
             header.appendChild(btn);
         }
-        
         const modal = document.getElementById('task-modal');
         if (modal) observer.observe(modal, { childList: true, subtree: true });
-
-        // Запускаем первичный перевод
         window.translateUI();
     });
 })();
