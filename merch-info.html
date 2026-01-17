@@ -5,44 +5,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title data-t="merch_h1">MERCH_X | О системе</title>
+    
     <link rel="apple-touch-icon" href="app/icon-1024.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background: #010409; color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
-        .card { background: rgba(13, 17, 23, 0.8); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 20px; padding: 20px; margin-bottom: 12px; }
-        .gold-txt { color: #f59e0b; font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
-        .btn-gold { background: #f59e0b; color: #000; width: 100%; padding: 18px; border-radius: 16px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.1rem; }
+        .card { background: rgba(13, 17, 23, 0.8); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 20px; padding: 20px; margin-bottom: 12px; transition: 0.3s; }
+        .card:active { transform: scale(0.98); background: rgba(245, 158, 11, 0.05); }
+        .gold-text { color: #f59e0b; }
+        .report-preview { background: #fff; color: #000; border-radius: 12px; padding: 15px; font-family: sans-serif; }
+        .btn-gold { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #000; font-weight: 900; border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; width: 100%; border: none; }
+        .feature-dot { width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+        
+        .folder-tree { font-family: monospace; font-size: 11px; color: #8b949e; }
+        .folder-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .folder-name { color: #e6edf3; font-weight: bold; }
+        .file-name { color: #7d8590; }
+        .tree-line { border-left: 1px solid #30363d; margin-left: 7px; padding-left: 15px; }
+
+        .planogram-compare { display: flex; gap: 8px; margin-top: 10px; }
+        .planogram-box { flex: 1; aspect-ratio: 1; background: #161b22; border: 1px solid #30363d; border-radius: 8px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .planogram-label { position: absolute; bottom: 4px; left: 4px; font-size: 7px; font-weight: 900; text-transform: uppercase; padding: 2px 4px; border-radius: 4px; }
+        
+        .pulse-icon { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* Анимация лазера сканера */
+        @keyframes scanMove {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #22c55e;
+            box-shadow: 0 0 15px #22c55e;
+            animation: scanMove 2s infinite ease-in-out;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
+
     <div onclick="toggleLang()" style="position:fixed; top:20px; right:20px; z-index:9999; background:rgba(0,0,0,0.8); border:1px solid #f59e0b; padding:8px 16px; border-radius:20px; cursor:pointer; display:flex; align-items:center; gap:8px;">
         <span style="font-size:16px;">🌐</span>
         <span id="lang-btn-text" style="color:#fff; font-weight:bold; font-size:12px;">RU</span>
     </div>
 
-    <div class="max-w-md mx-auto pt-10">
-        <div class="flex items-center gap-3 mb-8">
-            <div class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center font-black text-black text-xl">M</div>
-            <div>
-                <div class="font-black text-2xl tracking-tighter">MERCH_X</div>
-                <div class="text-xs text-white/40 font-bold uppercase tracking-widest">AI Vision Core</div>
+    <div class="max-w-md mx-auto pt-4">
+        <div class="flex items-center justify-between mb-6">
+            <a href="index.html" class="text-white/40"><i data-lucide="arrow-left"></i></a>
+            <div class="text-right">
+                <h1 class="text-3xl font-black italic gold-text leading-none">MERCH_X</h1>
+                <p data-t="merch_sol_title" class="opacity-40 text-[10px] uppercase tracking-[3px]">Business Solution</p>
             </div>
         </div>
 
-        <div class="card">
-            <div data-t="merch_prob_title" class="text-sm text-gray-400 font-bold mb-2 uppercase">Проблема: «Слепая» зона на полке</div>
-            <p data-t="merch_prob_desc" class="text-lg font-medium leading-snug opacity-90">
-                Мерчендайзеры часто не видят реальной картины на полке, а отчеты заполняются "на глаз".
-            </p>
+        <div class="card bg-amber-500/5 border-amber-500/20 mb-6" onclick="speak('Система автоматизации ритейл аудита заменяет рутину профессиональным софтом')">
+            <h2 data-t="merch_prob_title" class="text-lg font-black uppercase mb-4 italic">Что такое MERCH_X?</h2>
+            <div class="space-y-4 text-[13px] opacity-80 leading-relaxed italic">
+                <div class="flex gap-3">
+                    <div class="feature-dot"></div>
+                    <p data-t="merch_prob_desc">Это комплексная система для **автоматизации ритейл-аудита**, заменяющая рутину профессиональным софтом.</p>
+                </div>
+                <div class="flex gap-3">
+                    <div class="feature-dot"></div>
+                    <p data-t="merch_sol_desc">Программа фиксирует точное время визита, координаты мерчандайзера и реальную ситуацию на полках.</p>
+                </div>
+            </div>
         </div>
 
-        <div class="card border-amber-500/50 relative overflow-hidden">
-            <div data-t="merch_sol_title" class="gold-txt text-sm mb-2">Решение: Нейросеть MERCH_X</div>
-            <p data-t="merch_sol_desc" class="text-xl font-bold leading-tight">
-                Наша нейросеть анализирует фото, считает фейсинг и долю полки с точностью 99%.
-            </p>
+        <div class="card bg-blue-500/5 border-blue-500/20 mb-6" onclick="speak('Автоматическая сортировка отчетов по сотрудникам и датам в вашем облаке')">
+            <h2 class="text-xs font-black uppercase mb-4 gold-text flex items-center gap-2">
+                <i data-lucide="folder-tree" size="14"></i> <span data-t="merch_card_2">Иерархия отчетов</span>
+            </h2>
+            <div class="folder-tree bg-black/40 p-3 rounded-lg border border-white/5">
+                <div class="folder-item">
+                    <i data-lucide="folder" size="12" class="text-amber-500"></i>
+                    <span class="folder-name">Merch_Reports</span>
+                </div>
+                <div class="tree-line">
+                    <div class="folder-item">
+                        <i data-lucide="folder" size="12" class="text-amber-500"></i>
+                        <span class="folder-name">Employee (Name)</span>
+                    </div>
+                    <div class="tree-line">
+                        <div class="folder-item">
+                            <i data-lucide="folder" size="12" class="text-amber-500"></i>
+                            <span class="folder-name">2026-01-02 (Date)</span>
+                        </div>
+                        <div class="tree-line">
+                            <div class="folder-item">
+                                <i data-lucide="file-text" size="12" class="text-blue-400"></i>
+                                <span class="file-name">Shop_Report.pdf</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-purple-500/30 bg-purple-500/5 mb-6" onclick="speak('Принцип одного касания. Система сама узнает магазин и подгрузит эталон полки для сравнения')">
+            <h2 class="text-xs font-black uppercase mb-4 text-purple-400 flex items-center gap-2">
+                <i data-lucide="layout-template" size="14"></i> <span data-t="merch_sol_title">Умные Планограммы</span>
+            </h2>
+            <div class="planogram-compare mb-4">
+                <div class="planogram-box">
+                    <i data-lucide="image" class="text-white/10" size="24"></i>
+                    <span class="planogram-label bg-blue-600 text-white">BASE</span>
+                </div>
+                <div class="flex items-center">
+                    <i data-lucide="refresh-cw" class="text-purple-500/50 pulse-icon" size="16"></i>
+                </div>
+                <div class="planogram-box border-purple-500/40">
+                    <i data-lucide="camera" class="text-purple-400/30" size="24"></i>
+                    <span class="planogram-label bg-purple-600 text-white">CURRENT</span>
+                </div>
+            </div>
+            <p class="text-[11px] opacity-60 italic leading-tight">Система автоматически подгружает фото прошлого визита для контроля выкладки «Лицом к лицу».</p>
+        </div>
+
+        <div class="card border-green-500/30 bg-green-500/5 mb-6" onclick="speak('Облачный сканер превращает телефон в профессиональный терминал.')">
+            <h2 class="text-xs font-black uppercase mb-4 text-green-400 flex items-center gap-2">
+                <i data-lucide="scan-barcode" size="14"></i> <span data-t="card_merch_desc">Облачный сканер ТСД</span>
+            </h2>
+            
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-black/40 p-3 rounded-xl border border-green-500/20 text-center">
+                    <i data-lucide="search" class="text-blue-400 mx-auto mb-2" size="18"></i>
+                    <div class="text-[9px] font-black uppercase text-blue-400 mb-1">SEARCH</div>
+                </div>
+                <div class="bg-black/40 p-3 rounded-xl border border-green-500/20 text-center">
+                    <i data-lucide="plus-square" class="text-green-400 mx-auto mb-2" size="18"></i>
+                    <div class="text-[9px] font-black uppercase text-green-400 mb-1">COUNT (+1)</div>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-3 bg-green-500/10 p-3 rounded-lg border border-green-500/10 mb-4">
+                <i data-lucide="zap" class="text-green-400 flex-shrink-0" size="18"></i>
+                <div class="text-[11px] leading-tight text-green-100">
+                    <b>Live Sync:</b> Google Sheets Direct Connect.
+                </div>
+            </div>
+            
+            <div class="relative h-14 w-full bg-black/60 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center">
+                <div class="scanner-line"></div>
+                <div class="opacity-10">
+                    <i data-lucide="barcode" size="48"></i>
+                </div>
+                <span class="text-[10px] font-black tracking-[5px] text-green-500/80 uppercase z-20">Cloud Sync Active</span>
+            </div>
+        </div>
+
+        <div class="card border-red-500/30 bg-red-500/5 mb-6 py-4" onclick="speak('Подмена координат и времени невозможна. Строгий контроль местоположения')">
+            <div class="flex items-center gap-3">
+                <i data-lucide="shield-check" class="text-red-500" size="20"></i>
+                <span class="text-[11px] font-black uppercase tracking-wider">Strict GPS Protection</span>
+            </div>
         </div>
 
         <div class="mt-8 pb-10">
@@ -54,11 +180,26 @@
     </div>
 
     <script src="plugin-lang.js"></script>
+
     <script>
         lucide.createIcons();
+
+        // Старую функцию speak мы убрали, теперь работает та, что в plugin-lang.js
+
+        document.body.addEventListener('click', function() {
+            if (!window.wasGreeted) {
+                // Используем ключ словаря (если есть) или просто текст
+                speak('voice_merch_install'); 
+                window.wasGreeted = true;
+            }
+        }, { once: true });
+
         function handleInstall() {
-            speak('voice_merch'); // Используем ключ словаря
-            setTimeout(() => { window.location.href = "/merch/index.html"; }, 2000);
+            // Фраза установки
+            speak('voice_merch_install');
+            setTimeout(() => {
+                window.location.href = "/merch/index.html"; 
+            }, 2000);
         }
     </script>
 </body>
