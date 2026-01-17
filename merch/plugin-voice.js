@@ -1,13 +1,14 @@
 (function() {
-    window.pluginSpeak = function(t) {
-        // 1. ПРИОРИТЕТ: сначала смотрим выбор в приложении, 
-        // если его нет — берем язык системы телефона (первые 2 буквы: "ru", "en", "de"...)
+    // Внутренняя функция для работы с голосом
+    const coreSpeak = function(t) {
+        // 1. ПРИОРИТЕТ: Выбор в приложении -> Язык системы телефона
         const savedLang = localStorage.getItem('app_lang');
         const systemLang = navigator.language.substring(0, 2).toLowerCase();
         const lang = savedLang || (systemLang === 'en' ? 'en' : 'ru');
         
-        // 2. СЛОВАРЬ ПЕРЕВОДА (для системных фраз сканера и GPS)
         let textToSay = t;
+        
+        // 2. СЛОВАРЬ ПЕРЕВОДА
         if (lang === 'en') {
             const dictionary = {
                 "Проверяю адрес": "Checking store location",
@@ -16,10 +17,10 @@
                 "Доступ запрещен. Вы далеко.": "Access denied. Too far",
                 "Новый товар": "New item found",
                 "Отчет готов": "Report is ready",
-                "Ок": "Done"
+                "Ок": "Done",
+                "Система мерчендайзинга запущена. Удачной смены!": "Merchandising system started. Have a good shift!"
             };
             
-            // Если фраза есть в словаре — переводим
             for (let key in dictionary) {
                 if (t.includes(key)) {
                     textToSay = dictionary[key];
@@ -28,15 +29,25 @@
             }
         }
 
-        // 3. ОЗВУЧКА
+        // 3. СИНТЕЗ РЕЧИ
         window.speechSynthesis.cancel();
         const m = new SpeechSynthesisUtterance(textToSay);
-        
-        // Устанавливаем голос: если язык телефона/системы английский — ставим US голос
         m.lang = (lang === 'en') ? 'en-US' : 'ru-RU';
-        m.rate = 1.0;
-        
+        m.rate = 0.95; // Чуть медленнее для четкости
         window.speechSynthesis.speak(m);
     };
-    console.log("✅ Голос настроен: Система телефона + выбор в приложении");
+
+    // Экспортируем функцию для основного кода (index.html)
+    window.pluginSpeak = coreSpeak;
+
+    // --- ПЛАГИН ПРИВЕТСТВИЯ ВНУТРИ ---
+    // Браузеры требуют клика для активации звука
+    document.addEventListener('click', function() {
+        if (!window.wasGreeted) {
+            coreSpeak("Система мерчендайзинга запущена. Удачной смены!");
+            window.wasGreeted = true;
+        }
+    }, { once: true });
+
+    console.log("✅ Умный голос и приветствие активны (RU/EN)");
 })();
