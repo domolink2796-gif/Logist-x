@@ -1,14 +1,19 @@
 (function() {
-    // Внутренняя функция для работы с голосом
-    const coreSpeak = function(t) {
-        // 1. ПРИОРИТЕТ: Выбор в приложении -> Язык системы телефона
+    // Функция для определения текущего рабочего языка
+    const getActiveLang = () => {
         const savedLang = localStorage.getItem('app_lang');
-        const systemLang = navigator.language.substring(0, 2).toLowerCase();
-        const lang = savedLang || (systemLang === 'en' ? 'en' : 'ru');
+        if (savedLang) return savedLang;
         
+        // Если в приложении язык не выбран, берем язык системы телефона
+        const systemLang = navigator.language || navigator.userLanguage;
+        return systemLang.startsWith('en') ? 'en' : 'ru';
+    };
+
+    const coreSpeak = function(t) {
+        const lang = getActiveLang();
         let textToSay = t;
         
-        // 2. СЛОВАРЬ ПЕРЕВОДА
+        // Словарь перевода для системных фраз
         if (lang === 'en') {
             const dictionary = {
                 "Проверяю адрес": "Checking store location",
@@ -29,19 +34,18 @@
             }
         }
 
-        // 3. СИНТЕЗ РЕЧИ
         window.speechSynthesis.cancel();
         const m = new SpeechSynthesisUtterance(textToSay);
+        
+        // Принудительная установка голоса под язык телефона/приложения
         m.lang = (lang === 'en') ? 'en-US' : 'ru-RU';
-        m.rate = 0.95; // Чуть медленнее для четкости
+        m.rate = 0.95;
         window.speechSynthesis.speak(m);
     };
 
-    // Экспортируем функцию для основного кода (index.html)
     window.pluginSpeak = coreSpeak;
 
-    // --- ПЛАГИН ПРИВЕТСТВИЯ ВНУТРИ ---
-    // Браузеры требуют клика для активации звука
+    // Приветствие при первом клике
     document.addEventListener('click', function() {
         if (!window.wasGreeted) {
             coreSpeak("Система мерчендайзинга запущена. Удачной смены!");
@@ -49,5 +53,5 @@
         }
     }, { once: true });
 
-    console.log("✅ Умный голос и приветствие активны (RU/EN)");
+    console.log("✅ Голос синхронизирован. Текущий системный язык: " + navigator.language);
 })();
