@@ -243,9 +243,36 @@
     window.GLOBAL_CUR = null;
 
     function speak(t) { 
-        if (window.pluginSpeak) { window.pluginSpeak(t); } 
-        else { const m = new SpeechSynthesisUtterance(); m.text = t; m.lang = 'ru-RU'; window.speechSynthesis.speak(m); }
+        // 1. Узнаем какой язык выбран (из плагина перевода)
+        const currentLang = localStorage.getItem('app_lang') || 'ru';
+        let textToSay = t;
+
+        // 2. Если включен EN, переводим системные фразы
+        if (currentLang === 'en') {
+            if (t.includes("Проверяю адрес")) textToSay = "Checking store location";
+            else if (t.includes("Адрес подтверждён")) textToSay = "Location confirmed";
+            else if (t.includes("Включите GPS")) textToSay = "Please enable GPS";
+            else if (t.includes("Доступ запрещен")) textToSay = "Access denied. Too far";
+            else if (t.includes("Новый товар")) textToSay = "New item found";
+            else if (t.includes("Отчет готов")) textToSay = "Report is ready";
+            else if (t.includes("Ок")) textToSay = "Done";
+        }
+
+        // 3. Отправляем в плагин голоса или озвучиваем сами
+        if (window.pluginSpeak) { 
+            window.pluginSpeak(textToSay); 
+        } else {
+            window.speechSynthesis.cancel(); // Прерываем текущую речь
+            const m = new SpeechSynthesisUtterance();
+            m.text = textToSay;
+            
+            // 4. Устанавливаем правильный акцент (локаль)
+            m.lang = (currentLang === 'en') ? 'en-US' : 'ru-RU';
+            
+            window.speechSynthesis.speak(m);
+        }
     }
+
     
     function getDistance(lat1, lon1, lat2, lon2) {
         const R = 6371000; const dLat = (lat2-lat1) * Math.PI/180; const dLon = (lon2-lon1) * Math.PI/180;
