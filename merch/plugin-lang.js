@@ -1,13 +1,12 @@
 (function() {
-    // 1. УМНОЕ ОПРЕДЕЛЕНИЕ ЯЗЫКА:
-    // Сначала смотрим, выбирал ли пользователь язык вручную (localStorage).
-    // Если нет — берем язык системы телефона.
+    // 1. УМНОЕ ОПРЕДЕЛЕНИЕ ЯЗЫКА ПРИ ЗАГРУЗКЕ
     let currentLang = localStorage.getItem('app_lang');
     
     if (!currentLang) {
-        const systemLang = navigator.language.substring(0, 2).toLowerCase();
+        // Если пользователь еще не выбирал язык, смотрим настройки телефона
+        const systemLang = (navigator.language || navigator.userLanguage).substring(0, 2).toLowerCase();
         currentLang = (systemLang === 'en') ? 'en' : 'ru';
-        // Сохраняем, чтобы при переходах между страницами язык не прыгал
+        // Сохраняем, чтобы интерфейс не "прыгал" при перезагрузке
         localStorage.setItem('app_lang', currentLang);
     }
 
@@ -53,7 +52,7 @@
             if (langData[t]) el.innerText = langData[t];
         });
 
-        // Перевод текстовых узлов модалки
+        // Перевод текстовых узлов (внутри модального окна)
         const taskModal = document.getElementById('task-modal');
         if (taskModal) {
             const walk = document.createTreeWalker(taskModal, NodeFilter.SHOW_TEXT, null, false);
@@ -64,7 +63,7 @@
             }
         }
 
-        // Плейсхолдеры (поиск и т.д.)
+        // Плейсхолдеры
         document.querySelectorAll('input').forEach(inp => {
             if (inp.placeholder && langData[inp.placeholder]) {
                 inp.placeholder = langData[inp.placeholder];
@@ -72,12 +71,13 @@
         });
     };
 
-    // Слежка за изменениями (чтобы перевод не слетал)
+    // Слежка за изменениями в модалке (MutationObserver)
     const observer = new MutationObserver(() => {
         if (currentLang === 'en') window.translateUI();
     });
 
     window.addEventListener('load', () => {
+        // Создание переключателя в шапке
         const header = document.querySelector('.header');
         if (header) {
             const btn = document.createElement('div');
@@ -95,6 +95,7 @@
         const modal = document.getElementById('task-modal');
         if (modal) observer.observe(modal, { childList: true, subtree: true });
 
+        // Запускаем первичный перевод
         window.translateUI();
     });
 })();
