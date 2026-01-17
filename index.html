@@ -20,9 +20,9 @@
             webvisor:true
        });
     </script>
-    <title>X-PLATFORM | Экосистема LOGIST_X и MERCH_X</title>
-    <meta name="description" content="X-PLATFORM — официально зарегистрированная система (Свид-во №0849-643-137) для контроля полевого персонала и аналитики ритейла.">
-    <meta name="keywords" content="контроль монтажников, фотоотчет расклейка, программа для мерчандайзеров, контроль полевого персонала, автоматизация фотоотчетов, GPS контроль сотрудников, отчеты в google таблицы">
+    <noscript><div><img src="https://mc.yandex.ru/watch/106053460" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+
+    <title>X-PLATFORM | Global</title>
     
     <link rel="manifest" href="app/manifest.json">
     <meta name="theme-color" content="#010409">
@@ -31,58 +31,58 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org/",
-      "@type": "SoftwareApplication",
-      "name": "X-PLATFORM",
-      "operatingSystem": "Android, iOS, Windows",
-      "applicationCategory": "BusinessApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "1500.00",
-        "priceCurrency": "RUB"
-      }
-    }
-    </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         :root { --accent: #f59e0b; --bg: #010409; --card: rgba(13, 17, 23, 0.7); }
         body { background-color: var(--bg); color: #e6edf3; font-family: 'Inter', sans-serif; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-        @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); transform: scale(1); } 70% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); transform: scale(1.03); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); transform: scale(1); } }
+        
+        @keyframes pulse-gold { 
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); transform: scale(1); } 
+            70% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); transform: scale(1.03); } 
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); transform: scale(1); } 
+        }
+
         .btn-install-gold { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #000 !important; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; animation: pulse-gold 2s infinite; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; border-radius: 1.5rem; }
         .btn-bot-outline { border: 2px solid var(--accent); color: var(--accent) !important; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; border-radius: 1.5rem; background: rgba(245, 158, 11, 0.05); }
         .btn-bot-outline:hover { background: var(--accent); color: #000 !important; }
+        
         .price-card { background: var(--card); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 2.5rem; padding: 2.5rem 1.5rem; transition: 0.4s ease; display: flex; flex-direction: column; justify-content: space-between; }
+        
         .folder-node { border-left: 2px solid rgba(245, 158, 11, 0.2); margin-left: 1rem; padding-left: 1.5rem; position: relative; margin-bottom: 0.75rem; }
         .folder-node::before { content: ''; position: absolute; left: 0; top: 0.75rem; width: 1rem; border-top: 2px solid rgba(245, 158, 11, 0.2); }
         .dot-matrix { background-image: radial-gradient(rgba(245, 158, 11, 0.1) 1px, transparent 1px); background-size: 30px 30px; }
+        
         .benefit-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 2rem; padding: 2rem; transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
         .benefit-card:hover { border-color: var(--accent); background: rgba(245, 158, 11, 0.05); }
+        
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); overflow-y: auto; }
         .modal-content { background: #0d1117; margin: 5% auto; padding: 40px; border: 1px solid #30363d; width: 95%; max-width: 600px; border-radius: 24px; color: #8b949e; font-size: 14px; line-height: 1.6; position: relative; }
         .modal-header { color: #f59e0b; font-weight: 900; font-size: 24px; margin-bottom: 20px; text-transform: uppercase; }
         .close-modal { color: #fff; float: right; font-size: 28px; cursor: pointer; }
+        
         .login-input { width: 100%; background: #010409; border: 1px solid #30363d; padding: 15px; border-radius: 12px; color: #fff; font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 15px; letter-spacing: 2px; }
         .login-input:focus { border-color: var(--accent); outline: none; }
         #cabinetFrame { width: 100%; height: 80vh; border: none; border-radius: 12px; }
+        
         .tab-btn { font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; padding-bottom: 8px; border-bottom: 2px solid transparent; opacity: 0.4; transition: 0.3s; }
         .tab-btn.active { opacity: 1; color: var(--accent); border-bottom-color: var(--accent); }
+
+        .lang-switch { font-size: 10px; font-weight: 900; background: rgba(245, 158, 11, 0.1); padding: 6px 10px; border-radius: 6px; cursor: pointer; color: var(--accent); border: 1px solid rgba(245, 158, 11, 0.3); margin-right: 10px; }
     </style>
 </head>
 <body class="dot-matrix">
-    <noscript><div><img src="https://mc.yandex.ru/watch/106053460" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    
     <nav class="fixed top-0 w-full z-[1000] bg-black/80 backdrop-blur-xl border-b border-white/5 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <div class="bg-amber-500 p-1.5 rounded-xl"><i data-lucide="shield-check" class="text-black" size="20"></i></div>
                 <span class="text-2xl font-black italic tracking-tighter uppercase text-white">X-PLATFORM<span class="text-amber-500">_CORE</span></span>
             </div>
-            <div class="flex gap-2">
-                <button onclick="openModal('modalCabinet')" class="btn-bot-outline px-4 py-2 text-[9px]">Личный Кабинет</button>
-                <button onclick="handleInstallClick()" class="btn-install-gold px-5 py-2.5 text-[9px] hidden xs:flex">Установить App</button>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleLanguage()" class="lang-switch" id="langBtn">RU</button>
+                <button onclick="openModal('modalCabinet')" class="btn-bot-outline px-4 py-2 text-[9px]" data-i18n="nav_cabinet">Личный Кабинет</button>
+                <button onclick="handleInstallClick()" class="btn-install-gold px-5 py-2.5 text-[9px] hidden xs:flex" data-i18n="nav_install">Установить App</button>
             </div>
         </div>
     </nav>
@@ -93,20 +93,20 @@
                 Registered System № 0849-643-137
             </div>
             <h1 class="text-5xl md:text-8xl font-black mb-10 uppercase tracking-tighter animate__animated animate__fadeInUp">
-                X-PLATFORM <br><span class="text-amber-500 italic underline decoration-amber-500/20 text-4xl md:text-7xl">БЕЗОПАСНЫЙ КОНТРОЛЬ</span>
+                X-PLATFORM <br><span class="text-amber-500 italic underline decoration-amber-500/20 text-4xl md:text-7xl" data-i18n="hero_title_accent">БЕЗОПАСНЫЙ КОНТРОЛЬ</span>
             </h1>
-            <p class="text-lg md:text-2xl opacity-40 mb-14 max-w-2xl mx-auto leading-relaxed animate__animated animate__fadeInUp italic text-white">
+            <p class="text-lg md:text-2xl opacity-40 mb-14 max-w-2xl mx-auto leading-relaxed animate__animated animate__fadeInUp italic text-white" data-i18n="hero_desc">
                 Экосистема управления персоналом. Выберите модуль для начала работы:
             </p>
             <div class="flex flex-col lg:flex-row gap-4 justify-center items-stretch">
                 <button onclick="handleInstallClick()" class="btn-install-gold px-8 py-6 text-sm gap-3 shadow-2xl flex-1">
-                   <i data-lucide="download-cloud" size="22"></i> МОДУЛЬ LOGIST_X
+                   <i data-lucide="download-cloud" size="22"></i> <span data-i18n="btn_logist">МОДУЛЬ LOGIST_X</span>
                 </button>
-                <button onclick="window.location.href='merch-info.html'" class="btn-bot-outline px-8 py-6 text-sm gap-3 flex-1 border-amber-500/50">
-                   <i data-lucide="bar-chart-3" size="22"></i> АНАЛИТИКА MERCH_X
+                <button onclick="window.location.href='merch/index.html'" class="btn-bot-outline px-8 py-6 text-sm gap-3 flex-1 border-amber-500/50">
+                   <i data-lucide="bar-chart-3" size="22"></i> <span data-i18n="btn_merch">АНАЛИТИКА MERCH_X</span>
                 </button>
                 <button onclick="goToBot()" class="btn-bot-outline px-8 py-6 text-sm gap-3 flex-1">
-                   <i data-lucide="message-circle" size="22"></i> НАЧАТЬ В TELEGRAM
+                   <i data-lucide="message-circle" size="22"></i> <span data-i18n="btn_bot">НАЧАТЬ В TELEGRAM</span>
                 </button>
             </div>
         </div>
@@ -114,31 +114,35 @@
 
     <section class="py-24 px-6 border-t border-white/5">
         <div class="max-w-7xl mx-auto text-center">
-            <h2 class="text-3xl md:text-6xl font-black mb-16 italic uppercase text-white text-center">Наши <span class="text-amber-500">Технологии</span></h2>
+            <h2 class="text-3xl md:text-6xl font-black mb-16 italic uppercase text-white text-center">
+                <span data-i18n="tech_title">Наши</span> <span class="text-amber-500" data-i18n="tech_accent">Технологии</span>
+            </h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-left text-white">
                 <div class="benefit-card text-center sm:text-left">
                     <div class="text-amber-500 mb-6 mx-auto sm:mx-0"><i data-lucide="layout-grid" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase italic">Авто-Иерархия</h3>
-                    <p class="opacity-40 text-xs leading-relaxed italic">Автоматическое создание папок: <strong>Монтажник → Объект → Дата.</strong></p>
+                    <h3 class="text-xl font-black mb-4 uppercase italic" data-i18n="feat_1_title">Авто-Иерархия</h3>
+                    <p class="opacity-40 text-xs leading-relaxed italic" data-i18n="feat_1_desc">Автоматическое создание папок: Монтажник → Объект → Дата.</p>
                 </div>
                 <div class="benefit-card text-center sm:text-left">
                     <div class="text-amber-500 mb-6 mx-auto sm:mx-0"><i data-lucide="table-2" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase italic">Листы Google</h3>
-                    <p class="opacity-40 text-xs leading-relaxed italic">Персональные вкладки для каждого сотрудника с итоговыми суммами.</p>
+                    <h3 class="text-xl font-black mb-4 uppercase italic" data-i18n="feat_2_title">Листы Google</h3>
+                    <p class="opacity-40 text-xs leading-relaxed italic" data-i18n="feat_2_desc">Персональные вкладки для каждого сотрудника с итоговыми суммами.</p>
                 </div>
                 <div class="benefit-card text-center sm:text-left border-amber-500/40 bg-amber-500/5">
                     <div class="text-amber-500 mb-6 mx-auto sm:mx-0"><i data-lucide="copyright" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase italic text-amber-500">Правообладатель</h3>
-                    <p class="opacity-80 text-[10px] leading-relaxed italic uppercase font-bold tracking-widest text-white/70">
+                    <h3 class="text-xl font-black mb-4 uppercase italic text-amber-500" data-i18n="feat_3_title">Правообладатель</h3>
+                    <p class="opacity-80 text-[10px] leading-relaxed italic uppercase font-bold tracking-widest text-white/70" data-i18n="feat_3_desc">
                         Свидетельство № 0849-643-137<br>
                         Никитин Е. А. (100% ПРАВ)
                     </p>
                 </div>
-                <a href="merch-info.html" class="benefit-card border-amber-500/30 bg-amber-500/5 group cursor-pointer text-center sm:text-left">
+                <a href="merch/index.html" class="benefit-card border-amber-500/30 bg-amber-500/5 group cursor-pointer text-center sm:text-left">
                     <div class="text-amber-500 mb-6 mx-auto sm:mx-0 animate-pulse"><i data-lucide="bar-chart-3" size="40"></i></div>
-                    <h3 class="text-xl font-black mb-4 uppercase italic group-hover:text-amber-500 transition-colors">Система MERCH_X</h3>
-                    <p class="opacity-60 text-xs leading-relaxed mb-6 italic text-amber-500/80">Аналитика полок, остатки товара и расчет доли фейсинга.</p>
-                    <div class="mt-auto text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center justify-center sm:justify-start gap-2">ПОДРОБНЕЕ <i data-lucide="arrow-right" size="14"></i></div>
+                    <h3 class="text-xl font-black mb-4 uppercase italic group-hover:text-amber-500 transition-colors" data-i18n="feat_4_title">Система MERCH_X</h3>
+                    <p class="opacity-60 text-xs leading-relaxed mb-6 italic text-amber-500/80" data-i18n="feat_4_desc">Аналитика полок, остатки товара и расчет доли фейсинга.</p>
+                    <div class="mt-auto text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center justify-center sm:justify-start gap-2">
+                        <span data-i18n="btn_more">ПОДРОБНЕЕ</span> <i data-lucide="arrow-right" size="14"></i>
+                    </div>
                 </a>
             </div>
         </div>
@@ -149,41 +153,55 @@
             <div class="bg-[#05070a] p-8 md:p-12 rounded-[3rem] border border-white/5 shadow-2xl">
                 <div class="text-amber-500/40 mb-10 font-black text-xs tracking-[8px] uppercase border-b border-white/5 pb-6 text-white">ERP_Drive_Structure</div>
                 <div class="folder-node">
-                    <div class="flex items-center gap-3 text-blue-400 font-black uppercase tracking-widest text-sm"><i data-lucide="user" size="18"></i> Костик_Монтажник</div>
+                    <div class="flex items-center gap-3 text-blue-400 font-black uppercase tracking-widest text-sm"><i data-lucide="user" size="18"></i> <span data-i18n="demo_worker">Костик_Монтажник</span></div>
                     <div class="folder-node">
-                        <div class="flex items-center gap-3 text-green-500 font-black uppercase tracking-widest text-sm"><i data-lucide="building" size="18"></i> Магнит_Объект</div>
-                        <div class="folder-node italic text-amber-500/60 text-sm"><div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span>Монтаж_Завершен.jpg</span></div></div>
+                        <div class="flex items-center gap-3 text-green-500 font-black uppercase tracking-widest text-sm"><i data-lucide="building" size="18"></i> <span data-i18n="demo_obj">Магнит_Объект</span></div>
+                        <div class="folder-node italic text-amber-500/60 text-sm"><div class="flex items-center gap-3"><i data-lucide="file-image" size="16"></i> <span data-i18n="demo_file">Монтаж_Завершен.jpg</span></div></div>
                     </div>
                 </div>
             </div>
             <div class="text-center lg:text-left text-white">
-                <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase text-amber-500 leading-none">УМНЫЙ АРХИВ</h2>
-                <p class="opacity-40 text-xl italic leading-relaxed">Система сама распределяет фото по адресам. Вы получаете чистую аналитику без ручного труда.</p>
+                <h2 class="text-4xl md:text-7xl font-black mb-8 italic uppercase text-amber-500 leading-none" data-i18n="archive_title">УМНЫЙ АРХИВ</h2>
+                <p class="opacity-40 text-xl italic leading-relaxed" data-i18n="archive_desc">Система сама распределяет фото по адресам. Вы получаете чистую аналитику без ручного труда.</p>
             </div>
         </div>
     </section>
 
     <section class="py-24 px-6 border-t border-white/5">
         <div class="max-w-6xl mx-auto">
-            <h2 class="text-3xl md:text-6xl font-black italic uppercase text-white mb-16 text-center">Наш <span class="text-amber-500">Блог</span></h2>
+            <h2 class="text-3xl md:text-6xl font-black italic uppercase text-white mb-16 text-center">
+                <span data-i18n="blog_title">Наш</span> <span class="text-amber-500" data-i18n="blog_accent">Блог</span>
+            </h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 text-white">
                 <a href="blog-1.html" class="benefit-card flex flex-col justify-between group cursor-pointer">
-                    <div><div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">МЕТОДОЛОГИЯ</div>
-                    <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic">Исключаем обман</h3>
-                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Разбираем методы GPS-контроля для полной прозрачности работы полевого персонала...</p></div>
-                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать <i data-lucide="arrow-right" size="14"></i></div>
+                    <div>
+                        <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center" data-i18n="blog_1_cat">МЕТОДОЛОГИЯ</div>
+                        <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic" data-i18n="blog_1_title">Исключаем обман</h3>
+                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic" data-i18n="blog_1_desc">Разбираем методы GPS-контроля для полной прозрачности...</p>
+                    </div>
+                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                        <span data-i18n="btn_read">Читать</span> <i data-lucide="arrow-right" size="14"></i>
+                    </div>
                 </a>
                 <a href="blog-2.html" class="benefit-card flex flex-col justify-between group cursor-pointer">
-                    <div><div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">МЕНЕДЖМЕНТ</div>
-                    <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic">Порядок в сетях</h3>
-                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Как организовать контроль на десятках точек одновременно...</p></div>
-                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать <i data-lucide="arrow-right" size="14"></i></div>
+                    <div>
+                        <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center" data-i18n="blog_2_cat">МЕНЕДЖМЕНТ</div>
+                        <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic" data-i18n="blog_2_title">Порядок в сетях</h3>
+                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic" data-i18n="blog_2_desc">Как организовать контроль на десятках точек...</p>
+                    </div>
+                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                        <span data-i18n="btn_read">Читать</span> <i data-lucide="arrow-right" size="14"></i>
+                    </div>
                 </a>
                 <a href="blog-3.html" class="benefit-card flex flex-col justify-between group cursor-pointer">
-                    <div><div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center">ОБНОВЛЕНИЯ</div>
-                    <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic">Функции 2026</h3>
-                    <p class="opacity-40 text-xs leading-relaxed mb-8 italic">Анонсируем Telegram-панель управления и новые автоматические отчеты...</p></div>
-                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">Читать <i data-lucide="arrow-right" size="14"></i></div>
+                    <div>
+                        <div class="text-amber-500/40 mb-6 font-black text-[10px] tracking-[4px] uppercase italic text-center" data-i18n="blog_3_cat">ОБНОВЛЕНИЯ</div>
+                        <h3 class="text-xl font-black mb-4 uppercase group-hover:text-amber-500 italic" data-i18n="blog_3_title">Функции 2026</h3>
+                        <p class="opacity-40 text-xs leading-relaxed mb-8 italic" data-i18n="blog_3_desc">Анонсируем Telegram-панель управления...</p>
+                    </div>
+                    <div class="text-amber-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                        <span data-i18n="btn_read">Читать</span> <i data-lucide="arrow-right" size="14"></i>
+                    </div>
                 </a>
             </div>
         </div>
@@ -192,24 +210,24 @@
     <section id="pricing" class="py-32 px-6 border-t border-white/5">
         <div class="max-w-3xl mx-auto">
             <div class="price-card border-amber-500/40 bg-amber-500/5 text-center">
-                <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-60 text-amber-500">Единый тариф X-Platform</h3>
+                <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-60 text-amber-500" data-i18n="price_title">Единый тариф X-Platform</h3>
                 <div class="text-7xl md:text-8xl font-black mb-4 italic text-amber-500">1 500 <span class="text-2xl not-italic opacity-40 text-white">₽</span></div>
-                <p class="opacity-60 text-white font-bold text-sm uppercase tracking-widest mb-10">В месяц за сотрудника</p>
-                <button onclick="goToBot()" class="btn-install-gold w-full py-7 text-sm tracking-widest uppercase italic text-black">Запустить через BOT</button>
+                <p class="opacity-60 text-white font-bold text-sm uppercase tracking-widest mb-10" data-i18n="price_sub">В месяц за сотрудника</p>
+                <button onclick="goToBot()" class="btn-install-gold w-full py-7 text-sm tracking-widest uppercase italic text-black" data-i18n="btn_price_bot">Запустить через BOT</button>
             </div>
         </div>
     </section>
 
     <section class="py-10 px-6 opacity-10 text-[10px] text-center max-w-4xl mx-auto text-white">
-        <p>Автоматизация контроля монтажников, расклейщиков объявлений и мерчандайзеров. Экосистема X-PLATFORM (Logist_X & Merch_X) позволяет организовать сбор фотоотчетов с GPS-подтверждением прямо в Google Таблицы. Идеально для рекламных агентств, клининга и логистики. Зарегистрированный программный продукт № 0849-643-137.</p>
+        <p data-i18n="seo_text">Автоматизация контроля монтажников, расклейщиков объявлений и мерчандайзеров. Экосистема X-PLATFORM (Logist_X & Merch_X) позволяет организовать сбор фотоотчетов с GPS-подтверждением прямо в Google Таблицы.</p>
     </section>
 
     <footer class="py-24 text-center border-t border-white/5 bg-[#05070a]">
         <p class="text-[10px] font-black uppercase tracking-[15px] opacity-40 text-white italic">X-PLATFORM CORE 2026</p>
         
         <div class="mt-8 text-[11px] text-amber-500/80 space-y-2 uppercase tracking-widest italic font-bold">
-            <p>Никитин Евгений Анатольевич | Правообладатель (Свид-во №0849-643-137)</p>
-            <p>ИНН: 575405332940 | Статус: Самозанятый</p>
+            <p data-i18n="legal_owner">Никитин Евгений Анатольевич | Правообладатель (Свид-во №0849-643-137)</p>
+            <p data-i18n="legal_inn">ИНН: 575405332940 | Статус: Самозанятый</p>
             <p>Email: evgeny_orel@mail.ru | Тел: +7 995 447-01-30</p>
         </div>
 
@@ -220,9 +238,9 @@
         </div>
 
         <div class="mt-8 flex flex-wrap justify-center gap-6 text-[10px] uppercase font-bold text-white/40">
-            <a href="https://t.me/gena_krokodi" target="_blank" class="text-amber-500 border border-amber-500/30 px-4 py-2 rounded-full hover:bg-amber-500 hover:text-black transition-all flex items-center gap-2"><i data-lucide="send" size="12"></i> СВЯЗАТЬСЯ С НАМИ</a>
-            <a href="/privacy-policy" onclick="event.preventDefault(); openModal('modalPrivacy')" class="hover:text-amber-500 self-center">Политика конфиденциальности</a>
-            <a href="/public-offer" onclick="event.preventDefault(); openModal('modalTerms')" class="hover:text-amber-500 self-center">Публичная оферта</a>
+            <a href="https://t.me/gena_krokodi" target="_blank" class="text-amber-500 border border-amber-500/30 px-4 py-2 rounded-full hover:bg-amber-500 hover:text-black transition-all flex items-center gap-2"><i data-lucide="send" size="12"></i> <span data-i18n="btn_contact">СВЯЗАТЬСЯ С НАМИ</span></a>
+            <a href="/privacy-policy" onclick="event.preventDefault(); openModal('modalPrivacy')" class="hover:text-amber-500 self-center" data-i18n="link_policy">Политика конфиденциальности</a>
+            <a href="/public-offer" onclick="event.preventDefault(); openModal('modalTerms')" class="hover:text-amber-500 self-center" data-i18n="link_offer">Публичная оферта</a>
         </div>
     </footer>
 
@@ -232,79 +250,282 @@
             
             <div id="auth-ui">
                 <div class="flex gap-6 mb-8 border-b border-white/10">
-                    <button onclick="switchTab('login')" id="btn-tab-login" class="tab-btn active">Вход по ключу</button>
-                    <button onclick="switchTab('buy')" id="btn-tab-buy" class="tab-btn">Купить лицензию</button>
+                    <button onclick="switchTab('login')" id="btn-tab-login" class="tab-btn active" data-i18n="tab_login">Вход по ключу</button>
+                    <button onclick="switchTab('buy')" id="btn-tab-buy" class="tab-btn" data-i18n="tab_buy">Купить лицензию</button>
                 </div>
 
                 <div id="login-section">
-                    <div class="modal-header">Вход в X-PLATFORM</div>
-                    <p class="mb-6">Введите 8-значный ключ вашего объекта:</p>
+                    <div class="modal-header" data-i18n="login_title">Вход в X-PLATFORM</div>
+                    <p class="mb-6" data-i18n="login_desc">Введите 8-значный ключ вашего объекта:</p>
                     <input type="text" id="userKey" class="login-input" placeholder="XXXX-XXXX" maxlength="9">
-                    <button onclick="loginToCabinet()" class="btn-install-gold w-full py-4 text-sm tracking-widest uppercase italic text-black">ОТКРЫТЬ ДАННЫЕ</button>
+                    <button onclick="loginToCabinet()" class="btn-install-gold w-full py-4 text-sm tracking-widest uppercase italic text-black" data-i18n="btn_open_data">ОТКРЫТЬ ДАННЫЕ</button>
                 </div>
 
                 <div id="buy-section" style="display: none;">
-                    <div class="modal-header">Новая лицензия</div>
+                    <div class="modal-header" data-i18n="buy_title">Новая лицензия</div>
                     <div class="space-y-4">
                         <div>
-                            <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Название объекта</label>
+                            <label class="text-[9px] uppercase font-bold opacity-40 ml-2" data-i18n="buy_label_name">Название объекта</label>
                             <input type="text" id="buyName" class="login-input !text-left !text-sm !mb-0" placeholder="Например: Склад-1">
                         </div>
                         
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Сотрудников</label>
+                                <label class="text-[9px] uppercase font-bold opacity-40 ml-2" data-i18n="buy_label_count">Сотрудников</label>
                                 <input type="number" id="buyLimit" class="login-input !text-left !text-sm !mb-0" value="5" min="1" oninput="calculatePrice()">
                             </div>
                             <div>
-                                <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Период</label>
+                                <label class="text-[9px] uppercase font-bold opacity-40 ml-2" data-i18n="buy_label_period">Период</label>
                                 <select id="buyMonths" class="login-input !text-left !text-sm !mb-0 !bg-black" onchange="calculatePrice()">
-                                    <option value="30">1 месяц</option>
-                                    <option value="90">3 месяца (-10%)</option>
-                                    <option value="180">6 месяцев (-15%)</option>
-                                    <option value="365">1 год (ВЫГОДНО)</option>
+                                    <option value="30" data-i18n="opt_1m">1 месяц</option>
+                                    <option value="90" data-i18n="opt_3m">3 месяца (-10%)</option>
+                                    <option value="180" data-i18n="opt_6m">6 месяцев (-15%)</option>
+                                    <option value="365" data-i18n="opt_1y">1 год (ВЫГОДНО)</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Тип проекта</label>
+                            <label class="text-[9px] uppercase font-bold opacity-40 ml-2" data-i18n="buy_label_type">Тип проекта</label>
                             <select id="buyType" class="login-input !text-left !text-sm !mb-0 !bg-black" onchange="calculatePrice()">
-                                <option value="logist">LOGIST_X (Расклейка / Монтаж)</option>
-                                <option value="merch">MERCH_X (Мерчандайзинг / Аналитика)</option>
+                                <option value="logist">LOGIST_X (Delivery / Install)</option>
+                                <option value="merch">MERCH_X (Retail / Audit)</option>
                             </select>
                         </div>
 
                         <div class="bg-white/5 p-4 rounded-xl border border-white/10 text-center">
-                            <div class="text-[10px] uppercase opacity-50 mb-1">Итого к оплате:</div>
+                            <div class="text-[10px] uppercase opacity-50 mb-1" data-i18n="buy_total">Итого к оплате:</div>
                             <div id="totalPriceDisplay" class="text-2xl font-black text-amber-500">7 500 ₽</div>
                         </div>
                         
-                        <button onclick="buyLicenseOnSite()" class="btn-install-gold w-full py-4 text-sm tracking-widest uppercase italic text-black">ОПЛАТИТЬ ДОСТУП</button>
+                        <button onclick="buyLicenseOnSite()" class="btn-install-gold w-full py-4 text-sm tracking-widest uppercase italic text-black" data-i18n="btn_pay">ОПЛАТИТЬ ДОСТУП</button>
                     </div>
                 </div>
             </div>
 
             <div id="iframe-section" style="display: none;">
-                <div class="modal-header" id="cabinetTitle">Ваш Кабинет</div>
+                <div class="modal-header" id="cabinetTitle">Dashboard</div>
                 <iframe id="cabinetFrame" src=""></iframe>
-                <button onclick="location.reload()" class="mt-4 text-[10px] uppercase opacity-50 hover:opacity-100">← Выйти из кабинета</button>
+                <button onclick="location.reload()" class="mt-4 text-[10px] uppercase opacity-50 hover:opacity-100" data-i18n="btn_exit">← Выйти из кабинета</button>
             </div>
         </div>
     </div>
 
-    <div id="modalPrivacy" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span><div class="modal-header">Политика конфиденциальности</div><p>Настоящая политика действует в отношении всей информации, которую сервис X-PLATFORM может получить о пользователе Никитине Евгении Анатольевиче (самозанятый)...</p></div></div>
-    <div id="modalTerms" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalTerms')">&times;</span><div class="modal-header">Публичная оферта</div><p>Сервис X-PLATFORM (Никитин Е.А., самозанятый) предоставляет доступ к ПО на условиях подписки от 1500 руб/мес за одного пользователя. Оплата производится через сервис Робокасса...</p></div></div>
+    <div id="modalPrivacy" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span><div class="modal-header" data-i18n="modal_policy_title">Политика конфиденциальности</div><p data-i18n="modal_policy_text">Настоящая политика действует в отношении всей информации...</p></div></div>
+    <div id="modalTerms" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalTerms')">&times;</span><div class="modal-header" data-i18n="modal_offer_title">Публичная оферта</div><p data-i18n="modal_offer_text">Сервис X-PLATFORM предоставляет доступ к ПО...</p></div></div>
 
     <script>
         lucide.createIcons();
         const BOT_URL = 'https://t.me/LogistX_Robot_Bot';
         const SERVER_URL = 'https://logist-x-server-production.up.railway.app';
         let deferredPrompt;
-        
+        let currentLang = 'ru';
+
+        // === DICTIONARY ===
+        const translations = {
+            ru: {
+                nav_cabinet: "Личный Кабинет",
+                nav_install: "Установить App",
+                hero_title_accent: "БЕЗОПАСНЫЙ КОНТРОЛЬ",
+                hero_desc: "Экосистема управления персоналом. Выберите модуль для начала работы:",
+                btn_logist: "МОДУЛЬ LOGIST_X",
+                btn_merch: "АНАЛИТИКА MERCH_X",
+                btn_bot: "НАЧАТЬ В TELEGRAM",
+                
+                tech_title: "Наши",
+                tech_accent: "Технологии",
+                feat_1_title: "Авто-Иерархия",
+                feat_1_desc: "Автоматическое создание папок: Монтажник → Объект → Дата.",
+                feat_2_title: "Листы Google",
+                feat_2_desc: "Персональные вкладки для каждого сотрудника с итоговыми суммами.",
+                feat_3_title: "Правообладатель",
+                feat_3_desc: "Свидетельство № 0849-643-137<br>Никитин Е. А. (100% ПРАВ)",
+                feat_4_title: "Система MERCH_X",
+                feat_4_desc: "Аналитика полок, остатки товара и расчет доли фейсинга.",
+                btn_more: "ПОДРОБНЕЕ",
+
+                archive_title: "УМНЫЙ АРХИВ",
+                archive_desc: "Система сама распределяет фото по адресам. Вы получаете чистую аналитику без ручного труда.",
+                demo_worker: "Костик_Монтажник",
+                demo_obj: "Магнит_Объект",
+                demo_file: "Монтаж_Завершен.jpg",
+
+                blog_title: "Наш",
+                blog_accent: "Блог",
+                blog_1_cat: "МЕТОДОЛОГИЯ",
+                blog_1_title: "Исключаем обман",
+                blog_1_desc: "Разбираем методы GPS-контроля для полной прозрачности...",
+                blog_2_cat: "МЕНЕДЖМЕНТ",
+                blog_2_title: "Порядок в сетях",
+                blog_2_desc: "Как организовать контроль на десятках точек...",
+                blog_3_cat: "ОБНОВЛЕНИЯ",
+                blog_3_title: "Функции 2026",
+                blog_3_desc: "Анонсируем Telegram-панель управления...",
+                btn_read: "Читать",
+
+                price_title: "Единый тариф X-Platform",
+                price_sub: "В месяц за сотрудника",
+                btn_price_bot: "Запустить через BOT",
+                seo_text: "Автоматизация контроля монтажников, расклейщиков объявлений и мерчандайзеров. Экосистема X-PLATFORM...",
+
+                legal_owner: "Никитин Евгений Анатольевич | Правообладатель (Свид-во №0849-643-137)",
+                legal_inn: "ИНН: 575405332940 | Статус: Самозанятый",
+                btn_contact: "СВЯЗАТЬСЯ С НАМИ",
+                link_policy: "Политика конфиденциальности",
+                link_offer: "Публичная оферта",
+
+                tab_login: "Вход по ключу",
+                tab_buy: "Купить лицензию",
+                login_title: "Вход в X-PLATFORM",
+                login_desc: "Введите 8-значный ключ вашего объекта:",
+                btn_open_data: "ОТКРЫТЬ ДАННЫЕ",
+                
+                buy_title: "Новая лицензия",
+                buy_label_name: "Название объекта",
+                buy_label_count: "Сотрудников",
+                buy_label_period: "Период",
+                buy_label_type: "Тип проекта",
+                opt_1m: "1 месяц",
+                opt_3m: "3 месяца (-10%)",
+                opt_6m: "6 месяцев (-15%)",
+                opt_1y: "1 год (ВЫГОДНО)",
+                buy_total: "Итого к оплате:",
+                btn_pay: "ОПЛАТИТЬ ДОСТУП",
+                btn_exit: "← Выйти из кабинета",
+
+                modal_policy_title: "Политика конфиденциальности",
+                modal_policy_text: "Настоящая политика действует в отношении всей информации...",
+                modal_offer_title: "Публичная оферта",
+                modal_offer_text: "Сервис X-PLATFORM предоставляет доступ к ПО...",
+
+                // Speech parts
+                sp_bot: "Переходим в Телеграм бот платформы",
+                sp_license_new: "Оформление новой лицензии икс платформы",
+                sp_access_ok: "Доступ подтвержден. Добро пожаловать.",
+                sp_key_err: "Ключ не найден",
+                sp_invoice: "Формируем счет для компании",
+                sp_enter_name: "Введите название объекта",
+                sp_project: "Проект",
+                sp_limit: "Лимит",
+                sp_ppl: "человек",
+                sp_disc_no: "Без скидки",
+                sp_disc_10: "Скидка десять процентов",
+                sp_disc_15: "Скидка пятнадцать процентов",
+                sp_disc_max: "Максимальная выгода"
+            },
+            en: {
+                nav_cabinet: "Dashboard",
+                nav_install: "Install App",
+                hero_title_accent: "SECURE CONTROL",
+                hero_desc: "Personnel management ecosystem. Choose a module to start:",
+                btn_logist: "MODULE LOGIST_X",
+                btn_merch: "ANALYTICS MERCH_X",
+                btn_bot: "START IN TELEGRAM",
+                
+                tech_title: "Our",
+                tech_accent: "Technologies",
+                feat_1_title: "Auto-Hierarchy",
+                feat_1_desc: "Automatic folder creation: Worker → Site → Date.",
+                feat_2_title: "Google Sheets",
+                feat_2_desc: "Personal tabs for each employee with total calculations.",
+                feat_3_title: "Copyright Holder",
+                feat_3_desc: "Certificate № 0849-643-137<br>Nikitin E. A. (100% RIGHTS)",
+                feat_4_title: "MERCH_X System",
+                feat_4_desc: "Shelf analytics, stock levels, and facing share calculation.",
+                btn_more: "MORE DETAILS",
+
+                archive_title: "SMART ARCHIVE",
+                archive_desc: "The system sorts photos by address automatically. Pure analytics, zero manual work.",
+                demo_worker: "John_Worker",
+                demo_obj: "Store_Object",
+                demo_file: "Install_Done.jpg",
+
+                blog_title: "Our",
+                blog_accent: "Blog",
+                blog_1_cat: "METHODOLOGY",
+                blog_1_title: "Preventing Fraud",
+                blog_1_desc: "Analyzing GPS control methods for full transparency...",
+                blog_2_cat: "MANAGEMENT",
+                blog_2_title: "Network Order",
+                blog_2_desc: "How to control dozens of retail points simultaneously...",
+                blog_3_cat: "UPDATES",
+                blog_3_title: "2026 Features",
+                blog_3_desc: "Announcing Telegram control panel and new reports...",
+                btn_read: "Read",
+
+                price_title: "X-Platform Single Plan",
+                price_sub: "Per month / employee",
+                btn_price_bot: "Launch via BOT",
+                seo_text: "Automation for installers and merchandisers. X-PLATFORM ecosystem (Logist_X & Merch_X) allows collecting photo reports with GPS directly to Google Sheets.",
+
+                legal_owner: "Nikitin Evgeny Anatolyevich | Copyright Holder (Cert. №0849-643-137)",
+                legal_inn: "INN: 575405332940 | Status: Self-employed",
+                btn_contact: "CONTACT US",
+                link_policy: "Privacy Policy",
+                link_offer: "Public Offer",
+
+                tab_login: "Login via Key",
+                tab_buy: "Buy License",
+                login_title: "Login to X-PLATFORM",
+                login_desc: "Enter your 8-digit facility key:",
+                btn_open_data: "OPEN DATA",
+                
+                buy_title: "New License",
+                buy_label_name: "Object Name",
+                buy_label_count: "Employees",
+                buy_label_period: "Period",
+                buy_label_type: "Project Type",
+                opt_1m: "1 month",
+                opt_3m: "3 months (-10%)",
+                opt_6m: "6 months (-15%)",
+                opt_1y: "1 year (BEST VALUE)",
+                buy_total: "Total to pay:",
+                btn_pay: "PAY FOR ACCESS",
+                btn_exit: "← Exit Dashboard",
+
+                modal_policy_title: "Privacy Policy",
+                modal_policy_text: "This policy applies to all information...",
+                modal_offer_title: "Public Offer",
+                modal_offer_text: "X-PLATFORM service provides software access...",
+
+                // Speech parts
+                sp_bot: "Switching to Platform Telegram Bot",
+                sp_license_new: "Setting up a new X-Platform license",
+                sp_access_ok: "Access granted. Welcome.",
+                sp_key_err: "Key not found",
+                sp_invoice: "Generating invoice for company",
+                sp_enter_name: "Enter object name",
+                sp_project: "Project",
+                sp_limit: "Limit",
+                sp_ppl: "people",
+                sp_disc_no: "No discount",
+                sp_disc_10: "Ten percent discount",
+                sp_disc_15: "Fifteen percent discount",
+                sp_disc_max: "Maximum value"
+            }
+        };
+
+        // === LOGIC ===
+
+        function updateContent() {
+            const t = translations[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.innerHTML = t[key];
+            });
+            document.getElementById('langBtn').textContent = currentLang.toUpperCase();
+            calculatePrice(); // Update speech language in price calculator
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            updateContent();
+        }
+
         function speak(text) {
+            window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ru-RU';
+            utterance.lang = currentLang === 'ru' ? 'ru-RU' : 'en-US';
             utterance.rate = 1.0;
             window.speechSynthesis.speak(utterance);
         }
@@ -313,11 +534,11 @@
         
         async function handleInstallClick() {
             if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
-            else { alert('Меню браузера -> На экран Домой'); }
+            else { alert(currentLang === 'ru' ? 'Меню браузера -> На экран Домой' : 'Browser Menu -> Add to Home Screen'); }
         }
 
         function goToBot() { 
-            speak("Переходим в Телеграм бот платформы");
+            speak(translations[currentLang].sp_bot);
             window.location.href = BOT_URL; 
         }
         
@@ -330,56 +551,67 @@
             document.getElementById('buy-section').style.display = isLogin ? 'none' : 'block';
             document.getElementById('btn-tab-login').classList.toggle('active', isLogin);
             document.getElementById('btn-tab-buy').classList.toggle('active', !isLogin);
-            if(!isLogin) speak("Оформление новой лицензии икс платформы");
+            if(!isLogin) speak(translations[currentLang].sp_license_new);
         }
 
         function calculatePrice() {
             const limit = parseInt(document.getElementById('buyLimit').value) || 0;
             const days = parseInt(document.getElementById('buyMonths').value);
             const type = document.getElementById('buyType').value;
-            const typeText = type === 'logist' ? 'Логистика' : 'Мерч';
+            
+            // Text logic
+            const t = translations[currentLang];
+            const typeText = type === 'logist' ? 'Logist' : 'Merch';
             
             let pricePerWorker = 0;
-            let discountText = "Без скидки";
+            let discountText = t.sp_disc_no;
             
-            if (days == 30) { pricePerWorker = 1500; discountText = "Без скидки"; }
-            else if (days == 90) { pricePerWorker = 1350; discountText = "Скидка десять процентов"; }
-            else if (days == 180) { pricePerWorker = 1275; discountText = "Скидка пятнадцать процентов"; }
-            else if (days == 365) { pricePerWorker = 1250; discountText = "Максимальная выгода"; }
+            if (days == 30) { pricePerWorker = 1500; discountText = t.sp_disc_no; }
+            else if (days == 90) { pricePerWorker = 1350; discountText = t.sp_disc_10; }
+            else if (days == 180) { pricePerWorker = 1275; discountText = t.sp_disc_15; }
+            else if (days == 365) { pricePerWorker = 1250; discountText = t.sp_disc_max; }
             
             const total = limit * (pricePerWorker * (days / 30));
             document.getElementById('totalPriceDisplay').innerText = Math.round(total).toLocaleString() + ' ₽';
+            
             clearTimeout(window.speechTimer);
-            window.speechTimer = setTimeout(() => { speak(`Проект ${typeText}. Лимит ${limit} человек. ${discountText}.`); }, 1000);
+            window.speechTimer = setTimeout(() => { 
+                speak(`${t.sp_project} ${typeText}. ${t.sp_limit} ${limit} ${t.sp_ppl}. ${discountText}.`); 
+            }, 1000);
         }
 
         async function loginToCabinet() {
+            const t = translations[currentLang];
             const keyInput = document.getElementById('userKey').value.trim().toUpperCase();
-            if(!keyInput) return alert('Введите ключ!');
+            if(!keyInput) return alert('Key?');
+            
             try {
                 const response = await fetch(`${SERVER_URL}/api/keys`);
                 const keys = await response.json();
                 const found = keys.find(k => k.key === keyInput);
                 if (found && found.ownerChatId) {
-                    speak(`Доступ подтвержден. Добро пожаловать в икс платформу.`);
+                    speak(t.sp_access_ok);
                     document.getElementById('auth-ui').style.display = 'none';
                     document.getElementById('iframe-section').style.display = 'block';
                     document.getElementById('cabinetTitle').innerText = found.name;
                     document.getElementById('cabinetFrame').src = `${SERVER_URL}/client-dashboard?chatId=${found.ownerChatId}`;
                 } else {
-                    speak("Ключ не найден");
-                    alert('Ключ не найден или еще не активирован в Telegram боте!');
+                    speak(t.sp_key_err);
+                    alert(t.sp_key_err);
                 }
-            } catch (e) { alert('Ошибка связи с сервером.'); }
+            } catch (e) { alert('Server Error'); }
         }
 
         async function buyLicenseOnSite() {
+            const t = translations[currentLang];
             const name = document.getElementById('buyName').value.trim();
             const limit = document.getElementById('buyLimit').value;
             const days = document.getElementById('buyMonths').value;
             const type = document.getElementById('buyType').value;
-            if(!name) { speak("Введите название объекта"); return alert('Введите название объекта!'); }
-            speak(`Формируем счет для компании ${name}`);
+            
+            if(!name) { speak(t.sp_enter_name); return alert(t.sp_enter_name); }
+            
+            speak(`${t.sp_invoice} ${name}`);
             try {
                 const r = await fetch(`${SERVER_URL}/api/notify-admin`, {
                     method: 'POST',
@@ -388,10 +620,12 @@
                 });
                 const res = await r.json();
                 if(res.success && res.payUrl) window.location.href = res.payUrl;
-                else alert('Ошибка при создании счета');
-            } catch (e) { alert('Ошибка сети'); }
+                else alert('Error creating invoice');
+            } catch (e) { alert('Network Error'); }
         }
-        calculatePrice();
+        
+        // Initial
+        updateContent();
     </script>
 </body>
 </html>
