@@ -1,6 +1,16 @@
 (function() {
-    // Получаем текущий язык
-    const currentLang = localStorage.getItem('app_lang') || 'ru';
+    // 1. УМНОЕ ОПРЕДЕЛЕНИЕ ЯЗЫКА (Система телефона -> Память приложения)
+    const getActiveLang = () => {
+        try {
+            const navLang = (navigator.language || navigator.userLanguage || 'ru').toLowerCase();
+            // Если в системе телефона есть английский — выбираем его
+            if (navLang.includes('en')) return 'en';
+            // Иначе смотрим ручной выбор
+            return localStorage.getItem('app_lang') || 'ru';
+        } catch(e) { return 'ru'; }
+    };
+
+    const currentLang = getActiveLang();
 
     // Словарь для инструкции
     const manualDict = {
@@ -32,7 +42,7 @@
 
     const t = manualDict[currentLang];
 
-    // 1. Стили
+    // Стили
     const styles = `
         .manual-btn { background: #222; color: #f59e0b; border: 1px solid #f59e0b; padding: 8px 15px; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; margin: 10px 15px; display: inline-block; }
         .m-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 3000; display: none; padding: 20px; overflow-y: auto; color: #fff; font-family: sans-serif; }
@@ -47,7 +57,7 @@
     styleSheet.innerText = styles;
     document.head.appendChild(styleSheet);
 
-    // 2. HTML структура
+    // HTML структура
     const stepsHTML = t.steps.map(s => `
         <div class="m-step">
             <b>${s.b}</b>
