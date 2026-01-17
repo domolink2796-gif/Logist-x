@@ -4,7 +4,7 @@
     <link rel="manifest" href="/merch/manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MERCH_X | О системе</title>
+    <title>MERCH_X | About</title>
     
     <link rel="apple-touch-icon" href="app/icon-1024.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,52 +33,44 @@
         .pulse-icon { animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* Анимация лазера сканера */
-        @keyframes scanMove {
-            0% { top: 0%; }
-            50% { top: 100%; }
-            100% { top: 0%; }
-        }
-        .scanner-line {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: #22c55e;
-            box-shadow: 0 0 15px #22c55e;
-            animation: scanMove 2s infinite ease-in-out;
-            z-index: 10;
-        }
+        @keyframes scanMove { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
+        .scanner-line { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #22c55e; box-shadow: 0 0 15px #22c55e; animation: scanMove 2s infinite ease-in-out; z-index: 10; }
+        
+        /* Language Switcher Style */
+        .lang-switch { font-size: 10px; font-weight: 900; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="max-w-md mx-auto pt-4">
         <div class="flex items-center justify-between mb-6">
             <a href="index.html" class="text-white/40"><i data-lucide="arrow-left"></i></a>
-            <div class="text-right">
-                <h1 class="text-3xl font-black italic gold-text leading-none">MERCH_X</h1>
-                <p class="opacity-40 text-[10px] uppercase tracking-[3px]">Business Solution</p>
+            
+            <div class="flex flex-col items-end">
+                <button onclick="toggleLanguage()" class="lang-switch mb-2 text-amber-500 border border-amber-500/30" id="langBtn">RU</button>
+                <div class="text-right">
+                    <h1 class="text-3xl font-black italic gold-text leading-none">MERCH_X</h1>
+                    <p class="opacity-40 text-[10px] uppercase tracking-[3px]">Business Solution</p>
+                </div>
             </div>
         </div>
 
-        <div class="card bg-amber-500/5 border-amber-500/20 mb-6" onclick="speak('Система автоматизации ритейл аудита заменяет рутину профессиональным софтом')">
-            <h2 class="text-lg font-black uppercase mb-4 italic">Что такое MERCH_X?</h2>
+        <div class="card bg-amber-500/5 border-amber-500/20 mb-6" onclick="speakKey('intro_speech')">
+            <h2 class="text-lg font-black uppercase mb-4 italic" data-i18n="intro_title">Что такое MERCH_X?</h2>
             <div class="space-y-4 text-[13px] opacity-80 leading-relaxed italic">
                 <div class="flex gap-3">
                     <div class="feature-dot"></div>
-                    <p>Это комплексная система для **автоматизации ритейл-аудита**, заменяющая рутину профессиональным софтом.</p>
+                    <p data-i18n="intro_text_1">Это комплексная система для **автоматизации ритейл-аудита**.</p>
                 </div>
                 <div class="flex gap-3">
                     <div class="feature-dot"></div>
-                    <p>Программа фиксирует точное время визита, координаты мерчандайзера и реальную ситуацию на полках.</p>
+                    <p data-i18n="intro_text_2">Фиксирует время, GPS и ситуацию на полках.</p>
                 </div>
             </div>
         </div>
 
-        <div class="card bg-blue-500/5 border-blue-500/20 mb-6" onclick="speak('Автоматическая сортировка отчетов по сотрудникам и датам в вашем облаке')">
+        <div class="card bg-blue-500/5 border-blue-500/20 mb-6" onclick="speakKey('report_speech')">
             <h2 class="text-xs font-black uppercase mb-4 gold-text flex items-center gap-2">
-                <i data-lucide="folder-tree" size="14"></i> Иерархия отчетов (Google Drive)
+                <i data-lucide="folder-tree" size="14"></i> <span data-i18n="report_title">Иерархия отчетов</span>
             </h2>
             <div class="folder-tree bg-black/40 p-3 rounded-lg border border-white/5">
                 <div class="folder-item">
@@ -88,21 +80,17 @@
                 <div class="tree-line">
                     <div class="folder-item">
                         <i data-lucide="folder" size="12" class="text-amber-500"></i>
-                        <span class="folder-name">Ксения (Сотрудник)</span>
+                        <span class="folder-name" data-i18n="folder_employee">Ксения (Сотрудник)</span>
                     </div>
                     <div class="tree-line">
                         <div class="folder-item">
                             <i data-lucide="folder" size="12" class="text-amber-500"></i>
-                            <span class="folder-name">2026-01-02 (Дата)</span>
+                            <span class="folder-name" data-i18n="folder_date">2026-01-02 (Дата)</span>
                         </div>
                         <div class="tree-line">
                             <div class="folder-item">
                                 <i data-lucide="file-text" size="12" class="text-blue-400"></i>
-                                <span class="file-name">Магнит_Саханская_3.pdf</span>
-                            </div>
-                            <div class="folder-item">
-                                <i data-lucide="file-text" size="12" class="text-blue-400"></i>
-                                <span class="file-name">Пятерочка_Мира_10.pdf</span>
+                                <span class="file-name" data-i18n="file_ex_1">Магнит_Саханская.pdf</span>
                             </div>
                         </div>
                     </div>
@@ -110,99 +98,90 @@
             </div>
         </div>
 
-        <div class="card border-purple-500/30 bg-purple-500/5 mb-6" onclick="speak('Принцип одного касания. Система сама узнает магазин и подгрузит эталон полки для сравнения')">
+        <div class="card border-purple-500/30 bg-purple-500/5 mb-6" onclick="speakKey('plano_speech')">
             <h2 class="text-xs font-black uppercase mb-4 text-purple-400 flex items-center gap-2">
-                <i data-lucide="layout-template" size="14"></i> Умные Планограммы
+                <i data-lucide="layout-template" size="14"></i> <span data-i18n="plano_title">Умные Планограммы</span>
             </h2>
             <div class="planogram-compare mb-4">
                 <div class="planogram-box">
                     <i data-lucide="image" class="text-white/10" size="24"></i>
-                    <span class="planogram-label bg-blue-600 text-white">База (Эталон)</span>
+                    <span class="planogram-label bg-blue-600 text-white" data-i18n="plano_base">База (Эталон)</span>
                 </div>
                 <div class="flex items-center">
                     <i data-lucide="refresh-cw" class="text-purple-500/50 pulse-icon" size="16"></i>
                 </div>
                 <div class="planogram-box border-purple-500/40">
                     <i data-lucide="camera" class="text-purple-400/30" size="24"></i>
-                    <span class="planogram-label bg-purple-600 text-white">Текущий визит</span>
+                    <span class="planogram-label bg-purple-600 text-white" data-i18n="plano_current">Текущий</span>
                 </div>
             </div>
-            <p class="text-[11px] opacity-60 italic leading-tight">Система автоматически подгружает фото прошлого визита для контроля выкладки «Лицом к лицу».</p>
+            <p class="text-[11px] opacity-60 italic leading-tight" data-i18n="plano_desc">Система автоматически подгружает фото прошлого визита для сравнения.</p>
         </div>
 
-        <div class="card border-green-500/30 bg-green-500/5 mb-6" onclick="speak('Облачный сканер превращает телефон в профессиональный терминал. Каждое сканирование мгновенно сохраняется в общую таблицу, даже если вы закроете приложение. Это очень удобно при больших объемах товара.')">
+        <div class="card border-green-500/30 bg-green-500/5 mb-6" onclick="speakKey('scan_speech')">
             <h2 class="text-xs font-black uppercase mb-4 text-green-400 flex items-center gap-2">
-                <i data-lucide="scan-barcode" size="14"></i> Облачный сканер ТСД
+                <i data-lucide="scan-barcode" size="14"></i> <span data-i18n="scan_title">Облачный сканер</span>
             </h2>
             
             <div class="grid grid-cols-2 gap-3 mb-4">
                 <div class="bg-black/40 p-3 rounded-xl border border-green-500/20 text-center">
                     <i data-lucide="search" class="text-blue-400 mx-auto mb-2" size="18"></i>
-                    <div class="text-[9px] font-black uppercase text-blue-400 mb-1">ПОИСК</div>
-                    <p class="text-[8px] opacity-50 italic">Находит товар в базе по штрихкоду</p>
+                    <div class="text-[9px] font-black uppercase text-blue-400 mb-1" data-i18n="scan_search">ПОИСК</div>
                 </div>
                 <div class="bg-black/40 p-3 rounded-xl border border-green-500/20 text-center">
                     <i data-lucide="plus-square" class="text-green-400 mx-auto mb-2" size="18"></i>
-                    <div class="text-[9px] font-black uppercase text-green-400 mb-1">СЧЕТ (+1)</div>
-                    <p class="text-[8px] opacity-50 italic">Авто-прибавление при каждом «пике»</p>
+                    <div class="text-[9px] font-black uppercase text-green-400 mb-1" data-i18n="scan_count">СЧЕТ (+1)</div>
                 </div>
             </div>
 
             <div class="flex items-start gap-3 bg-green-500/10 p-3 rounded-lg border border-green-500/10 mb-4">
                 <i data-lucide="zap" class="text-green-400 flex-shrink-0" size="18"></i>
                 <div class="text-[11px] leading-tight text-green-100">
-                    <b>Живая синхронизация:</b> Данные записываются в Google Таблицу прямо в момент сканирования. 
+                    <b data-i18n="scan_sync_title">Синхронизация:</b> <span data-i18n="scan_sync_text">Данные пишутся в таблицу в момент сканирования.</span>
                 </div>
             </div>
             
             <div class="relative h-14 w-full bg-black/60 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center">
                 <div class="scanner-line"></div>
-                <div class="opacity-10">
-                    <i data-lucide="barcode" size="48"></i>
-                </div>
+                <div class="opacity-10"><i data-lucide="barcode" size="48"></i></div>
                 <span class="text-[10px] font-black tracking-[5px] text-green-500/80 uppercase z-20">Cloud Sync Active</span>
             </div>
         </div>
 
-        <div class="card border-red-500/30 bg-red-500/5 mb-6 py-4" onclick="speak('Подмена координат и времени невозможна. Строгий контроль местоположения')">
+        <div class="card border-red-500/30 bg-red-500/5 mb-6 py-4" onclick="speakKey('gps_speech')">
             <div class="flex items-center gap-3">
                 <i data-lucide="shield-check" class="text-red-500" size="20"></i>
-                <span class="text-[11px] font-black uppercase tracking-wider">Защита от фейков (Strict GPS)</span>
+                <span class="text-[11px] font-black uppercase tracking-wider" data-i18n="gps_title">Защита от фейков (GPS)</span>
             </div>
         </div>
 
-        <p class="text-[10px] uppercase font-bold opacity-30 mb-2 ml-2 tracking-widest text-white">Вид итогового отчета:</p>
-        <div class="card bg-white/5 border-white/10 p-2 mb-6" onclick="speak('Пример готового отчета. Расчет доли полки и времени в магазине выполняется системой автоматически')">
+        <p class="text-[10px] uppercase font-bold opacity-30 mb-2 ml-2 tracking-widest text-white" data-i18n="report_preview_title">Вид итогового отчета:</p>
+        
+        <div class="card bg-white/5 border-white/10 p-2 mb-6" onclick="speakKey('preview_speech')">
             <div class="report-preview scale-[0.95]">
                 <div class="flex justify-between items-start border-b-2 border-black pb-2 mb-2">
                     <span class="font-black text-xl tracking-tighter italic leading-none">LOGIST_X <span class="text-amber-600">MERCH</span></span>
-                    <span class="text-[8px] font-bold opacity-60">02.01.2026, 10:11:17</span>
+                    <span class="text-[8px] font-bold opacity-60">02.01.2026</span>
                 </div>
                 
                 <div class="mb-3">
-                    <div class="text-amber-600 font-black uppercase text-[10px] leading-tight">МАГНИТ</div>
-                    <div class="font-black text-[18px] leading-tight">ул. Саханская, 3</div>
+                    <div class="text-amber-600 font-black uppercase text-[10px] leading-tight">MAGNIT</div>
+                    <div class="font-black text-[18px] leading-tight">Sakhanskaya st., 3</div>
                 </div>
 
-                <div class="bg-amber-500 text-black font-black p-1.5 px-3 inline-block rounded-md text-[9px] mb-4 uppercase">
-                    ВРЕМЯ В МАГАЗИНЕ: 1 МИН
+                <div class="bg-amber-500 text-black font-black p-1.5 px-3 inline-block rounded-md text-[9px] mb-4 uppercase" data-i18n="report_time">
+                    ВРЕМЯ: 1 МИН
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <div class="bg-gray-50 p-2 rounded-xl border border-black/5 text-center">
                         <div class="font-black text-xl">25 / 5</div>
-                        <div class="text-amber-600 font-black text-[8px] uppercase">Доля: 29%</div>
+                        <div class="text-amber-600 font-black text-[8px] uppercase" data-i18n="report_share">Доля: 29%</div>
                     </div>
                     <div class="bg-gray-50 p-2 rounded-xl border border-black/5 text-center">
                         <div class="font-black text-[12px]">125 / 123 ₽</div>
-                        <div class="text-red-500 font-black text-[8px] uppercase">Срок: 22.01</div>
+                        <div class="text-red-500 font-black text-[8px] uppercase" data-i18n="report_exp">Срок: 22.01</div>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-1">
-                    <div class="aspect-[3/4] bg-black rounded flex items-center justify-center text-[6px] text-white/30 uppercase">До</div>
-                    <div class="aspect-[3/4] bg-black rounded flex items-center justify-center text-[6px] text-white/30 uppercase">После</div>
-                    <div class="aspect-[3/4] bg-black rounded flex items-center justify-center text-[6px] text-white/30 uppercase">Цена</div>
                 </div>
             </div>
         </div>
@@ -210,35 +189,148 @@
         <div class="mt-8 pb-10">
             <button onclick="handleInstall()" class="btn-gold shadow-2xl shadow-amber-500/20">
                 <i data-lucide="download" size="20"></i>
-                Установить MERCH_X
+                <span data-i18n="btn_install">Установить MERCH_X</span>
             </button>
         </div>
     </div>
 
     <script>
         lucide.createIcons();
+        
+        let currentLang = 'ru'; // Default language
 
-        function speak(text) {
+        // DICTIONARY
+        const translations = {
+            ru: {
+                intro_title: "Что такое MERCH_X?",
+                intro_text_1: "Это комплексная система для **автоматизации ритейл-аудита**.",
+                intro_text_2: "Фиксирует время, GPS и ситуацию на полках.",
+                intro_speech: "Система автоматизации ритейл аудита заменяет рутину профессиональным софтом.",
+                
+                report_title: "Иерархия отчетов",
+                folder_employee: "Ксения (Сотрудник)",
+                folder_date: "2026-01-02 (Дата)",
+                file_ex_1: "Магнит_Саханская.pdf",
+                report_speech: "Автоматическая сортировка отчетов по сотрудникам и датам в вашем облаке.",
+
+                plano_title: "Умные Планограммы",
+                plano_base: "База (Эталон)",
+                plano_current: "Текущий",
+                plano_desc: "Система автоматически подгружает фото прошлого визита для сравнения.",
+                plano_speech: "Принцип одного касания. Система сама узнает магазин и покажет эталон полки.",
+
+                scan_title: "Облачный сканер",
+                scan_search: "ПОИСК",
+                scan_count: "СЧЕТ (+1)",
+                scan_sync_title: "Синхронизация:",
+                scan_sync_text: "Данные пишутся в таблицу сразу.",
+                scan_speech: "Облачный сканер превращает телефон в терминал. Данные сохраняются мгновенно.",
+
+                gps_title: "Защита от фейков (GPS)",
+                gps_speech: "Подмена координат и времени невозможна. Строгий контроль.",
+
+                report_preview_title: "Вид итогового отчета:",
+                report_time: "ВРЕМЯ: 1 МИН",
+                report_share: "Доля: 29%",
+                report_exp: "Срок: 22.01",
+                preview_speech: "Пример готового отчета. Расчет доли полки и времени выполняется автоматически.",
+
+                btn_install: "Установить MERCH_X",
+                install_speech: "Перехожу к установке. Нажмите поделиться и на экран домой.",
+                welcome_speech: "Модуль Мерч Икс. Аналитика ритейла и контроль выкладки запущен."
+            },
+            en: {
+                intro_title: "What is MERCH_X?",
+                intro_text_1: "A comprehensive system for **retail audit automation**.",
+                intro_text_2: "Tracks time, GPS, and shelf situation.",
+                intro_speech: "Retail audit automation system replaces routine with professional software.",
+                
+                report_title: "Report Hierarchy",
+                folder_employee: "Ksenia (Employee)",
+                folder_date: "2026-01-02 (Date)",
+                file_ex_1: "Magnit_Sakhanskaya.pdf",
+                report_speech: "Automatic sorting of reports by employees and dates in your cloud.",
+
+                plano_title: "Smart Planograms",
+                plano_base: "Base (Ref)",
+                plano_current: "Current",
+                plano_desc: "Automatically loads previous visit photos for comparison.",
+                plano_speech: "One-touch principle. The system recognizes the store and shows the shelf reference.",
+
+                scan_title: "Cloud Scanner",
+                scan_search: "SEARCH",
+                scan_count: "COUNT (+1)",
+                scan_sync_title: "Live Sync:",
+                scan_sync_text: "Data written to sheet instantly.",
+                scan_speech: "Cloud scanner turns phone into a terminal. Data is saved instantly.",
+
+                gps_title: "Fake Protection (GPS)",
+                gps_speech: "Spoofing coordinates is impossible. Strict control.",
+
+                report_preview_title: "Final Report Preview:",
+                report_time: "TIME: 1 MIN",
+                report_share: "Share: 29%",
+                report_exp: "Exp: 22.01",
+                preview_speech: "Report example. Shelf share and time in store are calculated automatically.",
+
+                btn_install: "Install MERCH_X",
+                install_speech: "Proceeding to installation. Tap share and add to home screen.",
+                welcome_speech: "Merch X Module. Retail analytics and display control started."
+            }
+        };
+
+        // RENDER TEXT
+        function updateContent() {
+            const langData = translations[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (langData[key]) {
+                    // Check if it has markdown-style bolding
+                    if (langData[key].includes('**')) {
+                        el.innerHTML = langData[key].replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+                    } else {
+                        el.textContent = langData[key];
+                    }
+                }
+            });
+            document.getElementById('langBtn').textContent = currentLang.toUpperCase();
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            updateContent();
+        }
+
+        // SPEECH LOGIC
+        function speakKey(key) {
+            const text = translations[currentLang][key];
+            if (!text) return;
+
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ru-RU';
+            // Switch Voice Accent
+            utterance.lang = currentLang === 'ru' ? 'ru-RU' : 'en-US'; 
             utterance.rate = 1.05;
             window.speechSynthesis.speak(utterance);
         }
 
+        // INIT
         document.body.addEventListener('click', function() {
             if (!window.wasGreeted) {
-                speak('Модуль Мерч Икс. Аналитика ритейла и контроль выкладки запущен.');
+                speakKey('welcome_speech');
                 window.wasGreeted = true;
             }
         }, { once: true });
 
         function handleInstall() {
-            speak('Перехожу к установке рабочей версии. Нажмите кнопку поделиться и выберите на экран домой.');
+            speakKey('install_speech');
             setTimeout(() => {
                 window.location.href = "/merch/index.html"; 
             }, 2000);
         }
+
+        // Initial render
+        updateContent();
     </script>
 </body>
 </html>
