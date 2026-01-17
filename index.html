@@ -313,8 +313,33 @@
         </div>
     </div>
 
-    <div id="modalPrivacy" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span><div class="modal-header" data-i18n="modal_policy_title">Политика конфиденциальности</div><p data-i18n="modal_policy_text">Настоящая политика действует в отношении всей информации...</p></div></div>
-    <div id="modalTerms" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modalTerms')">&times;</span><div class="modal-header" data-i18n="modal_offer_title">Публичная оферта</div><p data-i18n="modal_offer_text">Сервис X-PLATFORM предоставляет доступ к ПО...</p></div></div>
+    <div id="modalPrivacy" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span>
+            <div class="modal-header" data-i18n="modal_policy_title">Политика конфиденциальности</div>
+            <div class="text-xs space-y-4 text-[#8b949e] overflow-y-auto max-h-[60vh] pr-2 text-left" id="policyText" data-i18n="modal_policy_text">
+                <p>1. Общие положения: Настоящая политика обработки персональных данных составлена в соответствии с требованиями Федерального закона от 27.07.2006. №152-ФЗ «О персональных данных».</p>
+                <p>2. Состав данных: Сервис собирает только те данные, которые необходимы для работы (ФИО сотрудников, отчетные фото, GPS-координаты объектов).</p>
+                <p>3. Цели сбора: Автоматизация контроля персонала, формирование отчетов в Google Sheets и обеспечение безопасности данных.</p>
+                <p>4. Безопасность: Мы используем шифрование и защищенные протоколы для передачи данных. Данные платежных карт не хранятся на наших серверах (обработка идет через Robokassa).</p>
+                <p>5. Контакты: По вопросам удаления данных пишите на evgeny_orel@mail.ru.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalTerms" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modalTerms')">&times;</span>
+            <div class="modal-header" data-i18n="modal_offer_title">Публичная оферта</div>
+            <div class="text-xs space-y-4 text-[#8b949e] overflow-y-auto max-h-[60vh] pr-2 text-left" id="offerText" data-i18n="modal_offer_text">
+                <p><strong>1. Предмет:</strong> Самозанятый Никитин Е.А. предоставляет доступ к облачному сервису X-PLATFORM (Logist_X/Merch_X) на условиях SaaS-подписки.</p>
+                <p><strong>2. Цена и оплата:</strong> Стоимость доступа составляет 1500 руб. (или $20) за 1 активного сотрудника в месяц. Оплата производится авансовым платежом.</p>
+                <p><strong>3. Срок оказания услуг:</strong> Доступ открывается в течение 24 часов после подтверждения транзакции платежной системой.</p>
+                <p><strong>4. Возврат средств:</strong> Поскольку услуга заключается в предоставлении доступа к цифровому контенту, возврат средств после активации доступа не производится (ст. 450.1 ГК РФ).</p>
+                <p><strong>5. Реквизиты:</strong> ИНН 575405332940. Место нахождения: г. Орел, Россия.</p>
+            </div>
+        </div>
+    </div>
 
     <script>
         lucide.createIcons();
@@ -398,9 +423,9 @@
                 btn_exit: "← Выйти из кабинета",
 
                 modal_policy_title: "Политика конфиденциальности",
-                modal_policy_text: "Настоящая политика действует в отношении всей информации...",
+                modal_policy_text: `<p>1. Личные данные: Мы уважаем вашу конфиденциальность и обрабатываем данные согласно закону 152-ФЗ.</p><p>2. Использование: Данные (фото и GPS) используются только для построения отчетов в рамках ваших проектов.</p><p>3. Оплата: Все платежи защищены шлюзом Robokassa.</p>`,
                 modal_offer_title: "Публичная оферта",
-                modal_offer_text: "Сервис X-PLATFORM предоставляет доступ к ПО...",
+                modal_offer_text: `<p>1. Услуга: Предоставление доступа к инструментам Logist_X и Merch_X.</p><p>2. Оплата: 1500 руб. за сотрудника/мес. Без скрытых комиссий.</p><p>3. Возврат: Цифровой товар возврату не подлежит после активации.</p>`,
 
                 // Speech parts
                 sp_bot: "Переходим в Телеграм бот платформы",
@@ -490,9 +515,9 @@
                 btn_exit: "← Exit Dashboard",
 
                 modal_policy_title: "Privacy Policy",
-                modal_policy_text: "This policy applies to all information...",
+                modal_policy_text: `<p>1. Data Privacy: We value your privacy and process data in accordance with international standards.</p><p>2. Usage: Photo and GPS data are used exclusively for report generation within your business objects.</p><p>3. Payments: All transactions are secured by Robokassa gateway.</p>`,
                 modal_offer_title: "Public Offer",
-                modal_offer_text: "X-PLATFORM service provides software access...",
+                modal_offer_text: `<p>1. Service: Access to Logist_X and Merch_X professional tools.</p><p>2. Pricing: $20 per employee/month. No hidden fees.</p><p>3. Refund: Digital services are non-refundable once access is granted.</p>`,
 
                 // Speech parts
                 sp_bot: "Switching to Platform Telegram Bot",
@@ -595,7 +620,7 @@
                 discountText = t.sp_disc_15; 
             }
             else if (days == 365) { 
-                pricePerWorker = basePrice * 0.83; // Approx for "best value"
+                pricePerWorker = basePrice * 0.83; 
                 discountText = t.sp_disc_max; 
             }
             
@@ -653,7 +678,7 @@
             } catch (e) { alert('Network Error'); }
         }
         
-        // Initial
+        // Initial setup
         updateContent();
     </script>
 </body>
