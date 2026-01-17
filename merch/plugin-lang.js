@@ -1,5 +1,15 @@
 (function() {
-    let currentLang = localStorage.getItem('app_lang') || 'ru';
+    // 1. УМНОЕ ОПРЕДЕЛЕНИЕ ЯЗЫКА:
+    // Сначала смотрим, выбирал ли пользователь язык вручную (localStorage).
+    // Если нет — берем язык системы телефона.
+    let currentLang = localStorage.getItem('app_lang');
+    
+    if (!currentLang) {
+        const systemLang = navigator.language.substring(0, 2).toLowerCase();
+        currentLang = (systemLang === 'en') ? 'en' : 'ru';
+        // Сохраняем, чтобы при переходах между страницами язык не прыгал
+        localStorage.setItem('app_lang', currentLang);
+    }
 
     const dictionary = {
         en: {
@@ -29,9 +39,7 @@
             "РЕЖИМ СЧЕТА (+1)": "COUNT MODE (+1)",
             "🔄 НОВЫЙ ВИЗИТ": "🔄 NEW VISIT",
             "ПРОВЕРКА GPS...": "CHECKING GPS...",
-            "Адрес подтверждён.": "Address confirmed.",
-            "СОХРАНЕНИЕ...": "SAVING...",
-            "В очереди:": "In queue:"
+            "Адрес подтверждён.": "Address confirmed."
         }
     };
 
@@ -39,13 +47,13 @@
         if (currentLang === 'ru') return;
         const langData = dictionary[currentLang];
 
-        // 1. Перевод кнопок и специальных меток
+        // Перевод кнопок и меток
         document.querySelectorAll('.btn-blue, .scan-btn, .f-label, .s-t, #begin-btn').forEach(el => {
             let t = el.innerText.trim();
             if (langData[t]) el.innerText = langData[t];
         });
 
-        // 2. Перевод текстовых узлов (чтобы не задеть INPUT)
+        // Перевод текстовых узлов модалки
         const taskModal = document.getElementById('task-modal');
         if (taskModal) {
             const walk = document.createTreeWalker(taskModal, NodeFilter.SHOW_TEXT, null, false);
@@ -56,7 +64,7 @@
             }
         }
 
-        // 3. Плейсхолдеры
+        // Плейсхолдеры (поиск и т.д.)
         document.querySelectorAll('input').forEach(inp => {
             if (inp.placeholder && langData[inp.placeholder]) {
                 inp.placeholder = langData[inp.placeholder];
@@ -64,29 +72,10 @@
         });
     };
 
-    // АВТО-ПЕРЕВОД ПРИ ИЗМЕНЕНИИ ОКНА (решает проблему с исчезновением кнопок)
+    // Слежка за изменениями (чтобы перевод не слетал)
     const observer = new MutationObserver(() => {
         if (currentLang === 'en') window.translateUI();
     });
-
-    // Перехват озвучки
-    const originalSpeak = window.speak;
-    window.speak = function(text) {
-        if (currentLang === 'en') {
-            const msg = new SpeechSynthesisUtterance();
-            let translatedText = text;
-            if (text.includes("Проверяю адрес")) translatedText = "Checking location";
-            if (text.includes("Адрес подтверждён")) translatedText = "Location confirmed";
-            if (text.includes("Включите GPS")) translatedText = "Enable GPS";
-            if (text.includes("Отчет готов")) translatedText = "Report ready";
-            if (text.includes("Ок")) translatedText = "Done";
-            msg.text = translatedText;
-            msg.lang = 'en-US';
-            window.speechSynthesis.speak(msg);
-        } else if (originalSpeak) {
-            originalSpeak(text);
-        }
-    };
 
     window.addEventListener('load', () => {
         const header = document.querySelector('.header');
@@ -96,17 +85,16 @@
             btn.innerText = currentLang.toUpperCase();
             btn.style = "position:absolute; top:20px; right:15px; background:rgba(255,255,255,0.05); border:1px solid #333; padding:6px 12px; border-radius:12px; font-size:11px; font-weight:900; color:#f59e0b; cursor:pointer; z-index:9999;";
             btn.onclick = () => {
-                currentLang = currentLang === 'ru' ? 'en' : 'ru';
-                localStorage.setItem('app_lang', currentLang);
+                const newLang = currentLang === 'ru' ? 'en' : 'ru';
+                localStorage.setItem('app_lang', newLang);
                 location.reload();
             };
             header.appendChild(btn);
         }
         
-        // Запускаем слежку за модальным окном
         const modal = document.getElementById('task-modal');
         if (modal) observer.observe(modal, { childList: true, subtree: true });
 
-        setTimeout(window.translateUI, 200);
+        window.translateUI();
     });
 })();
