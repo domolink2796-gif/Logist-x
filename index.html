@@ -211,7 +211,9 @@
         <div class="max-w-3xl mx-auto">
             <div class="price-card border-amber-500/40 bg-amber-500/5 text-center">
                 <h3 class="text-xs font-black uppercase tracking-[6px] mb-10 opacity-60 text-amber-500" data-i18n="price_title">Единый тариф X-Platform</h3>
-                <div class="text-7xl md:text-8xl font-black mb-4 italic text-amber-500">1 500 <span class="text-2xl not-italic opacity-40 text-white">₽</span></div>
+                <div class="text-7xl md:text-8xl font-black mb-4 italic text-amber-500">
+                    <span id="mainPrice">1 500</span> <span id="currencySign" class="text-2xl not-italic opacity-40 text-white">₽</span>
+                </div>
                 <p class="opacity-60 text-white font-bold text-sm uppercase tracking-widest mb-10" data-i18n="price_sub">В месяц за сотрудника</p>
                 <button onclick="goToBot()" class="btn-install-gold w-full py-7 text-sm tracking-widest uppercase italic text-black" data-i18n="btn_price_bot">Запустить через BOT</button>
             </div>
@@ -365,6 +367,8 @@
 
                 price_title: "Единый тариф X-Platform",
                 price_sub: "В месяц за сотрудника",
+                price_val: "1 500",
+                price_cur: "₽",
                 btn_price_bot: "Запустить через BOT",
                 seo_text: "Автоматизация контроля монтажников, расклейщиков объявлений и мерчандайзеров. Экосистема X-PLATFORM...",
 
@@ -455,6 +459,8 @@
 
                 price_title: "X-Platform Single Plan",
                 price_sub: "Per month / employee",
+                price_val: "20",
+                price_cur: "$",
                 btn_price_bot: "Launch via BOT",
                 seo_text: "Automation for installers and merchandisers. X-PLATFORM ecosystem (Logist_X & Merch_X) allows collecting photo reports with GPS directly to Google Sheets.",
 
@@ -513,6 +519,15 @@
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.innerHTML = t[key];
             });
+
+            // Update main price card manually
+            const mainPrice = document.getElementById('mainPrice');
+            const currencySign = document.getElementById('currencySign');
+            if(mainPrice && currencySign) {
+                mainPrice.textContent = t.price_val;
+                currencySign.textContent = t.price_cur;
+            }
+
             document.getElementById('langBtn').textContent = currentLang.toUpperCase();
             calculatePrice(); // Update speech language in price calculator
         }
@@ -563,16 +578,30 @@
             const t = translations[currentLang];
             const typeText = type === 'logist' ? 'Logist' : 'Merch';
             
+            let basePrice = currentLang === 'ru' ? 1500 : 20;
             let pricePerWorker = 0;
             let discountText = t.sp_disc_no;
             
-            if (days == 30) { pricePerWorker = 1500; discountText = t.sp_disc_no; }
-            else if (days == 90) { pricePerWorker = 1350; discountText = t.sp_disc_10; }
-            else if (days == 180) { pricePerWorker = 1275; discountText = t.sp_disc_15; }
-            else if (days == 365) { pricePerWorker = 1250; discountText = t.sp_disc_max; }
+            if (days == 30) { 
+                pricePerWorker = basePrice; 
+                discountText = t.sp_disc_no; 
+            }
+            else if (days == 90) { 
+                pricePerWorker = basePrice * 0.9; 
+                discountText = t.sp_disc_10; 
+            }
+            else if (days == 180) { 
+                pricePerWorker = basePrice * 0.85; 
+                discountText = t.sp_disc_15; 
+            }
+            else if (days == 365) { 
+                pricePerWorker = basePrice * 0.83; // Approx for "best value"
+                discountText = t.sp_disc_max; 
+            }
             
             const total = limit * (pricePerWorker * (days / 30));
-            document.getElementById('totalPriceDisplay').innerText = Math.round(total).toLocaleString() + ' ₽';
+            const currency = currentLang === 'ru' ? ' ₽' : ' $';
+            document.getElementById('totalPriceDisplay').innerText = Math.round(total).toLocaleString() + currency;
             
             clearTimeout(window.speechTimer);
             window.speechTimer = setTimeout(() => { 
