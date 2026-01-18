@@ -287,12 +287,12 @@
                     <label class="text-[9px] uppercase font-bold opacity-40 ml-2" data-i18n="buy_label_name">Название объекта</label>
                     <input type="text" id="trialObjectName" class="login-input !text-left !text-sm !mb-0" placeholder="Например: Склад Орел" data-i18n-placeholder="trial_input_placeholder">
                 </div>
-                
+
                 <div>
                     <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Ваш E-mail (для кода)</label>
                     <input type="email" id="trialEmail" class="login-input !text-left !text-sm !mb-0" placeholder="mail@example.com">
                 </div>
-
+                
                 <div>
                     <label class="text-[9px] uppercase font-bold opacity-40 ml-2" data-i18n="trial_label_type">Тип модуля для теста</label>
                     <select id="trialType" class="login-input !text-left !text-sm !mb-0 !bg-black">
@@ -313,7 +313,7 @@
             <span class="close-modal" onclick="closeModal('modalConfirmCode')">&times;</span>
             <div class="text-emerald-500 mb-4 flex justify-center"><i data-lucide="lock" size="40"></i></div>
             <h2 class="text-xl font-black text-white mb-2 uppercase italic">Подтверждение</h2>
-            <p class="text-xs text-gray-400 mb-6 italic">Введите код из письма от <br><span class="text-emerald-500">service@x-platform.ru</span></p>
+            <p class="text-xs text-gray-400 mb-6 italic">Введите 6-значный код из письма от <br><span class="text-emerald-500">service@x-platform.ru</span></p>
             <input type="text" id="vCode" class="login-input !text-center !text-3xl !tracking-[8px] !mb-6" placeholder="000000" maxlength="6">
             <button onclick="verifyAndFinish()" class="btn-emerald w-full py-5 text-sm font-black italic text-black">ОТКРЫТЬ ДОСТУП</button>
         </div>
@@ -436,10 +436,13 @@
     <script>
         lucide.createIcons();
         const BOT_URL = 'https://t.me/LogistX_Robot_Bot';
-        const SERVER_URL = 'https://logist-x-server-production.up.railway.app';
+        
+        // ОБНОВЛЕННЫЙ АДРЕС СЕРВЕРА
+        const SERVER_URL = 'https://logist-x.store';
+        
         let deferredPrompt;
         let currentLang = 'ru';
-        let trialData = {}; // Для временного хранения данных между шагами
+        let trialData = {}; // Храним данные между шагами
 
         // === DICTIONARY ===
         const translations = {
@@ -826,7 +829,7 @@
             } catch (e) { alert('Network Error'); }
         }
 
-        // ШАГ 1: ОТПРАВКА КОДА
+        // ШАГ 1: ОТПРАВКА КОДА ЧЕРЕЗ ПЛАГИН
         async function sendCode() {
             const name = document.getElementById('trialObjectName').value.trim();
             const email = document.getElementById('trialEmail').value.trim();
