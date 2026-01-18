@@ -809,7 +809,7 @@
             } catch (e) { alert('Network Error'); }
         }
 
-        // ОБНОВЛЕНО: Отправка триала с учетом выбранного типа
+        // ОБНОВЛЕНО: Тест-драйв с подтверждением через Email (service x-platform)
         async function sendTrialRequest() {
             const nameInput = document.getElementById('trialObjectName').value.trim();
             const typeInput = document.getElementById('trialType').value;
@@ -820,21 +820,58 @@
                 return;
             }
 
+            // 1. Запрос Email
+            const emailPrompt = currentLang === 'ru' 
+                ? 'service x-platform:\nВведите ваш Email для получения кода:' 
+                : 'service x-platform:\nEnter your Email to receive the code:';
+            const emailInput = prompt(emailPrompt);
+            
+            if(!emailInput || !emailInput.includes('@')) {
+                alert(currentLang === 'ru' ? 'Введите корректный адрес!' : 'Enter a valid email!');
+                return;
+            }
+
             try {
-                const response = await fetch(`${SERVER_URL}/api/keys/add-trial`, {
+                // Шаг 1: Запрос на отправку кода
+                const r = await fetch(`${SERVER_URL}/api/keys/send-verification`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ name: nameInput, type: typeInput })
+                    body: JSON.stringify({ email: emailInput, name: nameInput, type: typeInput })
                 });
-                const data = await response.json();
-                if(data.success) {
-                    document.getElementById('displayTrialKey').innerText = data.key;
-                    closeModal('modalTrialInput');
-                    openModal('modalTrialResult');
+                const res = await r.json();
+
+                if(res.success) {
+                    // Шаг 2: Ввод кода пользователем
+                    const codePrompt = currentLang === 'ru' 
+                        ? 'Код отправлен на почту!\nВведите 6 цифр из письма:' 
+                        : 'Code sent to your email!\nEnter 6 digits from the letter:';
+                    const userCode = prompt(codePrompt);
+                    
+                    if(!userCode) return;
+
+                    // Шаг 3: Верификация кода и получение ключа
+                    const rVerify = await fetch(`${SERVER_URL}/api/keys/verify-and-generate`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ email: emailInput, userCode: userCode.trim() })
+                    });
+                    const resVerify = await rVerify.json();
+
+                    if(resVerify.success) {
+                        document.getElementById('displayTrialKey').innerText = resVerify.key;
+                        closeModal('modalTrialInput');
+                        openModal('modalTrialResult');
+                    } else {
+                        const err = currentLang === 'ru' ? 'Неверный или просроченный код' : 'Invalid or expired code';
+                        alert(err);
+                    }
                 } else {
-                    alert('Error generating key');
+                    const err = currentLang === 'ru' ? 'Ошибка отправки. Проверьте Email.' : 'Send error. Check your Email.';
+                    alert(err);
                 }
-            } catch(e) { alert('Server Error'); }
+            } catch(e) { 
+                alert('Server Error'); 
+            }
         }
 
         function copyTrialKey(btn) {
