@@ -225,7 +225,7 @@
                     </p>
                     
                     <div class="flex flex-col md:flex-row gap-6 justify-center items-center">
-                        <button onclick="requestTrialOnSite()" class="btn-emerald px-10 py-5 text-sm gap-3 shadow-2xl">
+                        <button onclick="openModal('modalTrialInput')" class="btn-emerald px-10 py-5 text-sm gap-3 shadow-2xl">
                            <i data-lucide="zap" size="22"></i> <span data-i18n="btn_trial">Запустить Тест-Драйв</span>
                         </button>
                         <div class="text-[10px] opacity-40 uppercase font-bold tracking-tighter text-white text-left" data-i18n="trial_note">
@@ -276,6 +276,33 @@
         </div>
     </footer>
 
+    <div id="modalTrialInput" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modalTrialInput')">&times;</span>
+            <div class="modal-header" data-i18n="trial_input_title">Тест-Драйв Системы</div>
+            <p class="mb-6 opacity-60 text-xs italic" data-i18n="trial_input_desc">Пожалуйста, введите название вашего объекта или компании для генерации ключа:</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[9px] uppercase font-bold opacity-40 ml-2" data-i18n="buy_label_name">Название объекта</label>
+                    <input type="text" id="trialObjectName" class="login-input !text-left !text-sm !mb-0" placeholder="Например: Склад Орел" data-i18n-placeholder="trial_input_placeholder">
+                </div>
+                
+                <div>
+                    <label class="text-[9px] uppercase font-bold opacity-40 ml-2" data-i18n="trial_label_type">Тип модуля для теста</label>
+                    <select id="trialType" class="login-input !text-left !text-sm !mb-0 !bg-black">
+                        <option value="logist" data-i18n="opt_logist">LOGIST_X (Монтаж и доставка)</option>
+                        <option value="merch" data-i18n="opt_merch">MERCH_X (Мерчандайзинг)</option>
+                    </select>
+                </div>
+
+                <button onclick="sendTrialRequest()" class="btn-emerald w-full py-5 text-sm tracking-widest uppercase italic text-black">
+                    <i data-lucide="key" class="mr-2" size="18"></i> <span data-i18n="btn_get_trial">ПОЛУЧИТЬ КЛЮЧ</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="modalTrialResult" class="modal">
         <div class="modal-content !border-emerald-500/50 text-center">
             <span class="close-modal" onclick="closeModal('modalTrialResult')">&times;</span>
@@ -295,10 +322,10 @@
             </div>
             
             <div class="flex flex-col gap-3">
-                <button onclick="copyTrialKey()" class="btn-emerald !bg-white !text-black !py-4 text-xs">
-                    <i data-lucide="copy" class="mr-2" size="16"></i> <span data-i18n="btn_copy">СКОПИРОВАТЬ КЛЮЧ</span>
+                <button onclick="copyTrialKey(this)" class="btn-emerald !bg-white !text-black !py-4 text-xs">
+                    <i data-lucide="copy" class="mr-2" size="16"></i> <span id="copyBtnText" data-i18n="btn_copy">СКОПИРОВАТЬ КЛЮЧ</span>
                 </button>
-                <a href="https://t.me/LogistX_Robot_Bot" target="_blank" class="btn-bot-outline !border-emerald-500/50 !text-emerald-500 !py-4 !text-[10px]">
+                <a href="https://t.me/LogistX_Robot_Bot" onclick="closeModal('modalTrialResult')" target="_blank" class="btn-bot-outline !border-emerald-500/50 !text-emerald-500 !py-4 !text-[10px]">
                     <i data-lucide="message-circle" class="mr-2" size="16"></i> ПЕРЕЙТИ К АКТИВАЦИИ В BOT
                 </a>
             </div>
@@ -377,12 +404,7 @@
             <span class="close-modal" onclick="closeModal('modalPrivacy')">&times;</span>
             <div class="modal-header" data-i18n="modal_policy_title">Политика конфиденциальности</div>
             <div class="text-xs space-y-4 text-[#8b949e] overflow-y-auto max-h-[60vh] pr-2 text-left" id="policyText" data-i18n="modal_policy_text">
-                <p>1. Общие положения: Настоящая политика обработки персональных данных составлена в соответствии с требованиями Федерального закона от 27.07.2006. №152-ФЗ «О персональных данных».</p>
-                <p>2. Состав данных: Сервис собирает только те данные, которые необходимы для работы (ФИО сотрудников, отчетные фото, GPS-координаты объектов).</p>
-                <p>3. Цели сбора: Автоматизация контроля персонала, формирование отчетов в Google Sheets и обеспечение безопасности данных.</p>
-                <p>4. Безопасность: Мы используем шифрование и защищенные протоколы для передачи данных. Данные платежных карт не хранятся на наших серверах (обработка идет через Robokassa).</p>
-                <p>5. Контакты: По вопросам удаления данных пишите на evgeny_orel@mail.ru.</p>
-            </div>
+                </div>
         </div>
     </div>
 
@@ -391,12 +413,7 @@
             <span class="close-modal" onclick="closeModal('modalTerms')">&times;</span>
             <div class="modal-header" data-i18n="modal_offer_title">Публичная оферта</div>
             <div class="text-xs space-y-4 text-[#8b949e] overflow-y-auto max-h-[60vh] pr-2 text-left" id="offerText" data-i18n="modal_offer_text">
-                <p><strong>1. Предмет:</strong> Самозанятый Никитин Е.А. предоставляет доступ к облачному сервису X-PLATFORM (Logist_X/Merch_X) на условиях SaaS-подписки.</p>
-                <p><strong>2. Цена и оплата:</strong> Стоимость доступа составляет 1500 руб. (или $20) за 1 активного сотрудника в месяц. Оплата производится авансовым платежом.</p>
-                <p><strong>3. Срок оказания услуг:</strong> Доступ открывается в течение 24 часов после подтверждения транзакции платежной системой.</p>
-                <p><strong>4. Возврат средств:</strong> Поскольку услуга заключается в предоставлении доступа к цифровому контенту, возврат средств после активации доступа не производится (ст. 450.1 ГК РФ).</p>
-                <p><strong>5. Реквизиты:</strong> ИНН 575405332940. Место нахождения: г. Орел, Россия.</p>
-            </div>
+                </div>
         </div>
     </div>
 
@@ -455,7 +472,7 @@
                 trial_desc: "Получите полный доступ к системе на 3 дня прямо сейчас. Без привязки карты и лишних вопросов.",
                 btn_trial: "Запустить Тест-Драйв",
                 trial_note: "* До 2-х сотрудников <br> на период теста",
-                trial_res_title: "КЛЮЧ АКТИВИРОВАН",
+                trial_res_title: "КЛЮЧ ГОТОВ!",
                 trial_res_desc: "Ваш временный ключ для приложения (действует 3 дня):",
                 btn_copy: "СКОПИРОВАТЬ КЛЮЧ",
                 trial_instr_step: "Важный шаг:",
@@ -494,9 +511,30 @@
                 btn_exit: "← Выйти из кабинета",
 
                 modal_policy_title: "Политика конфиденциальности",
-                modal_policy_text: `<p>1. Личные данные: Мы уважаем вашу конфиденциальность и обрабатываем данные согласно закону 152-ФЗ.</p><p>2. Использование: Данные (фото и GPS) используются только для построения отчетов в рамках ваших проектов.</p><p>3. Оплата: Все платежи защищены шлюзом Robokassa.</p>`,
+                modal_policy_text: `
+                    <p><strong>1. Общие положения:</strong> Настоящая политика составлена в соответствии с ФЗ №152 «О персональных данных». Мы собираем данные для обеспечения работы сервиса X-PLATFORM.</p>
+                    <p><strong>2. Сбор GPS и медиа:</strong> Сервис использует GPS-координаты и фотографии сотрудников только для формирования отчетов в Google Sheets. Данные передаются в зашифрованном виде.</p>
+                    <p><strong>3. Безопасность платежей:</strong> Оплата происходит через защищенный шлюз Robokassa. Мы не храним данные ваших банковских карт.</p>
+                    <p><strong>4. Хранение данных:</strong> Фотоотчеты хранятся в облачной инфраструктуре Google Drive пользователя. Мы не имеем доступа к вашим личным файлам вне рамок работы бота.</p>
+                    <p><strong>5. Права пользователя:</strong> Вы можете в любой момент отозвать доступ бота к вашим таблицам или удалить аккаунт через Telegram.</p>
+                `,
                 modal_offer_title: "Публичная оферта",
-                modal_offer_text: `<p>1. Услуга: Предоставление доступа к инструментам Logist_X и Merch_X.</p><p>2. Оплата: 1500 руб. за сотрудника/мес. Без скрытых комиссий.</p><p>3. Возврат: Цифровой товар возврату не подлежит после активации.</p>`,
+                modal_offer_text: `
+                    <p><strong>1. Предмет:</strong> Самозанятый Никитин Е.А. предоставляет доступ к облачному сервису (SaaS) для автоматизации контроля персонала на условиях подписки.</p>
+                    <p><strong>2. Стоимость:</strong> Базовый тариф составляет 1500 руб. за 1 активного сотрудника в месяц. При оплате за длительный период применяются скидки.</p>
+                    <p><strong>3. Активация:</strong> Доступ к системе предоставляется автоматически или в течение 24 часов после подтверждения оплаты.</p>
+                    <p><strong>4. Цифровой товар:</strong> Услуга считается оказанной в момент предоставления лицензионного ключа. Возврат средств после активации ключа не производится (согласно ст. 450.1 ГК РФ).</p>
+                    <p><strong>5. Реквизиты:</strong> ИНН 575405332940. Место регистрации: г. Орел. Контакт: evgeny_orel@mail.ru.</p>
+                `,
+                
+                trial_input_title: "Тест-Драйв Системы",
+                trial_input_desc: "Введите название объекта для генерации ключа:",
+                trial_input_placeholder: "Например: Склад Орел",
+                trial_label_type: "Тип модуля для теста",
+                opt_logist: "LOGIST_X (Монтаж и доставка)",
+                opt_merch: "MERCH_X (Мерчандайзинг)",
+                btn_get_trial: "ПОЛУЧИТЬ КЛЮЧ",
+                copied: "СКОПИРОВАНО!",
 
                 // Speech parts
                 sp_bot: "Переходим в Телеграм бот платформы",
@@ -559,7 +597,7 @@
                 trial_desc: "Get full access for 3 days right now. No credit card required.",
                 btn_trial: "Start Trial",
                 trial_note: "* Up to 2 employees <br> for trial period",
-                trial_res_title: "KEY ACTIVATED",
+                trial_res_title: "KEY READY!",
                 trial_res_desc: "Your temporary app key (valid for 3 days):",
                 btn_copy: "COPY KEY",
                 trial_instr_step: "Important Step:",
@@ -598,9 +636,28 @@
                 btn_exit: "← Exit Dashboard",
 
                 modal_policy_title: "Privacy Policy",
-                modal_policy_text: `<p>1. Data Privacy: We value your privacy and process data in accordance with international standards.</p><p>2. Usage: Photo and GPS data are used exclusively for report generation within your business objects.</p><p>3. Payments: All transactions are secured by Robokassa gateway.</p>`,
+                modal_policy_text: `
+                    <p><strong>1. General:</strong> This policy describes how we handle personal data in X-PLATFORM ecosystem according to international privacy standards.</p>
+                    <p><strong>2. Data Collection:</strong> We collect worker GPS coordinates and photos solely for generating automated reports in your Google Sheets.</p>
+                    <p><strong>3. Payment Safety:</strong> All transactions are processed via Robokassa secure gateway. We do not store your credit card info.</p>
+                    <p><strong>4. Security:</strong> Data is encrypted during transmission. Your reports are stored within your own Google Drive infrastructure.</p>
+                `,
                 modal_offer_title: "Public Offer",
-                modal_offer_text: `<p>1. Service: Access to Logist_X and Merch_X professional tools.</p><p>2. Pricing: $20 per employee/month. No hidden fees.</p><p>3. Refund: Digital services are non-refundable once access is granted.</p>`,
+                modal_offer_text: `
+                    <p><strong>1. Service:</strong> SaaS access to Logist_X and Merch_X professional tools for business automation.</p>
+                    <p><strong>2. Pricing:</strong> Standard plan is $20 per active employee per month. Discounts available for 3+ months plans.</p>
+                    <p><strong>3. Activation:</strong> License keys are provided instantly after payment confirmation.</p>
+                    <p><strong>4. No Refunds:</strong> Digital goods are non-refundable once the license key has been activated.</p>
+                `,
+                
+                trial_input_title: "System Trial Access",
+                trial_input_desc: "Enter facility name to generate a key:",
+                trial_input_placeholder: "Example: Warehouse London",
+                trial_label_type: "Trial Module Type",
+                opt_logist: "LOGIST_X (Install & Delivery)",
+                opt_merch: "MERCH_X (Merchandising)",
+                btn_get_trial: "GET KEY",
+                copied: "COPIED!",
 
                 // Speech parts
                 sp_bot: "Switching to Platform Telegram Bot",
@@ -628,7 +685,11 @@
                 if (t[key]) el.innerHTML = t[key];
             });
 
-            // Update main price card manually
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (t[key]) el.placeholder = t[key];
+            });
+
             const mainPrice = document.getElementById('mainPrice');
             const currencySign = document.getElementById('currencySign');
             if(mainPrice && currencySign) {
@@ -637,7 +698,7 @@
             }
 
             document.getElementById('langBtn').textContent = currentLang.toUpperCase();
-            calculatePrice(); // Update speech language in price calculator
+            calculatePrice(); 
         }
 
         function toggleLanguage() {
@@ -682,7 +743,6 @@
             const days = parseInt(document.getElementById('buyMonths').value);
             const type = document.getElementById('buyType').value;
             
-            // Text logic
             const t = translations[currentLang];
             const typeText = type === 'logist' ? 'Logist' : 'Merch';
             
@@ -690,22 +750,10 @@
             let pricePerWorker = 0;
             let discountText = t.sp_disc_no;
             
-            if (days == 30) { 
-                pricePerWorker = basePrice; 
-                discountText = t.sp_disc_no; 
-            }
-            else if (days == 90) { 
-                pricePerWorker = basePrice * 0.9; 
-                discountText = t.sp_disc_10; 
-            }
-            else if (days == 180) { 
-                pricePerWorker = basePrice * 0.85; 
-                discountText = t.sp_disc_15; 
-            }
-            else if (days == 365) { 
-                pricePerWorker = basePrice * 0.83; 
-                discountText = t.sp_disc_max; 
-            }
+            if (days == 30) { pricePerWorker = basePrice; discountText = t.sp_disc_no; }
+            else if (days == 90) { pricePerWorker = basePrice * 0.9; discountText = t.sp_disc_10; }
+            else if (days == 180) { pricePerWorker = basePrice * 0.85; discountText = t.sp_disc_15; }
+            else if (days == 365) { pricePerWorker = basePrice * 0.83; discountText = t.sp_disc_max; }
             
             const total = limit * (pricePerWorker * (days / 30));
             const currency = currentLang === 'ru' ? ' ₽' : ' $';
@@ -761,35 +809,51 @@
             } catch (e) { alert('Network Error'); }
         }
 
-        async function requestTrialOnSite() {
-            const nameInput = prompt(currentLang === 'ru' ? 'Введите название вашего объекта:' : 'Enter your object name:');
-            if(!nameInput) return;
+        // ОБНОВЛЕНО: Отправка триала с учетом выбранного типа
+        async function sendTrialRequest() {
+            const nameInput = document.getElementById('trialObjectName').value.trim();
+            const typeInput = document.getElementById('trialType').value;
+            const t = translations[currentLang];
+            
+            if(!nameInput) {
+                alert(currentLang === 'ru' ? 'Введите название объекта!' : 'Enter object name!');
+                return;
+            }
 
             try {
                 const response = await fetch(`${SERVER_URL}/api/keys/add-trial`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ name: nameInput, type: 'logist' })
+                    body: JSON.stringify({ name: nameInput, type: typeInput })
                 });
                 const data = await response.json();
                 if(data.success) {
                     document.getElementById('displayTrialKey').innerText = data.key;
+                    closeModal('modalTrialInput');
                     openModal('modalTrialResult');
                 } else {
-                    alert('Error');
+                    alert('Error generating key');
                 }
             } catch(e) { alert('Server Error'); }
         }
 
-        function copyTrialKey() {
+        function copyTrialKey(btn) {
             const keyText = document.getElementById('displayTrialKey').innerText;
+            const t = translations[currentLang];
+            const originalText = t.btn_copy;
+
             navigator.clipboard.writeText(keyText).then(() => {
-                alert(currentLang === 'ru' ? 'Ключ скопирован!' : 'Key copied!');
-                closeModal('modalTrialResult');
+                const btnSpan = document.getElementById('copyBtnText');
+                btnSpan.innerText = t.copied;
+                btn.style.borderColor = "#10b981";
+                
+                setTimeout(() => {
+                    btnSpan.innerText = originalText;
+                    btn.style.borderColor = "";
+                }, 2000);
             });
         }
         
-        // Initial setup
         updateContent();
     </script>
 </body>
