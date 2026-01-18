@@ -289,6 +289,11 @@
                 </div>
                 
                 <div>
+                    <label class="text-[9px] uppercase font-bold opacity-40 ml-2">Ваш E-mail (для кода)</label>
+                    <input type="email" id="trialEmail" class="login-input !text-left !text-sm !mb-0" placeholder="mail@example.com">
+                </div>
+
+                <div>
                     <label class="text-[9px] uppercase font-bold opacity-40 ml-2" data-i18n="trial_label_type">Тип модуля для теста</label>
                     <select id="trialType" class="login-input !text-left !text-sm !mb-0 !bg-black">
                         <option value="logist" data-i18n="opt_logist">LOGIST_X (Монтаж и доставка)</option>
@@ -296,10 +301,21 @@
                     </select>
                 </div>
 
-                <button onclick="sendTrialRequest()" class="btn-emerald w-full py-5 text-sm tracking-widest uppercase italic text-black">
-                    <i data-lucide="key" class="mr-2" size="18"></i> <span data-i18n="btn_get_trial">ПОЛУЧИТЬ КЛЮЧ</span>
+                <button onclick="sendCode()" class="btn-emerald w-full py-5 text-sm tracking-widest uppercase italic text-black">
+                    <i data-lucide="mail" class="mr-2" size="18"></i> <span>ПОЛУЧИТЬ КОД</span>
                 </button>
             </div>
+        </div>
+    </div>
+
+    <div id="modalConfirmCode" class="modal">
+        <div class="modal-content text-center">
+            <span class="close-modal" onclick="closeModal('modalConfirmCode')">&times;</span>
+            <div class="text-emerald-500 mb-4 flex justify-center"><i data-lucide="lock" size="40"></i></div>
+            <h2 class="text-xl font-black text-white mb-2 uppercase italic">Подтверждение</h2>
+            <p class="text-xs text-gray-400 mb-6 italic">Введите код из письма от <br><span class="text-emerald-500">service@x-platform.ru</span></p>
+            <input type="text" id="vCode" class="login-input !text-center !text-3xl !tracking-[8px] !mb-6" placeholder="000000" maxlength="6">
+            <button onclick="verifyAndFinish()" class="btn-emerald w-full py-5 text-sm font-black italic text-black">ОТКРЫТЬ ДОСТУП</button>
         </div>
     </div>
 
@@ -423,6 +439,7 @@
         const SERVER_URL = 'https://logist-x-server-production.up.railway.app';
         let deferredPrompt;
         let currentLang = 'ru';
+        let trialData = {}; // Для временного хранения данных между шагами
 
         // === DICTIONARY ===
         const translations = {
@@ -809,69 +826,48 @@
             } catch (e) { alert('Network Error'); }
         }
 
-        // ОБНОВЛЕНО: Тест-драйв с подтверждением через Email (service x-platform)
-        async function sendTrialRequest() {
-            const nameInput = document.getElementById('trialObjectName').value.trim();
-            const typeInput = document.getElementById('trialType').value;
-            const t = translations[currentLang];
+        // ШАГ 1: ОТПРАВКА КОДА
+        async function sendCode() {
+            const name = document.getElementById('trialObjectName').value.trim();
+            const email = document.getElementById('trialEmail').value.trim();
+            const type = document.getElementById('trialType').value;
             
-            if(!nameInput) {
-                alert(currentLang === 'ru' ? 'Введите название объекта!' : 'Enter object name!');
-                return;
-            }
+            if(!name || !email) return alert("Заполните все поля!");
 
-            // 1. Запрос Email
-            const emailPrompt = currentLang === 'ru' 
-                ? 'service x-platform:\nВведите ваш Email для получения кода:' 
-                : 'service x-platform:\nEnter your Email to receive the code:';
-            const emailInput = prompt(emailPrompt);
-            
-            if(!emailInput || !emailInput.includes('@')) {
-                alert(currentLang === 'ru' ? 'Введите корректный адрес!' : 'Enter a valid email!');
-                return;
-            }
+            trialData = { name, email, type };
 
             try {
-                // Шаг 1: Запрос на отправку кода
-                const r = await fetch(`${SERVER_URL}/api/keys/send-verification`, {
+                const response = await fetch(`${SERVER_URL}/api/keys/send-code`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: emailInput, name: nameInput, type: typeInput })
+                    body: JSON.stringify({ email, name })
                 });
-                const res = await r.json();
+                const data = await response.json();
+                if(data.success) {
+                    closeModal('modalTrialInput');
+                    openModal('modalConfirmCode');
+                } else { alert("Ошибка: " + data.error); }
+            } catch(e) { alert("Ошибка сервера"); }
+        }
 
-                if(res.success) {
-                    // Шаг 2: Ввод кода пользователем
-                    const codePrompt = currentLang === 'ru' 
-                        ? 'Код отправлен на почту!\nВведите 6 цифр из письма:' 
-                        : 'Code sent to your email!\nEnter 6 digits from the letter:';
-                    const userCode = prompt(codePrompt);
-                    
-                    if(!userCode) return;
+        // ШАГ 2: ПРОВЕРКА КОДА И ВЫДАЧА КЛЮЧА
+        async function verifyAndFinish() {
+            const code = document.getElementById('vCode').value.trim();
+            if(!code) return alert("Введите код!");
 
-                    // Шаг 3: Верификация кода и получение ключа
-                    const rVerify = await fetch(`${SERVER_URL}/api/keys/verify-and-generate`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ email: emailInput, userCode: userCode.trim() })
-                    });
-                    const resVerify = await rVerify.json();
-
-                    if(resVerify.success) {
-                        document.getElementById('displayTrialKey').innerText = resVerify.key;
-                        closeModal('modalTrialInput');
-                        openModal('modalTrialResult');
-                    } else {
-                        const err = currentLang === 'ru' ? 'Неверный или просроченный код' : 'Invalid or expired code';
-                        alert(err);
-                    }
-                } else {
-                    const err = currentLang === 'ru' ? 'Ошибка отправки. Проверьте Email.' : 'Send error. Check your Email.';
-                    alert(err);
-                }
-            } catch(e) { 
-                alert('Server Error'); 
-            }
+            try {
+                const response = await fetch(`${SERVER_URL}/api/keys/verify-trial`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: trialData.email, code, type: trialData.type })
+                });
+                const data = await response.json();
+                if(data.success) {
+                    closeModal('modalConfirmCode');
+                    document.getElementById('displayTrialKey').innerText = data.key;
+                    openModal('modalTrialResult');
+                } else { alert("Неверный код!"); }
+            } catch(e) { alert("Ошибка сервера"); }
         }
 
         function copyTrialKey(btn) {
