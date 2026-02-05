@@ -154,10 +154,8 @@
 
 <script>
     const BOT_SERVER_URL = 'https://logist-x.store';
-    /* ЗАЩИТА MASTER_KEY: ТЕПЕРЬ ОН ЗАШИФРОВАН В BASE64 */
     const _MS_ENCRYPTED = "REVWLU1BU1RFUi05OTk="; 
     const MASTER_KEY = atob(_MS_ENCRYPTED);
-    // БЛОКИРОВКА ИНСПЕКТОРА (F12, Контекстное меню)
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => {
         if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode)) || (e.ctrlKey && e.keyCode == 85)) {
@@ -169,23 +167,24 @@
 
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
-   const CLIENT_MAP = {
-    "БИЛАЙН": "БИЛАЙН", "БИЛ": "БИЛАЙН", "BEELINE": "БИЛАЙН",
-    "МТС": "МТС", "MTS": "МТС",
-    "МЕГАФОН": "МЕГАФОН", "МЕГА": "МЕГАФОН",
-    "ТЕЛЕ2": "ТЕЛЕ2", "TELE2": "ТЕЛЕ2",
-    "ДОМРУ": "ДОМ.РУ", "ERTH": "ДОМ.РУ",
-    "РОСТЕЛЕКОМ": "РОСТЕЛЕКОМ", "РТК": "РОСТЕЛЕКОМ",
-    "ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "YANDEX": "ЯНДЕКС МАРКЕТ",
-    "САМОКАТ": "САМОКАТ", "SAMOKAT": "САМОКАТ",
-    "МАГНИТ": "МАГНИТ", "MAGNIT": "МАГНИТ",
-    "ОЗОН": "ОЗОН", "OZON": "ОЗОН",
-    "ВКУСВИЛЛ": "ВКУСВИЛЛ", "ВКУС": "ВКУСВИЛЛ",
-    "ПЯТЕРОЧКА": "ПЯТЕРОЧКА", "X5": "ПЯТЕРОЧКА",
-    "ДИКСИ": "ДИКСИ",
-    "СБЕР": "СБЕРМАРКЕТ", "КУПЕР": "КУПЕР"
-};
- 
+    
+    // СЛОВАРЬ КЛИЕНТОВ (Максимально полный)
+    const CLIENT_MAP = {
+        "БИЛАЙН": "БИЛАЙН", "БИЛ": "БИЛАЙН", "BEELINE": "БИЛАЙН",
+        "МТС": "МТС", "MTS": "МТС",
+        "МЕГАФОН": "МЕГАФОН", "МЕГА": "МЕГАФОН",
+        "ТЕЛЕ2": "ТЕЛЕ2", "TELE2": "ТЕЛЕ2",
+        "ДОМРУ": "ДОМ.РУ", "ERTH": "ДОМ.РУ",
+        "РОСТЕЛЕКОМ": "РОСТЕЛЕКОМ", "РТК": "РОСТЕЛЕКОМ",
+        "ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "YANDEX": "ЯНДЕКС МАРКЕТ",
+        "САМОКАТ": "САМОКАТ", "SAMOKAT": "САМОКАТ",
+        "МАГНИТ": "МАГНИТ", "MAGNIT": "МАГНИТ",
+        "ОЗОН": "ОЗОН", "OZON": "ОЗОН",
+        "ВКУСВИЛЛ": "ВКУСВИЛЛ", "ВКУС": "ВКУСВИЛЛ",
+        "ПЯТЕРОЧКА": "ПЯТЕРОЧКА", "X5": "ПЯТЕРОЧКА",
+        "ДИКСИ": "ДИКСИ",
+        "СБЕР": "СБЕРМАРКЕТ", "КУПЕР": "КУПЕР"
+    };
 
     function getDeviceId() { let id = localStorage.getItem('logist_device_id'); if (!id) { id = 'D-' + Math.random().toString(36).substr(2, 9).toUpperCase(); localStorage.setItem('logist_device_id', id); } return id; }
     function haptic() { if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(35); }
@@ -253,24 +252,59 @@
         let f = inp.files[0]; if(!f) return;
         setLoader(true);
         setTimeout(() => {
-            let r = new FileReader(); r.onload = (e) => {
+            let reader = new FileReader(); 
+            reader.onload = (e) => {
                 try {
-                    let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
-                    let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
-                    let head = rows[0].map(v => String(v || "").toLowerCase());
-                    let cS = head.findIndex(v => v.includes('улица') || v.includes('адрес'));
-                    let cH = head.findIndex(v => v.includes('дом'));
-                    let cP = head.findIndex(v => v.includes('подъезд'));
-                    if(cS === -1) return alert("Ошибка адреса");
+                    let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates: true});
                     let list = [];
-                    rows.forEach((row, k) => {
-                        if(k === 0 || !row[cS]) return;
-                        let cls = []; row.forEach(cell => { if(cell){ let v=String(cell).toUpperCase(); for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]); } });
-                        list.push({s: row[cS], h: row[cH] || "?", p: parseInt(row[cP])||1, clients: [...new Set(cls)], id: 'ID-'+k+'-'+(row[cS]+row[cH]).replace(/\W/g,'')});
+                    // Проходим по всем листам, ищем тот, где есть данные
+                    wb.SheetNames.forEach(sheetName => {
+                        let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1, defval: ""});
+                        if (rows.length === 0) return;
+
+                        // Ищем строку с заголовками (не обязательно первая)
+                        let headIdx = rows.findIndex(r => r.some(c => String(c).toLowerCase().includes('улица') || String(c).toLowerCase().includes('адрес')));
+                        if (headIdx === -1) return;
+
+                        let head = rows[headIdx].map(v => String(v || "").toLowerCase().trim());
+                        let cS = head.findIndex(v => v.includes('улица') || v.includes('адрес'));
+                        let cH = head.findIndex(v => v.includes('дом'));
+                        let cP = head.findIndex(v => v.includes('подъезд') || v.includes('кол-во'));
+                        
+                        rows.forEach((row, k) => {
+                            if(k <= headIdx || !row[cS]) return;
+                            
+                            // Исправляем ошибку даты (8 Марта)
+                            let street = String(row[cS]).trim();
+                            if (street.includes('2026-03-08')) street = "8 Марта";
+
+                            let house = (cH !== -1 && row[cH]) ? String(row[cH]).trim() : "";
+                            let count = parseInt(row[cP]) || 1;
+                            
+                            let cls = [];
+                            row.forEach(cell => {
+                                if(cell) {
+                                    let v = String(cell).toUpperCase();
+                                    for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]);
+                                }
+                            });
+
+                            list.push({
+                                s: street, 
+                                h: house, 
+                                p: count, 
+                                clients: [...new Set(cls)], 
+                                id: 'ID-'+k+'-'+(street+house).replace(/\W/g,'')
+                            });
+                        });
                     });
+
+                    if (list.length === 0) return alert("Ошибка: Не удалось найти колонку 'Улица' или 'Адрес'");
                     DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); Sfx.ok(); toast("БАЗА ОБНОВЛЕНА");
-                } finally { setTimeout(() => setLoader(false), 500); }
-            }; r.readAsArrayBuffer(f);
+                } catch(err) { alert("Ошибка при чтении файла!"); console.error(err); }
+                finally { setTimeout(() => setLoader(false), 500); }
+            }; 
+            reader.readAsArrayBuffer(f);
         }, 100);
     }
 
@@ -285,8 +319,9 @@
                 let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
                 pds += `<div class="p-btn ${st?'done-'+st:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
             }
+            const addressText = i.h ? `${i.s}, ${i.h}` : i.s;
             html += `<div class="card ${isDone?'is-finished':''}">
-                <div class="card-head"><div style="flex:1; margin-right:10px;">${i.s}, ${i.h}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
+                <div class="card-head"><div style="flex:1; margin-right:10px;">${addressText}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
                 <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
                 <div class="pods">${pds}</div>
             </div>`;
@@ -299,7 +334,7 @@
     function openReport(id, p) {
         if(!DATA.license.status) return checkLicenseUI();
         haptic(); curId = id; curP = p; curPhotos = {}; const it = DATA.list.find(x => x.id === id);
-        document.getElementById('modalTitle').innerText = `${it.s}, ${it.h} (П. ${p})`;
+        document.getElementById('modalTitle').innerText = `${it.s} (П. ${p})`;
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         document.getElementById('modalBody').innerHTML = cls.map((c, idx) => `
             <div class="photo-frame" onclick="document.getElementById('cam_${idx}').click()">
@@ -351,7 +386,7 @@
         const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
         const baseUUID = 'REP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
         for (let client of cls) {
-            const entry = { action: "save_report", report_uuid: baseUUID + '-' + client, worker: DATA.workerName, city: DATA.city, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, address: it.s + " " + it.h, entrance: curP, client: client, workType: ["", DATA.names.t1, "Срыв", DATA.names.t3, DATA.names.t4][curType], price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], lat: pos.lat, lon: pos.lon, ts: Date.now(), status: "Ожидание", full: curPhotos[client], licenseKey: DATA.license.key };
+            const entry = { action: "save_report", report_uuid: baseUUID + '-' + client, worker: DATA.workerName, city: DATA.city, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, address: it.s + (it.h ? " " + it.h : ""), entrance: curP, client: client, workType: ["", DATA.names.t1, "Срыв", DATA.names.t3, DATA.names.t4][curType], price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], lat: pos.lat, lon: pos.lon, ts: Date.now(), status: "Ожидание", full: curPhotos[client], licenseKey: DATA.license.key };
             DATA.history.unshift(entry); store.add(entry);
         }
         tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ"); };
@@ -380,7 +415,7 @@
     async function showMonitor() { monitorOpen = true; haptic(); const upd = async () => { if(!monitorOpen) return; const tx = db.transaction("sync_queue", "readonly"); const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result)); document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ"; document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Доставлено!</p>" : `<div style="padding:15px">${items.map(it => `<div style="background:#161b22; padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.entrance})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }; upd(); }
     function createFullBackup() { const blob = new Blob([JSON.stringify({ appData: DATA })], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click(); }
     function restoreFullBackup(inp) { let f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { DATA = JSON.parse(e.target.result).appData; saveCfg(); location.reload(); } catch(err) { alert("Ошибка!"); } }; r.readAsText(f); }
-    function showSryvy() { haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ"; let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } } let h = "<div style='padding:15px'>"; for(let id in gr){ const it=DATA.list.find(x=>x.id===id); if(it) h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}, ${it.h}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; } document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
+    function showSryvy() { haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ"; let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } } let h = "<div style='padding:15px'>"; for(let id in gr){ const it=DATA.list.find(x=>x.id===id); if(it) h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}${it.h ? ', '+it.h : ''}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; } document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
     function showArchive() { haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.entrance})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; }); document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
     function showArchivePhoto(idx) { const it = DATA.history[idx]; if(!it || !it.full) return; document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; }
     function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; if(document.getElementById('syncIndicator')) document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing && document.getElementById('queueCount')) document.getElementById('queueCount').innerText = c; }; }
