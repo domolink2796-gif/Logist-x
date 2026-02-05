@@ -169,7 +169,23 @@
 
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
-    const CLIENT_MAP = {"ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "САМОКАТ": "САМОКАТ", "МТС": "МТС", "МАГНИТ": "МАГНИТ", "ОЗОН": "ОЗОН", "ВКУСВИЛЛ": "ВКУСВИЛЛ"};
+   const CLIENT_MAP = {
+    "БИЛАЙН": "БИЛАЙН", "БИЛ": "БИЛАЙН", "BEELINE": "БИЛАЙН",
+    "МТС": "МТС", "MTS": "МТС",
+    "МЕГАФОН": "МЕГАФОН", "МЕГА": "МЕГАФОН",
+    "ТЕЛЕ2": "ТЕЛЕ2", "TELE2": "ТЕЛЕ2",
+    "ДОМРУ": "ДОМ.РУ", "ERTH": "ДОМ.РУ",
+    "РОСТЕЛЕКОМ": "РОСТЕЛЕКОМ", "РТК": "РОСТЕЛЕКОМ",
+    "ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "YANDEX": "ЯНДЕКС МАРКЕТ",
+    "САМОКАТ": "САМОКАТ", "SAMOKAT": "САМОКАТ",
+    "МАГНИТ": "МАГНИТ", "MAGNIT": "МАГНИТ",
+    "ОЗОН": "ОЗОН", "OZON": "ОЗОН",
+    "ВКУСВИЛЛ": "ВКУСВИЛЛ", "ВКУС": "ВКУСВИЛЛ",
+    "ПЯТЕРОЧКА": "ПЯТЕРОЧКА", "X5": "ПЯТЕРОЧКА",
+    "ДИКСИ": "ДИКСИ",
+    "СБЕР": "СБЕРМАРКЕТ", "КУПЕР": "КУПЕР"
+};
+ 
 
     function getDeviceId() { let id = localStorage.getItem('logist_device_id'); if (!id) { id = 'D-' + Math.random().toString(36).substr(2, 9).toUpperCase(); localStorage.setItem('logist_device_id', id); } return id; }
     function haptic() { if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(35); }
