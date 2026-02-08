@@ -210,7 +210,13 @@
         DATA.names.t3 = document.getElementById('t3_name')?.value || "Замена рекламы";
         DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudomona";
         if(document.getElementById('cityBadge')) document.getElementById('cityBadge').innerText = DATA.city.toUpperCase();
-        localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
+        
+        try {
+            localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
+        } catch(e) {
+            alert("ВНИМАНИЕ: Память телефона переполнена! Очистите кэш или архив.");
+            console.error("Storage full", e);
+        }
         checkLicenseUI();
     }
 
@@ -386,8 +392,19 @@
         const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
         const baseUUID = 'REP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
         for (let client of cls) {
-            const entry = { action: "save_report", report_uuid: baseUUID + '-' + client, worker: DATA.workerName, city: DATA.city, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, address: it.s + (it.h ? " " + it.h : ""), entrance: curP, client: client, workType: ["", DATA.names.t1, "Срыв", DATA.names.t3, DATA.names.t4][curType], price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], lat: pos.lat, lon: pos.lon, ts: Date.now(), status: "Ожидание", full: curPhotos[client], licenseKey: DATA.license.key };
-            DATA.history.unshift(entry); store.add(entry);
+            // 1. Создаем полный объект для отправки на сервер (С ФОТО)
+            const entryForServer = { action: "save_report", report_uuid: baseUUID + '-' + client, worker: DATA.workerName, city: DATA.city, image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, address: it.s + (it.h ? " " + it.h : ""), entrance: curP, client: client, workType: ["", DATA.names.t1, "Срыв", DATA.names.t3, DATA.names.t4][curType], price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][curType], lat: pos.lat, lon: pos.lon, ts: Date.now(), status: "Ожидание", full: curPhotos[client], licenseKey: DATA.license.key };
+            
+            // 2. Создаем легкий объект для истории в телефоне (БЕЗ ФОТО, чтобы не забить localStorage)
+            // Мы ставим full: null, чтобы localStorage не переполнялся.
+            const entryForHistory = { ...entryForServer, full: null, image: null };
+            
+            // Добавляем в историю и ограничиваем длину (последние 100 записей)
+            DATA.history.unshift(entryForHistory);
+            if(DATA.history.length > 100) DATA.history.length = 100;
+
+            // Добавляем в очередь синхронизации (полный объект)
+            store.add(entryForServer);
         }
         tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ"); };
     }
@@ -417,7 +434,14 @@
     function restoreFullBackup(inp) { let f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { DATA = JSON.parse(e.target.result).appData; saveCfg(); location.reload(); } catch(err) { alert("Ошибка!"); } }; r.readAsText(f); }
     function showSryvy() { haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ"; let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } } let h = "<div style='padding:15px'>"; for(let id in gr){ const it=DATA.list.find(x=>x.id===id); if(it) h+=`<div style="background:#161b22; margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}${it.h ? ', '+it.h : ''}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; } document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
     function showArchive() { haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:rgba(255,255,255,0.02); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.entrance})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; }); document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
-    function showArchivePhoto(idx) { const it = DATA.history[idx]; if(!it || !it.full) return; document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; }
+    function showArchivePhoto(idx) { const it = DATA.history[idx]; 
+        // Если фото нет в истории (мы его удалили для экономии), сообщаем об этом
+        if(!it || !it.full) {
+            document.getElementById('modalBody').innerHTML = `<div style="padding:20px; text-align:center;">Фото не сохранено в локальном архиве для экономии памяти.<br>На сервере фото есть.<br><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`;
+            return;
+        }
+        document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; 
+    }
     function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; if(document.getElementById('syncIndicator')) document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing && document.getElementById('queueCount')) document.getElementById('queueCount').innerText = c; }; }
     function updateStats() { let tot = 0; DATA.list.forEach(i => tot += i.p); let dn = 0, mon = 0; for(let id in DATA.done) { const it = DATA.list.find(x => x.id === id); if(!it) continue; for(let p in DATA.done[id]) { const t = DATA.done[id][p]; dn++; if(t !== 2) { let p_val = [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t]; mon += (p_val * (it.clients.length || 1)); } } } if(document.getElementById('statMoney')) document.getElementById('statMoney').innerText = mon + " ₽"; if(document.getElementById('statProgress')) document.getElementById('statProgress').innerText = `${dn}/${tot}`; if(document.getElementById('mainProgress')) document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%"; }
     function toggleMenu() { haptic(); Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
