@@ -64,6 +64,11 @@
         #syncIndicator { background: var(--text); color: var(--bg); padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.65rem; border: none; cursor: pointer; display: none; transition: all 0.3s ease; }
         #syncIndicator.active-sync { background: var(--accent); box-shadow: 0 0 15px var(--accent); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        
+        /* Анимация для активного спутника */
+        .gps-active { animation: gpsPulse 2s infinite; color: var(--accent) !important; opacity: 1 !important; filter: drop-shadow(0 0 5px var(--accent)) !important; }
+        @keyframes gpsPulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
         .search-box { width: 100%; padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 0.95rem; outline: none; background: var(--box-bg); color: var(--text); box-sizing: border-box; transition: 0.3s; }
         .stats-dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 15px; }
         .stat-block { text-align: center; background: var(--box-bg); padding: 12px 4px; border-radius: 12px; border: 1px solid var(--border); transition: 0.3s; }
@@ -111,7 +116,7 @@
         .btn-price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
         .price-btn-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
         .price-label { font-size: 0.52rem; font-weight: 800; color: var(--subtext); text-transform: uppercase; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .dist-badge { background: rgba(245, 158, 11, 0.1); color: var(--accent); padding: 4px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 900; margin-left: 8px; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .dist-badge { background: rgba(245, 158, 11, 0.1); color: var(--accent); padding: 4px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 900; margin-left: 8px; border: 1px solid rgba(245, 158, 11, 0.2); transition: 0.3s; }
         .sort-row { display: flex; gap: 10px; margin-bottom: 15px; }
     </style>
 </head>
@@ -135,7 +140,7 @@
     <div id="loader"><div style="font-weight: 900; color: var(--accent); letter-spacing: 10px; font-size: 1.8rem;">LOGIST_X</div><div class="lic-progress" style="display:block; width:150px; margin-top:15px;"><div class="lic-bar" style="width:100%"></div></div></div>
     <header>
         <div class="top-row">
-            <span class="app-name" id="appNameZone">LOGIST_X <span id="topGpsIcon" style="opacity:0.2; margin-left:10px;">🛰️</span></span>
+            <span class="app-name" id="appNameZone" onclick="startDynamicGps()">LOGIST_X <span id="topGpsIcon" style="opacity:0.2; margin-left:10px; cursor:pointer;">🛰️</span></span>
             <div style="display:flex; gap:8px;">
                 <button id="syncIndicator" onclick="showMonitor()">📦 <span id="queueCount">0</span></button>
                 <span id="cityBadge" style="background:rgba(245,158,11,0.1); color: var(--accent); padding: 8px 18px; border-radius: 12px; font-size: 0.7rem; font-weight: 900;">...</span>
@@ -219,7 +224,10 @@
     
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
-    let userPos = { lat: null, lon: null };
+    
+    // ПЕРЕМЕННЫЕ GPS
+    let userPos = JSON.parse(localStorage.getItem('logist_last_pos')) || { lat: null, lon: null };
+    let gpsWatcher = null;
 
     const CLIENT_MAP = {
         "БИЛАЙН": "БИЛАЙН", "БИЛ": "БИЛАЙН", "BEELINE": "БИЛАЙН",
@@ -249,34 +257,60 @@
         return res;
     }
 
-    function getCoords() {
-        return new Promise((resolve) => {
-            if (!navigator.geolocation) return resolve({lat:null, lon:null});
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    document.getElementById('topGpsIcon').style.opacity = "1";
-                    document.getElementById('topGpsIcon').style.color = "var(--accent)";
-                    resolve({lat: pos.coords.latitude, lon: pos.coords.longitude});
-                },
-                (err) => {
-                    document.getElementById('topGpsIcon').style.opacity = "0.2";
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
-                        () => resolve({lat:null, lon:null}),
-                        { enableHighAccuracy: false, timeout: 5000 }
-                    );
-                }, 
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-            );
-        });
+    // ЛОГИКА ДИНАМИЧЕСКОГО GPS
+    function setGpsVisual(active) {
+        const icon = document.getElementById('topGpsIcon');
+        if (!icon) return;
+        if (active) {
+            icon.classList.add('gps-active');
+        } else {
+            icon.classList.remove('gps-active');
+        }
     }
 
-    async function updateMyPos() {
-        const p = await getCoords();
-        if(p.lat) { 
-            userPos = p; 
-            render(); 
-        }
+    function startDynamicGps() {
+        if (!navigator.geolocation) return alert("GPS не поддерживается вашим устройством");
+        if (gpsWatcher !== null) return; // Уже запущен
+
+        toast("СПУТНИКИ АКТИВИРОВАНЫ");
+        
+        gpsWatcher = navigator.geolocation.watchPosition(
+            (pos) => {
+                const newPos = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                
+                // Проверяем, изменились ли координаты более чем на 10 метров (0.01 км)
+                const moveDist = getDist(userPos.lat, userPos.lon, newPos.lat, newPos.lon);
+                
+                if (moveDist === null || moveDist > 0.01) {
+                    userPos = newPos;
+                    localStorage.setItem('logist_last_pos', JSON.stringify(userPos));
+                    render(); // Перерисовываем карточки с новыми КМ
+                }
+                setGpsVisual(true);
+            },
+            (err) => {
+                console.warn("GPS Error:", err);
+                setGpsVisual(false);
+                gpsWatcher = null;
+            },
+            { 
+                enableHighAccuracy: true, 
+                maximumAge: 0, 
+                timeout: 20000 
+            }
+        );
+    }
+
+    // Для совместимости с остальным кодом
+    async function getCoords() {
+        if (userPos.lat) return userPos;
+        return new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
+                () => resolve({lat:null, lon:null}),
+                { enableHighAccuracy: true, timeout: 5000 }
+            );
+        });
     }
 
     async function geocodeAllAddresses() {
@@ -304,21 +338,15 @@
 
     async function sortByDistance() {
         haptic();
-        const btn = document.getElementById('sortBtn');
-        const originalText = btn.innerText;
-        btn.innerText = "⌛ ЖДУ GPS...";
-        const p = await getCoords();
-        if(!p.lat) {
-            btn.innerText = originalText;
-            return alert("Не удалось получить доступ к GPS.");
+        if(!userPos.lat) {
+            startDynamicGps();
+            return toast("ЖДУ GPS...");
         }
-        userPos = p;
         DATA.list.sort((a, b) => {
             const d1 = a.lat ? parseFloat(getDist(userPos.lat, userPos.lon, a.lat, a.lon)) : 9999;
             const d2 = b.lat ? parseFloat(getDist(userPos.lat, userPos.lon, b.lat, b.lon)) : 9999;
             return d1 - d2;
         });
-        btn.innerText = originalText;
         render();
         toast("БЛИЖАЙШИЕ СВЕРХУ");
     }
@@ -443,9 +471,9 @@
             let finished = 0; if(DATA.done[i.id]) { for(let p=1; p<=i.p; p++) if(DATA.done[i.id][p]) finished++; }
             const isDone = (finished === i.p && i.p > 0);
             
-            // Расчет дистанции для каждой карточки
+            // Расчет дистанции
             const dist = getDist(userPos.lat, userPos.lon, i.lat, i.lon);
-            const distHtml = dist ? `<span class="dist-badge">${dist} км</span>` : `<span class="dist-badge" style="opacity:0.4">Поиск...</span>`;
+            const distHtml = dist ? `<span class="dist-badge">${dist} км</span>` : `<span class="dist-badge" style="opacity:0.3">Поиск...</span>`;
 
             let pds = ""; for(let p=1; p<=i.p; p++){
                 let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
@@ -503,11 +531,15 @@
         const it = DATA.list.find(x => x.id === curId);
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         if(curType !== 2) { for(let c of cls) if(!curPhotos[c]) return alert(`Нет фото для: ${c}`); }
-        isSavingReport = true; haptic(); document.getElementById('confirmBtn').innerText = "GPS...";
+        isSavingReport = true; haptic(); document.getElementById('confirmBtn').innerText = "ОТПРАВЛЯЮ...";
+        
+        // Берем актуальную позицию
         const pos = await getCoords(); 
+        
         if(!DATA.done[curId]) DATA.done[curId] = {}; 
         DATA.done[curId][curP] = curType;
         render(); closeModal();
+        
         const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
         const baseUUID = 'REP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
         for (let client of cls) {
@@ -516,7 +548,7 @@
             if(DATA.history.length > 100) DATA.history.length = 100;
             store.add(entryForServer);
         }
-        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("В ОЧЕРЕДИ"); };
+        tx.oncomplete = () => { saveCfg(); isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; syncNow(); toast("ОТПРАВКА..."); };
     }
 
     async function syncNow() {
@@ -539,7 +571,7 @@
         } finally { syncing = false; if(document.getElementById('syncIndicator')) document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
     }
 
-    async function showMonitor() { monitorOpen = true; haptic(); const upd = async () => { if(!monitorOpen) return; const tx = db.transaction("sync_queue", "readonly"); const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result)); document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ"; document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Доставлено!</p>" : `<div style="padding:15px">${items.map(it => `<div style="background:var(--head-bg); padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.entrance})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }; upd(); }
+    async function showMonitor() { monitorOpen = true; haptic(); const upd = async () => { if(!monitorOpen) return; const tx = db.transaction("sync_queue", "readonly"); const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result)); document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ"; document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Все отчеты доставлены!</p>" : `<div style="padding:15px">${items.map(it => `<div style="background:var(--head-bg); padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.entrance})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }; upd(); }
     function createFullBackup() { const blob = new Blob([JSON.stringify({ appData: DATA })], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click(); }
     function restoreFullBackup(inp) { let f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { DATA = JSON.parse(e.target.result).appData; saveCfg(); location.reload(); } catch(err) { alert("Ошибка!"); } }; r.readAsText(f); }
     function showSryvy() { haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ"; let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } } let h = "<div style='padding:15px'>"; for(let id in gr){ const it=DATA.list.find(x=>x.id===id); if(it) h+=`<div style="background:var(--head-bg); margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}${it.h ? ', '+it.h : ''}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; } document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
@@ -566,8 +598,9 @@
             document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
         }
         checkLicenseUI(); openDB(); render();
-        updateMyPos();
-        setInterval(updateMyPos, 30000); 
+        
+        // Автоматический старт GPS при наличии координат в памяти
+        if (userPos.lat) startDynamicGps();
     };
     setInterval(syncNow, 12000);
 </script>
