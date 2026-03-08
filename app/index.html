@@ -15,7 +15,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
-        /* === БАЗОВЫЕ ПЕРЕМЕННЫЕ (ТЕМНАЯ ТЕМА) === */
         :root { 
             --bg: #010409; 
             --card: rgba(22, 27, 34, 0.95); 
@@ -37,7 +36,6 @@
             --card-fin: #000;
         }
 
-        /* === ПЕРЕМЕННЫЕ (СВЕТЛАЯ ТЕМА) === */
         body.light-theme {
             --bg: #f6f8fa; 
             --card: #ffffff; 
@@ -113,8 +111,6 @@
         .btn-price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
         .price-btn-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
         .price-label { font-size: 0.52rem; font-weight: 800; color: var(--subtext); text-transform: uppercase; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        /* СТИЛЬ ДЛЯ КМ */
         .dist-badge { background: rgba(47, 129, 247, 0.1); color: var(--blue); padding: 4px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 900; margin-left: 8px; border: 1px solid rgba(47, 129, 247, 0.2); }
         .sort-row { display: flex; gap: 10px; margin-bottom: 15px; }
     </style>
@@ -147,7 +143,7 @@
         </div>
         <div class="sort-row">
             <input type="text" id="search" class="search-box" style="flex:1" placeholder="Поиск по адресу..." oninput="render()">
-            <button class="nav-btn" style="background:var(--accent); box-shadow:none; white-space:nowrap;" onclick="sortByDistance()">🚀 БЛИЖАЙШИЕ</button>
+            <button id="sortBtn" class="nav-btn" style="background:var(--accent); box-shadow:none; white-space:nowrap;" onclick="sortByDistance()">🚀 БЛИЖАЙШИЕ</button>
         </div>
         <div class="stats-dashboard">
             <div class="stat-block"><span class="stat-label">Доход</span><span id="statMoney" class="stat-val" style="color:#3fb950">0 ₽</span></div>
@@ -159,12 +155,10 @@
     </header>
     <div class="menu-toggle" onclick="toggleMenu()">⚙️ МЕНЮ И НАСТРОЙКИ</div>
     <div id="menu" class="controls">
-        
         <div class="block-box">
             <div class="block-title">🎨 НАСТРОЙКИ ИНТЕРФЕЙСА:</div>
             <button class="btn-act btn-dark" id="themeBtn" onclick="toggleTheme()" style="margin-bottom:0;">☀️ СВЕТЛАЯ ТЕМА</button>
         </div>
-
         <div class="block-box">
             <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
             <input type="text" id="workerName" class="std-input" placeholder="Твое ФИО" oninput="saveCfg()">
@@ -245,7 +239,6 @@
         "ФРЕШМАРКЕТ": "ФрешМаркет", "ФРЕШ": "ФрешМаркет", "FRESH": "ФрешМаркет"
     };
 
-    // --- ГЕОЛОКАЦИЯ И ДИСТАНЦИЯ ---
     function getDist(lat1, lon1, lat2, lon2) {
         if(!lat1 || !lon1 || !lat2 || !lon2) return null;
         const R = 6371;
@@ -255,9 +248,33 @@
         return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1);
     }
 
+    // ИСПРАВЛЕННЫЙ ЗАПРОС GPS
+    function getCoords() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                console.log("GPS not supported");
+                return resolve({lat:null, lon:null});
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    console.log("GPS success:", pos.coords.latitude);
+                    resolve({lat: pos.coords.latitude, lon: pos.coords.longitude});
+                },
+                (err) => {
+                    console.log("GPS error:", err.code);
+                    resolve({lat:null, lon:null});
+                }, 
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+            );
+        });
+    }
+
     async function updateMyPos() {
         const p = await getCoords();
-        if(p.lat) { userPos = p; render(); }
+        if(p.lat) { 
+            userPos = p; 
+            render(); 
+        }
     }
 
     async function geocodeAllAddresses() {
@@ -266,7 +283,7 @@
         toast("ГЕОКОДИРОВАНИЕ...");
         for(let i=0; i<DATA.list.length; i++) {
             let item = DATA.list[i];
-            if(item.lat) continue; // Пропуск если уже есть
+            if(item.lat) continue; 
             try {
                 const addr = `${DATA.city}, ${item.s}, ${item.h}`;
                 const res = await fetch(`https://geocode-maps.yandex.ru/1.x/?apikey=8d98d095-2591-4f11-8869-705139097721&format=json&geocode=${encodeURIComponent(addr)}`);
@@ -274,7 +291,7 @@
                 const pos = json.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(" ");
                 item.lon = parseFloat(pos[0]);
                 item.lat = parseFloat(pos[1]);
-            } catch(e) { console.error("Geocode error for " + item.s); }
+            } catch(e) { console.error("Geocode error"); }
             if(i % 5 === 0) saveCfg(); 
         }
         setLoader(false);
@@ -283,19 +300,31 @@
         toast("КООРДИНАТЫ ОБНОВЛЕНЫ");
     }
 
-    function sortByDistance() {
+    // ИСПРАВЛЕННАЯ СОРТИРОВКА
+    async function sortByDistance() {
         haptic();
-        if(!userPos.lat) return alert("Включите GPS!");
+        const btn = document.getElementById('sortBtn');
+        const originalText = btn.innerText;
+        btn.innerText = "⌛ ПОИСК GPS...";
+        
+        const p = await getCoords();
+        if(!p.lat) {
+            btn.innerText = originalText;
+            return alert("Не удалось получить доступ к GPS. Проверьте настройки Chrome и включите Геолокацию в шторке телефона.");
+        }
+        
+        userPos = p;
         DATA.list.sort((a, b) => {
             const d1 = a.lat ? parseFloat(getDist(userPos.lat, userPos.lon, a.lat, a.lon)) : 9999;
             const d2 = b.lat ? parseFloat(getDist(userPos.lat, userPos.lon, b.lat, b.lon)) : 9999;
             return d1 - d2;
         });
+        
+        btn.innerText = originalText;
         render();
         toast("ОТСОРТИРОВАНО ПО КМ");
     }
 
-    // --- БАЗОВЫЕ ФУНКЦИИ ---
     function toggleTheme() {
         document.body.classList.toggle('light-theme');
         const isLight = document.body.classList.contains('light-theme');
@@ -469,23 +498,17 @@
 
     function setType(t) { haptic(); curType = t; [1,2,3,4].forEach(i => { let b = document.getElementById('bt'+i); if(b) b.style.border = (i===t)?"3px solid var(--accent)":"none"; }); }
 
-    function getCoords() {
-        return new Promise((resolve) => {
-            if (!navigator.geolocation) return resolve({lat:null, lon:null});
-            navigator.geolocation.getCurrentPosition(
-                (pos) => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
-                () => resolve({lat:null, lon:null}), { enableHighAccuracy: true, timeout: 5000 }
-            );
-        });
-    }
-
     async function confirmReport() {
         if(isSavingReport) return;
         const it = DATA.list.find(x => x.id === curId);
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         if(curType !== 2) { for(let c of cls) if(!curPhotos[c]) return alert(`Нет фото для: ${c}`); }
-        isSavingReport = true; haptic(); document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
-        const pos = await getCoords(); if(!DATA.done[curId]) DATA.done[curId] = {}; DATA.done[curId][curP] = curType;
+        isSavingReport = true; haptic(); document.getElementById('confirmBtn').innerText = "GPS...";
+        
+        const pos = await getCoords(); 
+        if(!DATA.done[curId]) DATA.done[curId] = {}; 
+        DATA.done[curId][curP] = curType;
+        
         render(); closeModal();
         const tx = db.transaction("sync_queue", "readwrite"); const store = tx.objectStore("sync_queue");
         const baseUUID = 'REP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
@@ -547,7 +570,7 @@
         }
         checkLicenseUI(); openDB(); render();
         updateMyPos();
-        setInterval(updateMyPos, 30000); // Обновляем GPS раз в 30 сек
+        setInterval(updateMyPos, 45000); 
     };
     setInterval(syncNow, 12000);
 </script>
