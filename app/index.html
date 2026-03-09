@@ -102,7 +102,6 @@
         .photo-frame { background: var(--bg); border: 2px dashed var(--border); border-radius: 28px; width: 100%; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 240px; transition: 0.3s; }
         .photo-preview { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 2; border-radius: 26px; }
         
-        /* КОМПАКТНАЯ НИЖНЯЯ ПАНЕЛЬ */
         .bot-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bot-blur); backdrop-filter: blur(25px); padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 10px)) 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; z-index: 2000; box-sizing: border-box; transition: 0.3s; }
         .bb-btn { flex: 1; padding: 14px 10px; border: none; border-radius: 16px; color: white; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; letter-spacing: 1px; }
         
@@ -115,7 +114,10 @@
         .price-btn-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
         .price-label { font-size: 0.5rem; font-weight: 800; color: var(--subtext); text-transform: uppercase; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        .dist-badge { background: rgba(47, 129, 247, 0.1); color: var(--blue); padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 900; margin-left: 8px; border: 1px solid rgba(47, 129, 247, 0.2); }
+        /* ЯРКИЕ КМ И ВРЕМЯ */
+        .dist-badge { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #000; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 900; margin-left: 8px; border: none; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4); }
+        .time-badge { background: linear-gradient(135deg, #2f81f7, #60a5fa); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 900; margin-left: 6px; border: none; box-shadow: 0 2px 6px rgba(47, 129, 247, 0.4); }
+        
         .sort-row { display: flex; gap: 8px; margin-bottom: 12px; }
     </style>
 </head>
@@ -246,7 +248,6 @@
         "ФРЕШМАРКЕТ": "ФрешМаркет", "ФРЕШ": "ФрешМаркет", "FRESH": "ФрешМаркет"
     };
 
-    // РАССТОЯНИЕ МЕЖДУ ТОЧКАМИ (Гарверсинус)
     function calcDistance(lat1, lon1, lat2, lon2) {
         if (!lat1 || !lon1 || !lat2 || !lon2) return 999999;
         const R = 6371;
@@ -256,45 +257,29 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
-    // ОПТИМИЗАЦИЯ МАРШРУТА (Ближайший сосед)
     async function optimizeRoute() {
         haptic();
         if (!userPos.lat) return alert("Включите GPS для оптимизации маршрута!");
-        
         setLoader(true);
         toast("СТРОЮ МАРШРУТ...");
-
         setTimeout(() => {
             let unvisited = [...DATA.list];
             let optimized = [];
             let currentLat = userPos.lat;
             let currentLon = userPos.lon;
-
             while (unvisited.length > 0) {
                 let closestIndex = 0;
                 let minDistance = calcDistance(currentLat, currentLon, unvisited[0].lat, unvisited[0].lon);
-
                 for (let i = 1; i < unvisited.length; i++) {
                     let d = calcDistance(currentLat, currentLon, unvisited[i].lat, unvisited[i].lon);
-                    if (d < minDistance) {
-                        minDistance = d;
-                        closestIndex = i;
-                    }
+                    if (d < minDistance) { minDistance = d; closestIndex = i; }
                 }
-
                 let nextPoint = unvisited.splice(closestIndex, 1)[0];
                 optimized.push(nextPoint);
-                if (nextPoint.lat) {
-                    currentLat = nextPoint.lat;
-                    currentLon = nextPoint.lon;
-                }
+                if (nextPoint.lat) { currentLat = nextPoint.lat; currentLon = nextPoint.lon; }
             }
-
             DATA.list = optimized;
-            saveCfg();
-            render();
-            setLoader(false);
-            toast("МАРШРУТ ОПТИМИЗИРОВАН");
+            saveCfg(); render(); setLoader(false); toast("МАРШРУТ ОПТИМИЗИРОВАН");
         }, 300);
     }
 
@@ -321,8 +306,9 @@
                 userPos = { lat: newLat, lon: newLon };
                 for (let item of DATA.list) {
                     if (item.lat && item.lon) {
-                        const d = calcDistance(userPos.lat, userPos.lon, item.lat, item.lon);
-                        item.km = d.toFixed(1);
+                        const info = await getRoadDist(userPos.lat, userPos.lon, item.lat, item.lon);
+                        item.km = info.km;
+                        item.travelTime = info.time;
                     }
                 }
                 render();
@@ -348,7 +334,11 @@
                 if(res && res.length > 0) {
                     item.lat = parseFloat(res[0].lat); 
                     item.lon = parseFloat(res[0].lon);
-                    if (userPos.lat) item.km = calcDistance(userPos.lat, userPos.lon, item.lat, item.lon).toFixed(1);
+                    if (userPos.lat) {
+                        const info = await getRoadDist(userPos.lat, userPos.lon, item.lat, item.lon);
+                        item.km = info.km;
+                        item.travelTime = info.time;
+                    }
                     saveCfg(); render(); 
                 }
             } catch(e) {}
@@ -463,7 +453,7 @@
                                     for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]);
                                 }
                             });
-                            list.push({ s: street, h: house, p: count, clients: [...new Set(cls)], id: 'ID-'+k+'-'+(street+house).replace(/\W/g,''), lat: null, lon: null, km: null });
+                            list.push({ s: street, h: house, p: count, clients: [...new Set(cls)], id: 'ID-'+k+'-'+(street+house).replace(/\W/g,''), lat: null, lon: null, km: null, travelTime: null });
                         });
                     });
                     DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); Sfx.ok(); toast("ЗАГРУЖЕНО: " + list.length);
@@ -486,8 +476,9 @@
                 pds += `<div class="p-btn ${st?'done-'+st:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
             }
             let distDisplay = i.km ? `<span class="dist-badge">🚗 ${i.km} км</span>` : `<span class="dist-badge" style="opacity:0.3">? км</span>`;
+            let timeDisplay = i.travelTime ? `<span class="time-badge">⏱️ ${i.travelTime} мин</span>` : "";
             html += `<div class="card ${isDone?'is-finished':''}">
-                <div class="card-head"><div style="flex:1; margin-right:10px; font-size:0.85rem;">${i.s}, ${i.h} ${distDisplay}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
+                <div class="card-head"><div style="flex:1; margin-right:10px; font-size:0.85rem;">${i.s}, ${i.h} ${distDisplay}${timeDisplay}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
                 <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
                 <div class="pods">${pds}</div>
             </div>`;
