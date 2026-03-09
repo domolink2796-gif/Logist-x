@@ -6,9 +6,9 @@
     <title>LOGIST_X | Elite Pro Robot Edition</title>
     <link rel="manifest" href="../manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Logist_X">
+    <meta name="apple-web-app-capable" content="yes">
+    <meta name="apple-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-web-app-title" content="Logist_X">
     <meta name="theme-color" content="#010409">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1162/1162456.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -243,68 +243,103 @@
         "ФРЕШМАРКЕТ": "ФрешМаркет", "ФРЕШ": "ФрешМаркет", "FRESH": "ФрешМаркет"
     };
 
-    function getDist(lat1, lon1, lat2, lon2) {
+    // НОВАЯ ЛОГИКА: Реальный дорожный расчет через OSRM
+    async function getRoadDist(lat1, lon1, lat2, lon2) {
         if(!lat1 || !lon1 || !lat2 || !lon2) return null;
+        try {
+            const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`);
+            const data = await res.json();
+            if (data.code === 'Ok') {
+                const distanceKm = (data.routes[0].distance / 1000).toFixed(1);
+                const durationMin = Math.round(data.routes[0].duration / 60);
+                return { km: distanceKm, time: durationMin };
+            }
+        } catch (e) {
+            console.error("OSRM Error");
+        }
+        // Если сервис упал, считаем по прямой (страховка)
         const R = 6371;
         const dLat = (lat2 - lat1) * Math.PI / 180;
         const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-        return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1);
+        const d = (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1);
+        return { km: d, time: "?" };
     }
 
     async function updateMyPos() {
-        const p = await getCoords();
-        if(p.lat) { userPos = p; render(); }
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const newLat = parseFloat(pos.coords.latitude);
+            const newLon = parseFloat(pos.coords.longitude);
+            
+            // Если сдвинулись более чем на 50 метров, обновляем всё
+            if (!userPos.lat || Math.abs(userPos.lat - newLat) > 0.0005) {
+                userPos = { lat: newLat, lon: newLon };
+                // Обновляем километраж для всех видимых карточек
+                for (let item of DATA.list) {
+                    if (item.lat && item.lon) {
+                        const road = await getRoadDist(userPos.lat, userPos.lon, item.lat, item.lon);
+                        item.km = road.km;
+                        item.time = road.time;
+                    }
+                }
+                render();
+            }
+        }, null, { enableHighAccuracy: true });
     }
 
     async function geocodeAllAddresses() {
         if(isGeocodingBackground) return toast("ПРОЦЕСС УЖЕ ИДЕТ...");
-        const queue = DATA.list.filter(item => !item.km);
+        const queue = DATA.list.filter(item => !item.lat);
         if(!queue.length) return alert("Все точки уже с координатами!");
 
         isGeocodingBackground = true;
         const btn = document.getElementById('btnGeoCloud');
-        const originalText = "📍 ПОЛУЧИТЬ КООРДИНАТЫ (КМ)";
-        toast("ЗАПУЩЕН ФОНОВЫЙ ПОИСК В Г. " + DATA.city.toUpperCase());
+        const originalText = btn.innerText;
+        toast("ЗАПУСК СКАНИРОВАНИЯ ПО ВСЕЙ РОССИИ...");
         
         for(let i=0; i < queue.length; i++) {
             let item = queue[i];
-            if(btn) btn.innerText = `📍 ПОИСК: ${i+1} / ${queue.length}`;
+            btn.innerText = `📍 ПОИСК: ${i+1} / ${queue.length}`;
             try {
-                const response = await fetch(`${BOT_SERVER_URL}/api/geo-sync`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        cityFrom: DATA.city, 
-                        addressTo: `${DATA.city}, ${item.s}, ${item.h}` 
-                    })
-                });
+                // Ищем через Nominatim (бесплатно, любая точка РФ)
+                const query = encodeURIComponent(`${DATA.city}, ${item.s}, ${item.h}`);
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
                 const res = await response.json();
-                if(res.success) {
-                    item.km = res.km;     
-                    item.lat = res.coords.lat; 
-                    item.lon = res.coords.lon;
+                
+                if(res && res.length > 0) {
+                    item.lat = parseFloat(res[0].lat); 
+                    item.lon = parseFloat(res[0].lon);
+                    
+                    // Сразу считаем реальный путь до этой точки
+                    if (userPos.lat) {
+                        const road = await getRoadDist(userPos.lat, userPos.lon, item.lat, item.lon);
+                        item.km = road.km;
+                        item.time = road.time;
+                    }
+                    
                     saveCfg(); 
                     render(); 
                 }
             } catch(e) { console.error("Ошибка спутника для: " + item.s); }
+            // Задержка 1.2 сек, чтобы не забанили за скорость
             await new Promise(r => setTimeout(r, 1200));
         }
         isGeocodingBackground = false;
-        if(btn) btn.innerText = originalText;
-        toast("ВСЕ КООРДИНАТЫ ОБНОВЛЕНЫ");
+        btn.innerText = originalText;
+        toast("ОБРАБОТКА ЗАВЕРШЕНА");
     }
 
     function sortByDistance() {
         haptic();
         if(!userPos.lat) return alert("Включите GPS!");
         DATA.list.sort((a, b) => {
-            const d1 = a.lat ? parseFloat(getDist(userPos.lat, userPos.lon, a.lat, a.lon)) : (a.km ? parseFloat(a.km) : 9999);
-            const d2 = b.lat ? parseFloat(getDist(userPos.lat, userPos.lon, b.lat, b.lon)) : (b.km ? parseFloat(b.km) : 9999);
+            const d1 = a.km ? parseFloat(a.km) : 9999;
+            const d2 = b.km ? parseFloat(b.km) : 9999;
             return d1 - d2;
         });
         render();
-        toast("ОТСОРТИРОВАНО ПО КМ");
+        toast("БЛИЖАЙШИЕ ВВЕРХУ");
     }
 
     function toggleTheme() {
@@ -389,18 +424,27 @@
                     wb.SheetNames.forEach(sheetName => {
                         let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1, defval: ""});
                         if (rows.length === 0) return;
-                        let headIdx = rows.findIndex(r => r.some(c => String(c).toLowerCase().includes('улица') || String(c).toLowerCase().includes('адрес')));
+                        
+                        // ГИБКИЙ ПОИСК КОЛОНОК (для любого города)
+                        let headIdx = rows.findIndex(r => r.some(c => {
+                            let s = String(c).toLowerCase();
+                            return s.includes('улица') || s.includes('адрес') || s.includes('street');
+                        }));
+                        
                         if (headIdx === -1) return;
                         let head = rows[headIdx].map(v => String(v || "").toLowerCase().trim());
-                        let cS = head.findIndex(v => v.includes('улица') || v.includes('адрес'));
-                        let cH = head.findIndex(v => v.includes('дом'));
-                        let cP = head.findIndex(v => v.includes('подъезд') || v.includes('кол-во'));
+                        
+                        let cS = head.findIndex(v => v.includes('улица') || v.includes('адрес') || v.includes('street'));
+                        let cH = head.findIndex(v => v.includes('дом') || v.includes('house') || v.includes('строение'));
+                        let cP = head.findIndex(v => v.includes('подъезд') || v.includes('entr') || v.includes('кол-во'));
+                        
                         rows.forEach((row, k) => {
                             if(k <= headIdx || !row[cS]) return;
                             let street = String(row[cS]).trim();
                             if (street.includes('2026-03-08')) street = "8 Марта";
                             let house = (cH !== -1 && row[cH]) ? String(row[cH]).trim() : "";
                             let count = parseInt(row[cP]) || 1;
+                            
                             let cls = [];
                             row.forEach(cell => {
                                 if(cell) {
@@ -408,11 +452,23 @@
                                     for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]);
                                 }
                             });
-                            list.push({ s: street, h: house, p: count, clients: [...new Set(cls)], id: 'ID-'+k+'-'+(street+house).replace(/\W/g,'') });
+                            
+                            list.push({ 
+                                s: street, 
+                                h: house, 
+                                p: count, 
+                                clients: [...new Set(cls)], 
+                                id: 'ID-'+k+'-'+(street+house).replace(/\W/g,''),
+                                lat: null,
+                                lon: null,
+                                km: null,
+                                time: null
+                            });
                         });
                     });
-                    if (list.length === 0) return alert("Ошибка: Не удалось найти колонку 'Улица' или 'Адрес'");
-                    DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); Sfx.ok(); toast("БАЗА ОБНОВЛЕНА");
+                    
+                    if (list.length === 0) return alert("Ошибка: Не удалось распознать адреса в файле.");
+                    DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); Sfx.ok(); toast("ЗАГРУЖЕНО: " + list.length + " ДОМОВ");
                 } catch(err) { alert("Ошибка при чтении файла!"); }
                 finally { setTimeout(() => setLoader(false), 500); }
             }; 
@@ -431,12 +487,19 @@
                 let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
                 pds += `<div class="p-btn ${st?'done-'+st:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
             }
+            
             const addressText = i.h ? `${i.s}, ${i.h}` : i.s;
-            let currentDist = getDist(userPos.lat, userPos.lon, i.lat, i.lon);
-            if (!currentDist && i.km) currentDist = i.km; 
-            const distHtml = currentDist ? `<span class="dist-badge">${currentDist} км</span>` : '';
+            
+            // ОТОБРАЖЕНИЕ: Километраж и Время в пути (динамика)
+            let distDisplay = "";
+            if (i.km) {
+                distDisplay = `<span class="dist-badge" style="background:rgba(35, 134, 54, 0.1); color:var(--green)">🚗 ${i.km} км ${i.time ? '| '+i.time+' мин' : ''}</span>`;
+            } else {
+                distDisplay = `<span class="dist-badge" style="opacity:0.5">? км</span>`;
+            }
+
             html += `<div class="card ${isDone?'is-finished':''}">
-                <div class="card-head"><div style="flex:1; margin-right:10px;">${addressText} ${distHtml}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
+                <div class="card-head"><div style="flex:1; margin-right:10px; font-size:0.9rem;">${addressText} ${distDisplay}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
                 <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
                 <div class="pods">${pds}</div>
             </div>`;
@@ -484,7 +547,7 @@
         return new Promise((resolve) => {
             if (!navigator.geolocation) return resolve({lat:null, lon:null});
             navigator.geolocation.getCurrentPosition(
-                (pos) => resolve({lat: pos.coords.latitude, lon: pos.coords.longitude}),
+                (pos) => resolve({lat: parseFloat(pos.coords.latitude), lon: parseFloat(pos.coords.longitude)}),
                 () => resolve({lat:null, lon:null}), { enableHighAccuracy: true, timeout: 5000 }
             );
         });
@@ -558,7 +621,7 @@
         }
         checkLicenseUI(); openDB(); render();
         updateMyPos();
-        setInterval(updateMyPos, 30000); 
+        setInterval(updateMyPos, 15000); // Обновление координат каждые 15 сек
     };
     setInterval(syncNow, 12000);
 </script>
