@@ -188,7 +188,7 @@
             <button class="btn-act btn-blue" onclick="createFullBackup()">💾 БЭКАП + ФОТО</button>
             <label class="btn-act btn-dark">🔄 ВОССТАНОВИТЬ<input type="file" style="display:none;" onchange="restoreFullBackup(this)"></label>
             <label class="btn-act btn-green" style="margin-top:10px">📊 ЗАГРУЗИТЬ EXCEL<input type="file" style="display:none;" onchange="handleExcel(this)"></label>
-            <button class="btn-act btn-blue" style="margin-top:10px; background:var(--accent)" onclick="geocodeAllAddresses()">📍 ПОЛУЧИТЬ КООРДИНАТЫ (КМ)</button>
+            <button class="btn-act btn-blue" id="btnGeoCloud" style="margin-top:10px; background:var(--accent)" onclick="geocodeAllAddresses()">📍 ПОЛУЧИТЬ КООРДИНАТЫ (КМ)</button>
         </div>
         <button class="btn-act btn-red" onclick="if(confirm('Сбросить базу?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС СИСТЕМЫ</button>
     </div>
@@ -223,6 +223,7 @@
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
     let userPos = { lat: null, lon: null };
+    let isGeocodingBackground = false; // Флаг фонового процесса
 
     const CLIENT_MAP = {
         "БИЛАЙН": "БИЛАЙН", "БИЛ": "БИЛАЙН", "BEELINE": "БИЛАЙН",
@@ -256,14 +257,24 @@
         if(p.lat) { userPos = p; render(); }
     }
 
+    // ТВОЯ ОБНОВЛЕННАЯ ФУНКЦИЯ (ФОНОВЫЙ РЕЖИМ)
     async function geocodeAllAddresses() {
-        if(!DATA.list.length) return alert("Список пуст!");
-        setLoader(true);
-        toast("СВЯЗЬ СО СПУТНИКОМ...");
+        if(isGeocodingBackground) return toast("ПРОЦЕСС УЖЕ ИДЕТ...");
         
-        for(let i=0; i < DATA.list.length; i++) {
-            let item = DATA.list[i];
-            if(item.km) continue; 
+        const queue = DATA.list.filter(item => !item.km);
+        if(!queue.length) return alert("Все точки уже с координатами!");
+
+        isGeocodingBackground = true;
+        const btn = document.getElementById('btnGeoCloud');
+        const originalText = "📍 ПОЛУЧИТЬ КООРДИНАТЫ (КМ)";
+        
+        toast("ЗАПУЩЕН ФОНОВЫЙ ПОИСК...");
+        
+        for(let i=0; i < queue.length; i++) {
+            let item = queue[i];
+            
+            // Обновляем текст на кнопке в меню для контроля
+            if(btn) btn.innerText = `📍 ПОИСК: ${i+1} / ${queue.length}`;
 
             try {
                 const response = await fetch(`${BOT_SERVER_URL}/api/geo-sync`, {
@@ -280,17 +291,22 @@
                     item.km = res.km;     
                     item.lat = res.coords.lat; 
                     item.lon = res.coords.lon;
+                    
+                    // Сохраняем и перерисовываем точечно, не мешая юзеру
+                    saveCfg(); 
+                    render(); 
                 }
             } catch(e) { 
-                console.error("Ошибка плагина для: " + item.s, e); 
+                console.error("Ошибка спутника для: " + item.s); 
             }
             
-            if(i % 5 === 0) saveCfg(); 
+            // Пауза 1.5 сек, чтобы не забанили IP за частые запросы
+            await new Promise(r => setTimeout(r, 1500));
         }
-        setLoader(false);
-        saveCfg();
-        render(); 
-        toast("ДИСТАНЦИИ ОБНОВЛЕНЫ");
+
+        isGeocodingBackground = false;
+        if(btn) btn.innerText = originalText;
+        toast("ВСЕ КООРДИНАТЫ ОБНОВЛЕНЫ");
     }
 
     function sortByDistance() {
