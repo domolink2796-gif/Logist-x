@@ -259,23 +259,18 @@
 
     async function geocodeAllAddresses() {
         if(isGeocodingBackground) return toast("ПРОЦЕСС УЖЕ ИДЕТ...");
-        
         const queue = DATA.list.filter(item => !item.km);
         if(!queue.length) return alert("Все точки уже с координатами!");
 
         isGeocodingBackground = true;
         const btn = document.getElementById('btnGeoCloud');
         const originalText = "📍 ПОЛУЧИТЬ КООРДИНАТЫ (КМ)";
-        
         toast("ЗАПУЩЕН ФОНОВЫЙ ПОИСК В Г. " + DATA.city.toUpperCase());
         
         for(let i=0; i < queue.length; i++) {
             let item = queue[i];
-            
             if(btn) btn.innerText = `📍 ПОИСК: ${i+1} / ${queue.length}`;
-
             try {
-                // ИСПРАВЛЕНО: Теперь город из DATA.city жестко подставляется в запрос
                 const response = await fetch(`${BOT_SERVER_URL}/api/geo-sync`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -284,23 +279,17 @@
                         addressTo: `${DATA.city}, ${item.s}, ${item.h}` 
                     })
                 });
-
                 const res = await response.json();
                 if(res.success) {
                     item.km = res.km;     
                     item.lat = res.coords.lat; 
                     item.lon = res.coords.lon;
-                    
                     saveCfg(); 
                     render(); 
                 }
-            } catch(e) { 
-                console.error("Ошибка спутника для: " + item.s); 
-            }
-            
+            } catch(e) { console.error("Ошибка спутника для: " + item.s); }
             await new Promise(r => setTimeout(r, 1200));
         }
-
         isGeocodingBackground = false;
         if(btn) btn.innerText = originalText;
         toast("ВСЕ КООРДИНАТЫ ОБНОВЛЕНЫ");
@@ -442,12 +431,10 @@
                 let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
                 pds += `<div class="p-btn ${st?'done-'+st:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
             }
-            
             const addressText = i.h ? `${i.s}, ${i.h}` : i.s;
             let currentDist = getDist(userPos.lat, userPos.lon, i.lat, i.lon);
             if (!currentDist && i.km) currentDist = i.km; 
             const distHtml = currentDist ? `<span class="dist-badge">${currentDist} км</span>` : '';
-
             html += `<div class="card ${isDone?'is-finished':''}">
                 <div class="card-head"><div style="flex:1; margin-right:10px;">${addressText} ${distHtml}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
                 <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
