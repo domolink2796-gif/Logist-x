@@ -1,4 +1,4 @@
-const CACHE_NAME = 'logistx-smart-cache-v2';
+const CACHE_NAME = 'logistx-smart-cache-v1';
 
 // 1. Установка: сразу активируем воркер
 self.addEventListener('install', () => self.skipWaiting());
@@ -50,8 +50,9 @@ self.addEventListener('fetch', (event) => {
             })
     );
 });
-
-// Слушаем команду на обновление из приложения
+// Слушаем команду на обновление из приложения (ИСПРАВЛЕНО ПОД chat7.html)
 self.addEventListener('message', (event) => {
-    if (event.data.action === 'skipWaiting') self.skipWaiting();
+    if (event.data.type === 'SKIP_WAITING' || event.data.action === 'skipWaiting') {
+        self.skipWaiting();
+    }
 });
