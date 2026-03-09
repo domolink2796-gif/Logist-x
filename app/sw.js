@@ -112,19 +112,21 @@
         .price-btn-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .price-label { font-size: 0.5rem; font-weight: 800; color: var(--subtext); text-transform: uppercase; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        .dist-badge { background: rgba(47, 129, 247, 0.1); color: var(--blue); padding: 4px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 900; margin-left: 8px; border: 1px solid rgba(47, 129, 247, 0.2); }
+        .dist-badge { background: rgba(35, 134, 54, 0.1); color: var(--green); padding: 4px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 900; margin-left: 8px; border: 1px solid rgba(35, 134, 54, 0.2); }
         .sort-row { display: flex; gap: 10px; margin-bottom: 15px; }
 
         .client-block { background: var(--box-bg); padding: 12px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; }
         .client-tag { font-weight: 900; color: var(--accent); font-size: 0.7rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Стили плашки обновления */
+        /* ИСПРАВЛЕННЫЕ СТИЛИ ПЛАШКИ ОБНОВЛЕНИЯ */
         #update-banner {
             position: fixed;
-            bottom: 115px;
+            bottom: 125px; /* Поднял выше, чтобы не перекрывать нижний бар */
             left: 16px;
             right: 16px;
-            background: var(--accent);
+            background: rgba(245, 158, 11, 0.85); /* Полупрозрачный акцент */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             color: #000;
             padding: 14px 20px;
             border-radius: 20px;
@@ -132,21 +134,22 @@
             justify-content: space-between;
             align-items: center;
             z-index: 10001;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-            transform: translateY(200%);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: translateY(250%);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(0,0,0,0.1);
         }
         #update-banner.show { transform: translateY(0); }
         .update-btn {
             background: #000;
             color: #fff;
             border: none;
-            padding: 8px 15px;
-            border-radius: 12px;
+            padding: 10px 18px;
+            border-radius: 14px;
             font-weight: 900;
             font-size: 0.7rem;
             text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
     </style>
 </head>
@@ -154,8 +157,14 @@
     <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
     
     <div id="update-banner">
-        <span style="font-weight:900; font-size:0.75rem;">🚀 ОБНОВЛЕНИЕ ГОТОВО</span>
-        <button class="update-btn" id="reload-app">ОБНОВИТЬ</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size: 1.2rem;">🚀</span>
+            <div style="display:flex; flex-direction:column;">
+                <span style="font-weight:900; font-size:0.75rem; letter-spacing:0.5px;">СИСТЕМА ОБНОВЛЕНА</span>
+                <span style="font-size:0.6rem; font-weight:700; opacity:0.8;">Новые функции готовы к работе</span>
+            </div>
+        </div>
+        <button class="update-btn" id="reload-app">ПРИМЕНИТЬ</button>
     </div>
 
     <div id="licenseLock">
@@ -256,7 +265,7 @@
     
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, audioCtx = null, monitorOpen = false, isSavingReport = false;
-    let selectedTypes = {}; // Храним выбранные типы для каждого клиента { "БИЛАЙН": 1, "МТС": 3 }
+    let selectedTypes = {}; 
     let userPos = { lat: null, lon: null };
     let isGeocodingBackground = false; 
 
@@ -503,7 +512,7 @@
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         
         document.getElementById('modalBody').innerHTML = cls.map((c, idx) => {
-            selectedTypes[c] = 1; // По умолчанию Монтаж
+            selectedTypes[c] = 1; 
             return `
             <div class="client-block">
                 <div class="client-tag">${c}</div>
@@ -604,7 +613,7 @@
         
         tx.oncomplete = () => { 
             saveCfg(); 
-            updateStats(); // Обновляем статистику и деньги мгновенно
+            updateStats(); 
             render(); 
             isSavingReport = false; 
             document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; 
@@ -694,11 +703,10 @@
         updateMyPos();
         setInterval(updateMyPos, 15000);
 
-            // Логика Service Worker и Обновления
+    // Логика Service Worker и Обновления
     if ('serviceWorker' in navigator) {
         let refreshing = false;
 
-        // Следим за сменой контроллера (когда новый SW вступил в силу)
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;
             refreshing = true;
@@ -706,12 +714,10 @@
         });
 
         navigator.serviceWorker.register('../sw.js').then(reg => {
-            // Если новый воркер уже ждет активации
             if (reg.waiting) {
                 document.getElementById('update-banner').classList.add('show');
             }
 
-            // Если воркер в процессе установки
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
                 newWorker.addEventListener('statechange', () => {
@@ -722,16 +728,15 @@
             });
         });
 
-        // Кнопка ОБНОВИТЬ
         document.getElementById('reload-app').onclick = () => {
             haptic();
+            // Мгновенно скрываем плашку при нажатии
+            document.getElementById('update-banner').classList.remove('show');
+            
             navigator.serviceWorker.getRegistration().then(reg => {
                 if (reg && reg.waiting) {
-                    // Отправляем сигнал на активацию
                     reg.waiting.postMessage({ type: 'SKIP_WAITING' });
                 } else {
-                    // Если ждать нечего, просто скрываем и рефрешим
-                    document.getElementById('update-banner').classList.remove('show');
                     window.location.reload();
                 }
             });
