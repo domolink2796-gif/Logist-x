@@ -707,42 +707,47 @@
         updateMyPos();
         setInterval(updateMyPos, 15000);
 
-        // ЛОГИКА ОБНОВЛЕНИЯ ЧЕРЕЗ SERVICE WORKER
+                // ЛОГИКА ОБНОВЛЕНИЯ ЧЕРЕЗ SERVICE WORKER
         if ('serviceWorker' in navigator) {
             let refreshing = false;
 
-            // Перезагрузка при получении нового контроллера
+            // 1. Перезагрузка страницы, когда новый воркер вступил в силу
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 if (refreshing) return;
                 refreshing = true;
                 window.location.reload();
             });
 
+            // 2. Регистрация воркера
             navigator.serviceWorker.register('../sw.js').then(reg => {
-                // Если новая версия уже ждет
+                // ПРИНУДИТЕЛЬНО ПРОВЕРЯЕМ ОБНОВЛЕНИЕ ПРИ КАЖДОМ ЗАПУСКЕ
+                reg.update();
+
+                // Проверка: если обновление уже скачано и ждет (статус waiting)
                 if (reg.waiting) {
                     document.getElementById('update-banner').style.display = 'flex';
                 }
 
-                // Отслеживание появления новой версии
+                // Отслеживание процесса загрузки новой версии
                 reg.addEventListener('updatefound', () => {
                     const newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
+                        // Если новая версия полностью скачана (installed)
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            // Плашка появляется только если есть что обновлять
                             document.getElementById('update-banner').style.display = 'flex';
                         }
                     });
                 });
             });
 
+            // Кнопка "ОБНОВИТЬ" на золотой плашке
             document.getElementById('reload-app').onclick = () => {
                 haptic();
-                // Плашка пропадает СРАЗУ при клике
                 document.getElementById('update-banner').style.display = 'none';
                 
                 navigator.serviceWorker.getRegistration().then(reg => {
                     if (reg && reg.waiting) {
+                        // Посылаем сигнал воркеру немедленно активироваться
                         reg.waiting.postMessage({ type: 'SKIP_WAITING' });
                     } else {
                         window.location.reload();
@@ -751,6 +756,8 @@
             };
         }
     };
+    
+    // Интервал синхронизации очереди (12 секунд)
     setInterval(syncNow, 12000);
 
 </script>
