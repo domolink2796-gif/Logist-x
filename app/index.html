@@ -527,7 +527,6 @@
         const it = DATA.list.find(x => x.id === curId);
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         
-        // Валидация: если не СРЫВ, то должно быть фото
         for(let c of cls) {
             if(selectedTypes[c] !== 2 && !curPhotos[c]) return alert(`Нет фото для клиента: ${c}`);
         }
@@ -536,12 +535,9 @@
         document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
         const pos = await getCoords(); 
         
-        // Ставим статус выполнено (используем тип первого клиента для иконки на главной)
         if(!DATA.done[curId]) DATA.done[curId] = {}; 
         DATA.done[curId][curP] = selectedTypes[cls[0]]; 
 
-        render(); closeModal();
-        
         const tx = db.transaction("sync_queue", "readwrite"); 
         const store = tx.objectStore("sync_queue");
         const baseUUID = 'REP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
@@ -570,9 +566,14 @@
         }
         
         tx.oncomplete = () => { 
-            saveCfg(); isSavingReport = false; 
+            saveCfg(); 
+            updateStats(); // Обновляем статистику и деньги мгновенно
+            render(); 
+            isSavingReport = false; 
             document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; 
-            syncNow(); toast("В ОЧЕРЕДИ"); 
+            closeModal();
+            syncNow(); 
+            toast("В ОЧЕРЕДИ"); 
         };
     }
 
@@ -608,7 +609,6 @@
         let tot = 0; DATA.list.forEach(i => tot += i.p); 
         let dn = 0, mon = 0; 
         
-        // Для точного подсчета денег используем историю (она хранит реальные выплаты по каждому клиенту)
         DATA.history.forEach(it => {
             if (it.workType !== "Срыв") mon += (it.price || 0);
         });
