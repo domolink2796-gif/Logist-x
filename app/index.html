@@ -117,10 +117,47 @@
 
         .client-block { background: var(--box-bg); padding: 12px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; }
         .client-tag { font-weight: 900; color: var(--accent); font-size: 0.7rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Стили плашки обновления */
+        #update-banner {
+            position: fixed;
+            bottom: 115px;
+            left: 16px;
+            right: 16px;
+            background: var(--accent);
+            color: #000;
+            padding: 14px 20px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10001;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            transform: translateY(200%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #000;
+        }
+        #update-banner.show { transform: translateY(0); }
+        .update-btn {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body onclick="resumeAudio()">
     <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
+    
+    <div id="update-banner">
+        <span style="font-weight:900; font-size:0.75rem;">🚀 ОБНОВЛЕНИЕ ГОТОВО</span>
+        <button class="update-btn" id="reload-app">ОБНОВИТЬ</button>
+    </div>
+
     <div id="licenseLock">
         <div style="background: var(--box-bg); padding: 45px; border-radius: 45px; border: 1px solid var(--border); width: 100%; max-width: 420px; text-align: center;">
             <div style="font-size: 5rem; margin-bottom: 25px;">🔒</div>
@@ -656,6 +693,28 @@
         checkLicenseUI(); openDB(); render();
         updateMyPos();
         setInterval(updateMyPos, 15000);
+
+        // Логика Service Worker и Обновления
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('../sw.js').then(reg => {
+                if (reg.waiting) document.getElementById('update-banner').classList.add('show');
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            document.getElementById('update-banner').classList.add('show');
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('reload-app').onclick = () => {
+                navigator.serviceWorker.getRegistration().then(reg => {
+                    if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                });
+            };
+        }
     };
     setInterval(syncNow, 12000);
 </script>
