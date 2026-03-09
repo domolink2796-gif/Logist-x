@@ -112,41 +112,48 @@
         .price-btn-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .price-label { font-size: 0.5rem; font-weight: 800; color: var(--subtext); text-transform: uppercase; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        .dist-badge { background: rgba(47, 129, 247, 0.1); color: var(--blue); padding: 4px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 900; margin-left: 8px; border: 1px solid rgba(47, 129, 247, 0.2); }
+        .dist-badge { background: rgba(35, 134, 54, 0.1); color: var(--green); padding: 4px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 900; margin-left: 8px; border: 1px solid rgba(35, 134, 54, 0.2); }
         .sort-row { display: flex; gap: 10px; margin-bottom: 15px; }
 
         .client-block { background: var(--box-bg); padding: 12px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; }
         .client-tag { font-weight: 900; color: var(--accent); font-size: 0.7rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Стили плашки обновления */
+        /* ИСПРАВЛЕННЫЕ СТИЛИ ПЛАШКИ: ЗОЛОТАЯ ПОЛУПРОЗРАЧНАЯ */
         #update-banner {
             position: fixed;
-            bottom: 115px;
+            bottom: 125px; 
             left: 16px;
             right: 16px;
-            background: var(--accent);
-            color: #000;
+            /* Золотисто-желтый полупрозрачный градиент */
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.4), rgba(251, 191, 36, 0.2));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            color: #fff;
             padding: 14px 20px;
             border-radius: 20px;
-            display: flex;
+            display: none; /* Скрыто по умолчанию */
             justify-content: space-between;
             align-items: center;
             z-index: 10001;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-            transform: translateY(200%);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #update-banner.show { transform: translateY(0); }
+        @keyframes slideUp {
+            from { transform: translateY(150%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
         .update-btn {
-            background: #000;
-            color: #fff;
+            background: #f59e0b;
+            color: #000;
             border: none;
-            padding: 8px 15px;
-            border-radius: 12px;
+            padding: 10px 18px;
+            border-radius: 14px;
             font-weight: 900;
             font-size: 0.7rem;
             text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
         }
     </style>
 </head>
@@ -154,7 +161,13 @@
     <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
     
     <div id="update-banner">
-        <span style="font-weight:900; font-size:0.75rem;">🚀 ОБНОВЛЕНИЕ ГОТОВО</span>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:10px; height:10px; background:#f59e0b; border-radius:50%; box-shadow:0 0 10px #f59e0b;"></div>
+            <div style="display:flex; flex-direction:column;">
+                <span style="font-weight:900; font-size:0.75rem; letter-spacing:0.5px; color:#ffd700;">UPDATE READY</span>
+                <span style="font-size:0.6rem; font-weight:700; opacity:0.8;">Доступна новая версия системы</span>
+            </div>
+        </div>
         <button class="update-btn" id="reload-app">ОБНОВИТЬ</button>
     </div>
 
@@ -256,7 +269,7 @@
     
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, audioCtx = null, monitorOpen = false, isSavingReport = false;
-    let selectedTypes = {}; // Храним выбранные типы для каждого клиента { "БИЛАЙН": 1, "МТС": 3 }
+    let selectedTypes = {}; 
     let userPos = { lat: null, lon: null };
     let isGeocodingBackground = false; 
 
@@ -503,7 +516,7 @@
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
         
         document.getElementById('modalBody').innerHTML = cls.map((c, idx) => {
-            selectedTypes[c] = 1; // По умолчанию Монтаж
+            selectedTypes[c] = 1; 
             return `
             <div class="client-block">
                 <div class="client-tag">${c}</div>
@@ -604,7 +617,7 @@
         
         tx.oncomplete = () => { 
             saveCfg(); 
-            updateStats(); // Обновляем статистику и деньги мгновенно
+            updateStats(); 
             render(); 
             isSavingReport = false; 
             document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; 
@@ -694,24 +707,46 @@
         updateMyPos();
         setInterval(updateMyPos, 15000);
 
-        // Логика Service Worker и Обновления
+        // ЛОГИКА ОБНОВЛЕНИЯ ЧЕРЕЗ SERVICE WORKER
         if ('serviceWorker' in navigator) {
+            let refreshing = false;
+
+            // Перезагрузка при получении нового контроллера
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
+            });
+
             navigator.serviceWorker.register('../sw.js').then(reg => {
-                if (reg.waiting) document.getElementById('update-banner').classList.add('show');
+                // Если новая версия уже ждет
+                if (reg.waiting) {
+                    document.getElementById('update-banner').style.display = 'flex';
+                }
+
+                // Отслеживание появления новой версии
                 reg.addEventListener('updatefound', () => {
                     const newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            document.getElementById('update-banner').classList.add('show');
+                            // Плашка появляется только если есть что обновлять
+                            document.getElementById('update-banner').style.display = 'flex';
                         }
                     });
                 });
             });
 
             document.getElementById('reload-app').onclick = () => {
+                haptic();
+                // Плашка пропадает СРАЗУ при клике
+                document.getElementById('update-banner').style.display = 'none';
+                
                 navigator.serviceWorker.getRegistration().then(reg => {
-                    if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-                    window.location.reload();
+                    if (reg && reg.waiting) {
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    } else {
+                        window.location.reload();
+                    }
                 });
             };
         }
