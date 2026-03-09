@@ -1,4 +1,4 @@
-const CACHE_NAME = 'logistx-smart-cache-v1';
+const CACHE_NAME = 'logistx-smart-cache-v2';
 
 // 1. Установка: сразу активируем воркер
 self.addEventListener('install', () => self.skipWaiting());
