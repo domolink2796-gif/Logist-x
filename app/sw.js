@@ -1,45 +1,44 @@
-const CACHE_NAME = 'logistx-v1';
+const CACHE_NAME = 'logistx-smart-cache-v1';
 
-// При установке активируемся сразу
-self.addEventListener('install', (event) => {
-    self.skipWaiting();
-});
+// При установке ничего не кэшируем заранее, чтобы не привязываться к списку файлов
+self.addEventListener('install', () => self.skipWaiting());
 
-// Захватываем управление вкладками сразу
 self.addEventListener('activate', (event) => {
     event.waitUntil(clients.claim());
 });
 
-// --- ГЛАВНЫЙ БЛОК: ОБРАБОТКА ЗАПРОСОВ ---
+// ГЛАВНАЯ ЛОГИКА: Сначала сеть, если сети нет — Кэш
 self.addEventListener('fetch', (event) => {
-    // Пропускаем запросы к API (чтобы не кэшировать отправку отчетов, только интерфейс)
-    if (event.request.url.includes('/upload') || event.request.url.includes('/api')) {
-        return; 
-    }
+    // API (загрузку фото) вообще не трогаем, это святое
+    if (event.request.url.includes('/upload') || event.request.url.includes('/api')) return;
 
     event.respondWith(
         fetch(event.request)
             .then((response) => {
-                // Если интернет есть, делаем копию страницы в кэш
+                // Если интернет есть, обновляем копию в памяти
                 if (response && response.status === 200) {
-                    const responseToCache = response.clone();
+                    const responseCopy = response.clone();
                     caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseToCache);
+                        cache.put(event.request, responseCopy);
                     });
                 }
                 return response;
             })
             .catch(() => {
-                // ЕСЛИ ИНТЕРНЕТА НЕТ — достаем сохраненную версию из памяти
-                return caches.match(event.request).then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
-                    // Если это переход по страницам (навигация), а в кэше нет — отдаем корень
+                // ЕСЛИ ИНТЕРНЕТА НЕТ (глухой подвал) — отдаем из памяти
+                return caches.match(event.request).then((cached) => {
+                    if (cached) return cached;
+                    
+                    // Если это навигация, а в кэше нет — корень (главная страница)
                     if (event.request.mode === 'navigate') {
-                        return caches.match('./index.html');
+                        return caches.match('./index.html') || caches.match('./');
                     }
                 });
             })
     );
+});
+
+// Слушаем команду на обновление, если она придет из приложения
+self.addEventListener('message', (event) => {
+    if (event.data.action === 'skipWaiting') self.skipWaiting();
 });
