@@ -1,57 +1,745 @@
-const CACHE_NAME = 'logistx-smart-cache-v1';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LOGIST_X | Elite Pro Robot Edition</title>
+    <link rel="manifest" href="../manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Logist_X">
+    <meta name="theme-color" content="#010409">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1162/1162456.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root { 
+            --bg: #010409; 
+            --card: rgba(22, 27, 34, 0.95); 
+            --accent: #f59e0b; 
+            --green: #238636; 
+            --red: #da3633; 
+            --blue: #2f81f7; 
+            --purp: #8957e5; 
+            --text: #e6edf3; 
+            --subtext: #8b949e; 
+            --border: rgba(48, 54, 61, 1);
+            --box-bg: #0d1117;
+            --input-bg: #010409;
+            --head-bg: #161b22;
+            --head-blur: rgba(1, 4, 9, 0.92);
+            --bot-blur: rgba(13, 17, 23, 0.92);
+            --overlay: rgba(1, 4, 9, 0.98);
+            --btn-dark: #21262d;
+            --card-fin: #000;
+        }
 
-// 1. Установка: сразу активируем воркер
-self.addEventListener('install', () => self.skipWaiting());
+        body.light-theme {
+            --bg: #f6f8fa; 
+            --card: #ffffff; 
+            --accent: #d97706; 
+            --green: #1a7f37; 
+            --red: #cf222e; 
+            --blue: #0969da; 
+            --purp: #8250df; 
+            --text: #1F2328; 
+            --subtext: #656d76; 
+            --border: #d0d7de;
+            --box-bg: #ffffff;
+            --input-bg: #f6f8fa;
+            --head-bg: #eaeeef;
+            --head-blur: rgba(246, 248, 250, 0.92);
+            --bot-blur: rgba(255, 255, 255, 0.92);
+            --overlay: rgba(255, 255, 255, 0.95);
+            --btn-dark: #e5e7eb;
+            --card-fin: #e1e4e8;
+        }
 
-// 2. Активация: вот тут добавлено "ухо" для чистки старых версий
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    // Если имя кэша не совпадает с текущим — удаляем его нафиг
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('Удаляю старый кэш:', cacheName);
-                        return caches.delete(cacheName);
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 110px; -webkit-tap-highlight-color: transparent; overflow-x: hidden; background-image: radial-gradient(circle at 0% 0%, rgba(245, 158, 11, 0.05) 0%, transparent 50%); user-select: none; -webkit-user-select: none; transition: background 0.3s, color 0.3s; }
+        header { background: var(--head-blur); backdrop-filter: blur(18px); padding: 16px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top, 16px); transition: background 0.3s; }
+        .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .app-name { font-weight: 900; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 5px; color: var(--accent); font-style: italic; }
+        #syncIndicator { background: var(--text); color: var(--bg); padding: 6px 14px; border-radius: 20px; font-weight: 900; font-size: 0.65rem; border: none; cursor: pointer; display: none; transition: all 0.3s ease; }
+        #syncIndicator.active-sync { background: var(--accent); box-shadow: 0 0 15px var(--accent); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        .search-box { width: 100%; padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 0.95rem; outline: none; background: var(--box-bg); color: var(--text); box-sizing: border-box; transition: 0.3s; }
+        .stats-dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 15px; }
+        .stat-block { text-align: center; background: var(--box-bg); padding: 12px 4px; border-radius: 12px; border: 1px solid var(--border); transition: 0.3s; }
+        .stat-label { font-size: 0.5rem; color: var(--subtext); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 4px; }
+        .stat-val { font-weight: 900; font-size: 0.8rem; display: block; }
+        .progress-container { background: var(--head-bg); height: 4px; border-radius: 2px; overflow: hidden; margin-top: 15px; transition: 0.3s; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), #fbbf24); transition: width 0.8s ease; width: 0%; }
+        .menu-toggle { text-align: center; padding: 14px; font-weight: 800; font-size: 0.7rem; color: var(--subtext); letter-spacing: 2px; cursor: pointer; text-transform: uppercase; border-bottom: 1px solid var(--border); background: var(--box-bg); transition: 0.3s; }
+        .controls { display: none; background: var(--bg); padding: 20px; border-bottom: 1px solid var(--border); max-height: 80vh; overflow-y: auto; transition: 0.3s; }
+        .controls.active { display: block; }
+        .btn-act { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 16px; font-weight: 900; color: white; cursor: pointer; text-align: center; transition: 0.1s; font-size: 0.75rem; text-transform: uppercase; box-sizing: border-box; text-decoration: none; }
+        .btn-act:active { transform: scale(0.95); opacity: 0.85; filter: brightness(1.2); }
+        .btn-blue { background: var(--blue); } .btn-red { background: var(--red); } .btn-purple { background: var(--purp); } .btn-green { background: var(--green); color: #fff; }
+        .btn-dark { background: var(--btn-dark); border: 1px solid var(--border); color: var(--text); } 
+        .block-box { background: var(--box-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; position: relative; overflow: hidden; transition: 0.3s; }
+        .block-title { font-weight: 900; font-size: 0.6rem; color: var(--subtext); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1.5px; }
+        .std-input { width: 100%; padding: 14px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); border-radius: 10px; font-size: 0.85rem; box-sizing: border-box; outline: none; margin-bottom: 10px; transition: 0.3s; }
+        .card { background: var(--card); border-radius: 24px; margin: 0 16px 20px 16px; border: 1px solid var(--border); overflow: hidden; transition: 0.4s ease; }
+        .card.is-finished { opacity: 0.3; filter: grayscale(100%); pointer-events: none; background: var(--card-fin); }
+        .card-head { padding: 20px; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--head-bg); transition: 0.3s; }
+        .nav-btn { background: var(--blue); color: #fff; border: none; border-radius: 10px; padding: 10px 14px; font-size: 0.65rem; font-weight: 900; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(47, 129, 247, 0.3); }
+        .nav-btn:active { transform: scale(0.9); background: #fff; color: var(--blue); }
+        .cl-badges { padding: 10px 20px 0 20px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .cl-badge { background: var(--head-bg); padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; color: var(--subtext); border: 1px solid var(--border); transition: 0.3s; }
+        .pods { padding: 16px 20px 25px 20px; display: flex; flex-wrap: wrap; gap: 14px; }
+        .p-btn { width: 56px; height: 56px; background: var(--btn-dark); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--subtext); font-size: 1.25rem; transition: 0.1s; cursor: pointer; }
+        .p-btn:active { transform: scale(0.85); background: var(--accent); color: #fff; }
+        .p-btn.done-1 { background: var(--green) !important; color: #fff !important; border:none; }
+        .p-btn.done-2 { background: var(--red) !important; color: #fff !important; border:none; }
+        .p-btn.done-3 { background: var(--blue) !important; color: #fff !important; border:none; }
+        .p-btn.done-4 { background: var(--purp) !important; color: #fff !important; border:none; }
+        .modal-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(20px); z-index: 5000; display: none; justify-content: center; align-items: flex-end; transition: 0.3s; }
+        .modal { background: var(--box-bg); width: 100%; max-width: 500px; border-radius: 35px 35px 0 0; border: 1px solid var(--border); max-height: 98vh; display: flex; flex-direction: column; overflow: hidden; transition: 0.3s; }
+        .modal-head { padding: 25px; font-weight: 900; text-align: center; border-bottom: 1px solid var(--border); background: var(--head-bg); color: var(--accent); transition: 0.3s; }
+        .photo-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 20px; overflow-y: auto; flex: 1; }
+        .photo-frame { background: var(--bg); border: 2px dashed var(--border); border-radius: 28px; width: 100%; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 200px; transition: 0.3s; margin-bottom: 10px; }
+        .photo-preview { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 2; border-radius: 26px; }
+        .bot-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bot-blur); backdrop-filter: blur(25px); padding: 8px 12px env(safe-area-inset-bottom, 25px) 12px; border-top: 1px solid var(--border); display: flex; gap: 10px; z-index: 2000; box-sizing: border-box; transition: 0.3s; }
+        .bb-btn { flex: 1; padding: 14px 8px; border: none; border-radius: 16px; color: white; font-weight: 800; font-size: 0.8rem; text-transform: uppercase; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        #loader { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
+        #licenseLock { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; transition: 0.3s; }
+        .lic-progress { width: 100%; height: 4px; background: var(--head-bg); border-radius: 2px; margin: 10px 0; overflow: hidden; display: none; transition: 0.3s; }
+        .lic-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; box-shadow: 0 0 10px var(--accent); }
+        #toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 50px; font-weight: 900; font-size: 0.8rem; z-index: 9999; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .btn-price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 5px; }
+        .price-btn-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .price-label { font-size: 0.5rem; font-weight: 800; color: var(--subtext); text-transform: uppercase; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        .dist-badge { background: rgba(47, 129, 247, 0.1); color: var(--blue); padding: 4px 8px; border-radius: 8px; font-size: 0.7rem; font-weight: 900; margin-left: 8px; border: 1px solid rgba(47, 129, 247, 0.2); }
+        .sort-row { display: flex; gap: 10px; margin-bottom: 15px; }
+
+        .client-block { background: var(--box-bg); padding: 12px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; }
+        .client-tag { font-weight: 900; color: var(--accent); font-size: 0.7rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Стили плашки обновления */
+        #update-banner {
+            position: fixed;
+            bottom: 115px;
+            left: 16px;
+            right: 16px;
+            background: var(--accent);
+            color: #000;
+            padding: 14px 20px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10001;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            transform: translateY(200%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #000;
+        }
+        #update-banner.show { transform: translateY(0); }
+        .update-btn {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body onclick="resumeAudio()">
+    <div id="toast">ДЕЙСТВИЕ ВЫПОЛНЕНО</div>
+    
+    <div id="update-banner">
+        <span style="font-weight:900; font-size:0.75rem;">🚀 ОБНОВЛЕНИЕ ГОТОВО</span>
+        <button class="update-btn" id="reload-app">ОБНОВИТЬ</button>
+    </div>
+
+    <div id="licenseLock">
+        <div style="background: var(--box-bg); padding: 45px; border-radius: 45px; border: 1px solid var(--border); width: 100%; max-width: 420px; text-align: center;">
+            <div style="font-size: 5rem; margin-bottom: 25px;">🔒</div>
+            <h1 style="font-weight: 900; color: var(--text); font-size: 1.6rem;">LOGIST_X SECURE</h1>
+            <div style="margin-top: 30px; text-align: left;">
+                <label class="stat-label" style="margin-left:10px">Введите ФИО:</label>
+                <input type="text" id="lockWorkerName" class="std-input" placeholder="Иванов Иван">
+                <label class="stat-label" style="margin-left:10px">Лицензионный Ключ:</label>
+                <input type="text" id="lockLicenseKey" class="std-input" style="color:var(--accent); font-weight:900;" placeholder="LX-XXXX-XXXX">
+                <div id="lockLicProgress" class="lic-progress"><div id="lockLicBar" class="lic-bar"></div></div>
+                <button id="lockBtn" class="btn-act btn-blue" style="margin-top:20px;" onclick="saveAndCheckLock()">АКТИВИРОВАТЬ</button>
+            </div>
+            <p style="font-size: 0.6rem; color: var(--subtext); margin-top: 20px;">Designed by NIKITIN EVGENY</p>
+        </div>
+    </div>
+    <div id="loader"><div style="font-weight: 900; color: var(--accent); letter-spacing: 10px; font-size: 1.8rem;">LOGIST_X</div><div class="lic-progress" style="display:block; width:150px; margin-top:15px;"><div class="lic-bar" style="width:100%"></div></div></div>
+    <header>
+        <div class="top-row">
+            <span class="app-name">LOGIST_X</span>
+            <div style="display:flex; gap:8px;">
+                <button id="syncIndicator" onclick="showMonitor()">📦 <span id="queueCount">0</span></button>
+                <span id="cityBadge" style="background:rgba(245,158,11,0.1); color: var(--accent); padding: 8px 18px; border-radius: 12px; font-size: 0.7rem; font-weight: 900;">...</span>
+            </div>
+        </div>
+        <div class="sort-row">
+            <input type="text" id="search" class="search-box" style="flex:1" placeholder="Поиск по адресу..." oninput="render()">
+            <button class="nav-btn" style="background:var(--accent); box-shadow:none; white-space:nowrap;" onclick="sortByDistance()">🚀 БЛИЖАЙШИЕ</button>
+        </div>
+        <div class="stats-dashboard">
+            <div class="stat-block"><span class="stat-label">Доход</span><span id="statMoney" class="stat-val" style="color:#3fb950">0 ₽</span></div>
+            <div class="stat-block"><span class="stat-label">Готово</span><span id="statProgress" class="stat-val">0/0</span></div>
+            <div class="stat-block"><span class="stat-label">Срывы</span><span id="statSryv" class="stat-val" style="color:#f85149">0</span></div>
+            <div class="stat-block"><span class="stat-label">Доступ</span><span id="statLicense" class="stat-val" style="color:var(--accent)">-</span></div>
+        </div>
+        <div class="progress-container"><div id="mainProgress" class="progress-bar"></div></div>
+    </header>
+    <div class="menu-toggle" onclick="toggleMenu()">⚙️ МЕНЮ И НАСТРОЙКИ</div>
+    <div id="menu" class="controls">
+        
+        <div class="block-box">
+            <div class="block-title">🎨 НАСТРОЙКИ ИНТЕРФЕЙСА:</div>
+            <button class="btn-act btn-dark" id="themeBtn" onclick="toggleTheme()" style="margin-bottom:0;">☀️ СВЕТЛАЯ ТЕМА</button>
+        </div>
+
+        <div class="block-box">
+            <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
+            <input type="text" id="workerName" class="std-input" placeholder="Твое ФИО" oninput="saveCfg()">
+            <input type="text" id="cityName" class="std-input" placeholder="Город (напр. Сочи)" oninput="saveCfg()">
+            <input type="text" id="licenseKey" class="std-input" placeholder="Ключ" oninput="saveCfg()">
+            <div id="menuLicProgress" class="lic-progress"><div id="menuLicBar" class="lic-bar"></div></div>
+            <button class="btn-act btn-blue" onclick="checkLicense()">ОБНОВИТЬ СТАТУС</button>
+        </div>
+        <div class="block-box">
+            <div class="block-title">🛠 ТАРИФЫ И ВИДЫ РАБОТ:</div>
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
+                <input type="text" id="t1_name" class="std-input" oninput="saveCfg()"><input type="number" id="p1" class="std-input" oninput="saveCfg()">
+            </div>
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:10px;">
+                <input type="text" id="t3_name" class="std-input" oninput="saveCfg()"><input type="number" id="p3" class="std-input" oninput="saveCfg()">
+            </div>
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
+                <input type="text" id="t4_name" class="std-input" oninput="saveCfg()"><input type="number" id="p4" class="std-input" oninput="saveCfg()">
+            </div>
+        </div>
+        <div class="block-box">
+            <div class="block-title">📦 УПРАВЛЕНИЕ ДАННЫМИ:</div>
+            <button class="btn-act btn-purple" onclick="showArchive()">📁 АРХИВ РАБОТ</button>
+            <button class="btn-act btn-blue" onclick="createFullBackup()">💾 БЭКАП + ФОТО</button>
+            <label class="btn-act btn-dark">🔄 ВОССТАНОВИТЬ<input type="file" style="display:none;" onchange="restoreFullBackup(this)"></label>
+            <label class="btn-act btn-green" style="margin-top:10px">📊 ЗАГРУЗИТЬ EXCEL<input type="file" style="display:none;" onchange="handleExcel(this)"></label>
+            <button class="btn-act btn-blue" id="btnGeoCloud" style="margin-top:10px; background:var(--accent)" onclick="geocodeAllAddresses()">📍 ПОЛУЧИТЬ КООРДИНАТЫ (КМ)</button>
+        </div>
+        <button class="btn-act btn-red" onclick="if(confirm('Сбросить базу?')){localStorage.clear();location.reload();}">ПОЛНЫЙ СБРОС СИСТЕМЫ</button>
+    </div>
+    <div id="content" style="padding-top:20px;"></div>
+    <div id="reportModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-head" id="modalTitle">ОТЧЕТ</div>
+            <div id="modalBody" class="photo-grid"></div>
+            <div id="reportFooter" style="padding:15px; background:var(--head-bg); display:none; transition: 0.3s;">
+                <button class="btn-act btn-green" id="confirmBtn" onclick="confirmReport()">ОТПРАВИТЬ ОТЧЕТ</button>
+                <button class="btn-act btn-dark" onclick="closeModal()">ЗАКРЫТЬ</button>
+            </div>
+        </div>
+    </div>
+    <div class="bot-bar">
+        <button class="bb-btn" style="background: linear-gradient(135deg, #f59e0b, #b45309); color: #000;" onclick="showWallet()">💰 КОШЕЛЕК</button>
+        <button class="bb-btn" style="background: linear-gradient(135deg, #ef4444, #991b1b); color: #fff;" onclick="showSryvy()">⚠️ СРЫВЫ</button>
+    </div>
+
+<script>
+    const BOT_SERVER_URL = 'https://logist-x.store';
+    const _MS_ENCRYPTED = "REVWLU1BU1RFUi05OTk="; 
+    const MASTER_KEY = atob(_MS_ENCRYPTED);
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    
+    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
+    let curId, curP, curPhotos = {}, db, syncing = false, audioCtx = null, monitorOpen = false, isSavingReport = false;
+    let selectedTypes = {}; // Храним выбранные типы для каждого клиента { "БИЛАЙН": 1, "МТС": 3 }
+    let userPos = { lat: null, lon: null };
+    let isGeocodingBackground = false; 
+
+    const CLIENT_MAP = {
+        "БИЛАЙН": "БИЛАЙН", "БИЛ": "БИЛАЙН", "BEELINE": "БИЛАЙН",
+        "МТС": "МТС", "MTS": "МТС",
+        "МЕГАФОН": "МЕГАФОН", "МЕГА": "МЕГАФОН",
+        "ТЕЛЕ2": "ТЕЛЕ2", "TELE2": "ТЕЛЕ2",
+        "ДОМРУ": "ДОМ.РУ", "ERTH": "ДОМ.РУ",
+        "РОСТЕЛЕКОМ": "РОСТЕЛЕКОМ", "РТК": "РОСТЕЛЕКОМ",
+        "ЯМ": "ЯНДЕКС МАРКЕТ", "ЯНДЕКС": "ЯНДЕКС МАРКЕТ", "YANDEX": "ЯНДЕКС МАРКЕТ",
+        "САМОКАТ": "САМОКАТ", "SAMOKAT": "САМОКАТ",
+        "МАГНИТ": "МАГНИТ", "MAGNIT": "МАГНИТ",
+        "ОЗОН": "ОЗОН", "OZON": "ОЗОН",
+        "ВКУСВИЛЛ": "ВКУСВИЛЛ", "ВКУС": "ВКУСВИЛЛ",
+        "ПЯТЕРОЧКА": "ПЯТЕРОЧКА", "X5": "ПЯТЕРОЧКА",
+        "ДИКСИ": "ДИКСИ",
+        "СБЕР": "СБЕРМАРКЕТ", "КУПЕР": "КУПЕР",
+        "ФРЕШМАРКЕТ": "ФрешМаркет", "ФРЕШ": "ФрешМаркет", "FRESH": "ФрешМаркет"
+    };
+
+    async function getRoadDist(lat1, lon1, lat2, lon2) {
+        if(!lat1 || !lon1 || !lat2 || !lon2) return null;
+        try {
+            const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${lon1},${lat1};${lon2},${lat2}?overview=false`);
+            const data = await res.json();
+            if (data.code === 'Ok') {
+                const distanceKm = (data.routes[0].distance / 1000).toFixed(1);
+                const durationMin = Math.round(data.routes[0].duration / 60);
+                return { km: distanceKm, time: durationMin };
+            }
+        } catch (e) { console.error("OSRM Error"); }
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        const d = (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1);
+        return { km: d, time: "?" };
+    }
+
+    async function updateMyPos() {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const newLat = parseFloat(pos.coords.latitude);
+            const newLon = parseFloat(pos.coords.longitude);
+            if (!userPos.lat || Math.abs(userPos.lat - newLat) > 0.0005) {
+                userPos = { lat: newLat, lon: newLon };
+                for (let item of DATA.list) {
+                    if (item.lat && item.lon) {
+                        const road = await getRoadDist(userPos.lat, userPos.lon, item.lat, item.lon);
+                        item.km = road.km; item.time = road.time;
                     }
-                })
-            );
-        }).then(() => self.clients.claim())
-    );
-});
-
-// 3. ГЛАВНАЯ ЛОГИКА: Сначала сеть, если сети нет — Кэш
-self.addEventListener('fetch', (event) => {
-    // API и загрузку фото не трогаем
-    if (event.request.url.includes('/upload') || event.request.url.includes('/api')) return;
-
-    event.respondWith(
-        fetch(event.request)
-            .then((response) => {
-                // Если интернет есть, обновляем копию в памяти
-                if (response && response.status === 200) {
-                    const responseCopy = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseCopy);
-                    });
                 }
-                return response;
-            })
-            .catch(() => {
-                // ЕСЛИ ИНТЕРНЕТА НЕТ — отдаем из памяти
-                return caches.match(event.request).then((cached) => {
-                    if (cached) return cached;
-                    
-                    // Если это навигация, а в кэше нет — корень
-                    if (event.request.mode === 'navigate') {
-                        return caches.match('./index.html') || caches.match('./');
+                render();
+            }
+        }, null, { enableHighAccuracy: true });
+    }
+
+    async function geocodeAllAddresses() {
+        if(isGeocodingBackground) return toast("ПРОЦЕСС УЖЕ ИДЕТ...");
+        const queue = DATA.list.filter(item => !item.lat);
+        if(!queue.length) return alert("Все точки уже с координатами!");
+        isGeocodingBackground = true;
+        const btn = document.getElementById('btnGeoCloud');
+        const originalText = btn.innerText;
+        toast("ЗАПУСК СКАНИРОВАНИЯ ПО ВСЕЙ РОССИИ...");
+        for(let i=0; i < queue.length; i++) {
+            let item = queue[i];
+            btn.innerText = `📍 ПОИСК: ${i+1} / ${queue.length}`;
+            try {
+                const query = encodeURIComponent(`${DATA.city}, ${item.s}, ${item.h}`);
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+                const res = await response.json();
+                if(res && res.length > 0) {
+                    item.lat = parseFloat(res[0].lat); item.lon = parseFloat(res[0].lon);
+                    if (userPos.lat) {
+                        const road = await getRoadDist(userPos.lat, userPos.lon, item.lat, item.lon);
+                        item.km = road.km; item.time = road.time;
+                    }
+                    saveCfg(); render(); 
+                }
+            } catch(e) { console.error("Ошибка спутника для: " + item.s); }
+            await new Promise(r => setTimeout(r, 1200));
+        }
+        isGeocodingBackground = false; btn.innerText = originalText; toast("ОБРАБОТКА ЗАВЕРШЕНА");
+    }
+
+    function sortByDistance() {
+        haptic();
+        if(!userPos.lat) return alert("Включите GPS!");
+        DATA.list.sort((a, b) => {
+            const d1 = a.km ? parseFloat(a.km) : 9999;
+            const d2 = b.km ? parseFloat(b.km) : 9999;
+            return d1 - d2;
+        });
+        render(); toast("БЛИЖАЙШИЕ ВВЕРХУ");
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-theme');
+        const isLight = document.body.classList.contains('light-theme');
+        localStorage.setItem('logist_theme', isLight ? 'light' : 'dark');
+        document.getElementById('themeBtn').innerText = isLight ? '🌙 ТЕМНАЯ ТЕМА' : '☀️ СВЕТЛАЯ ТЕМА';
+        haptic();
+    }
+
+    function getDeviceId() { let id = localStorage.getItem('logist_device_id'); if (!id) { id = 'D-' + Math.random().toString(36).substr(2, 9).toUpperCase(); localStorage.setItem('logist_device_id', id); } return id; }
+    function haptic() { if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(35); }
+    function toast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 2000); }
+    function resumeAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    function playSfx(f, t, d) { try { if(!audioCtx) return; let o = audioCtx.createOscillator(), v = audioCtx.createGain(); o.type = t; o.frequency.value = f; v.gain.value = 0.05; o.connect(v); v.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); } catch(e){} }
+    const Sfx = { click: () => playSfx(600, 'sine', 0.08), ok: () => playSfx(800, 'sine', 0.1) };
+
+    function openDB() {
+        const req = indexedDB.open("LogistX_Secure_v450", 1);
+        req.onupgradeneeded = (e) => e.target.result.createObjectStore("sync_queue", { autoIncrement: true });
+        req.onsuccess = (e) => { db = e.target.result; updateSyncCount(); syncNow(); };
+    }
+
+    function saveCfg() {
+        DATA.license.key = document.getElementById('licenseKey')?.value.trim().toUpperCase() || DATA.license.key;
+        DATA.workerName = document.getElementById('workerName')?.value.trim() || DATA.workerName;
+        DATA.city = document.getElementById('cityName')?.value.trim() || DATA.city || "Орёл";
+        DATA.prices.p1 = parseInt(document.getElementById('p1')?.value) || 500;
+        DATA.prices.p3 = parseInt(document.getElementById('p3')?.value) || 300;
+        DATA.prices.p4 = parseInt(document.getElementById('p4')?.value) || 100;
+        DATA.names.t1 = document.getElementById('t1_name')?.value || "Монтаж";
+        DATA.names.t3 = document.getElementById('t3_name')?.value || "Замена рекламы";
+        DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudomona";
+        if(document.getElementById('cityBadge')) document.getElementById('cityBadge').innerText = DATA.city.toUpperCase();
+        localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
+        checkLicenseUI();
+    }
+
+    function checkLicenseUI() {
+        if (DATA.license.key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; }
+        const now = Date.now();
+        const active = DATA.license.key && Number(DATA.license.expiry) > now;
+        DATA.license.status = active;
+        if(document.getElementById('licenseLock')) document.getElementById('licenseLock').style.display = active ? 'none' : 'flex';
+        const h = document.getElementById('statLicense');
+        if(h) {
+            if(active) {
+                const d = Math.ceil((DATA.license.expiry - now) / 86400000);
+                h.innerText = (DATA.license.key === MASTER_KEY ? "∞" : d) + " дн."; h.style.color = "var(--accent)";
+            } else { h.innerText = "EXP"; h.style.color = "var(--red)"; }
+        }
+    }
+
+    async function checkLicense() {
+        const key = DATA.license.key; const worker = DATA.workerName; const devId = getDeviceId();
+        if (key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("MASTER OK"); return; }
+        if(!key || !worker) return alert("Введите ФИО и Ключ!");
+        const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
+        bars.forEach(b => b && (b.style.width = '50%'));
+        try {
+            const res = await fetch(`${BOT_SERVER_URL}/upload`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: 'check_license', licenseKey: key, workerName: worker, deviceId: devId })
+            });
+            const result = await res.json();
+            if(result.status === "active") { DATA.license.expiry = Number(result.expiry) || Date.now() + (30*86400000); saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); } else { alert("ОТКАЗ: " + result.message); }
+        } catch(e) { alert("Ошибка связи!"); }
+        finally { bars.forEach(b => b && (b.style.width = '0%')); }
+    }
+
+    async function saveAndCheckLock() { DATA.workerName = document.getElementById('lockWorkerName').value.trim(); DATA.license.key = document.getElementById('lockLicenseKey').value.trim().toUpperCase(); saveCfg(); await checkLicense(); }
+
+    function handleExcel(inp) {
+        let f = inp.files[0]; if(!f) return;
+        setLoader(true);
+        setTimeout(() => {
+            let reader = new FileReader(); 
+            reader.onload = (e) => {
+                try {
+                    let wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates: true});
+                    let list = [];
+                    wb.SheetNames.forEach(sheetName => {
+                        let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header:1, defval: ""});
+                        if (rows.length === 0) return;
+                        let headIdx = rows.findIndex(r => r.some(c => {
+                            let s = String(c).toLowerCase();
+                            return s.includes('улица') || s.includes('адрес') || s.includes('street');
+                        }));
+                        if (headIdx === -1) return;
+                        let head = rows[headIdx].map(v => String(v || "").toLowerCase().trim());
+                        let cS = head.findIndex(v => v.includes('улица') || v.includes('адрес') || v.includes('street'));
+                        let cH = head.findIndex(v => v.includes('дом') || v.includes('house') || v.includes('строение'));
+                        let cP = head.findIndex(v => v.includes('подъезд') || v.includes('entr') || v.includes('кол-во'));
+                        rows.forEach((row, k) => {
+                            if(k <= headIdx || !row[cS]) return;
+                            let street = String(row[cS]).trim();
+                            if (street.includes('2026-03-08')) street = "8 Марта";
+                            let house = (cH !== -1 && row[cH]) ? String(row[cH]).trim() : "";
+                            let count = parseInt(row[cP]) || 1;
+                            let cls = [];
+                            row.forEach(cell => {
+                                if(cell) {
+                                    let v = String(cell).toUpperCase();
+                                    for(let key in CLIENT_MAP) if(v.includes(key)) cls.push(CLIENT_MAP[key]);
+                                }
+                            });
+                            list.push({ s: street, h: house, p: count, clients: [...new Set(cls)], id: 'ID-'+k+'-'+(street+house).replace(/\W/g,''), lat: null, lon: null, km: null, time: null });
+                        });
+                    });
+                    if (list.length === 0) return alert("Ошибка: Не удалось распознать адреса в файле.");
+                    DATA.list = list; DATA.done = {}; saveCfg(); render(); toggleMenu(); Sfx.ok(); toast("ЗАГРУЖЕНО: " + list.length + " ДОМОВ");
+                } catch(err) { alert("Ошибка при чтении файла!"); }
+                finally { setTimeout(() => setLoader(false), 500); }
+            }; 
+            reader.readAsArrayBuffer(f);
+        }, 100);
+    }
+
+    function render() {
+        const box = document.getElementById('content'), search = (document.getElementById('search')?.value || "").toLowerCase();
+        let html = "";
+        DATA.list.forEach(i => {
+            if(search && !i.s.toLowerCase().includes(search) && !i.h.toString().includes(search)) return;
+            let finished = 0; if(DATA.done[i.id]) { for(let p=1; p<=i.p; p++) if(DATA.done[i.id][p]) finished++; }
+            const isDone = (finished === i.p && i.p > 0);
+            let pds = ""; for(let p=1; p<=i.p; p++){
+                let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
+                pds += `<div class="p-btn ${st?'done-'+st:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
+            }
+            const addressText = i.h ? `${i.s}, ${i.h}` : i.s;
+            let distDisplay = i.km ? `<span class="dist-badge" style="background:rgba(35, 134, 54, 0.1); color:var(--green)">🚗 ${i.km} км ${i.time ? '| '+i.time+' мин' : ''}</span>` : `<span class="dist-badge" style="opacity:0.5">? км</span>`;
+            html += `<div class="card ${isDone?'is-finished':''}">
+                <div class="card-head"><div style="flex:1; margin-right:10px; font-size:0.9rem;">${addressText} ${distDisplay}</div><button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button></div>
+                <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
+                <div class="pods">${pds}</div>
+            </div>`;
+        });
+        box.innerHTML = html || "<p style='text-align:center; opacity:0.1; padding:50px;'>СПИСОК ПУСТ</p>"; updateStats();
+    }
+
+    function openNav(addr) { haptic(); window.open(`https://yandex.ru/maps/?text=${encodeURIComponent(DATA.city + " " + addr)}`); }
+
+    function openReport(id, p) {
+        if(!DATA.license.status) return checkLicenseUI();
+        haptic(); curId = id; curP = p; curPhotos = {}; selectedTypes = {}; 
+        const it = DATA.list.find(x => x.id === id);
+        document.getElementById('modalTitle').innerText = `${it.s} (П. ${p})`;
+        const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
+        
+        document.getElementById('modalBody').innerHTML = cls.map((c, idx) => {
+            selectedTypes[c] = 1; // По умолчанию Монтаж
+            return `
+            <div class="client-block">
+                <div class="client-tag">${c}</div>
+                <div class="photo-frame" onclick="document.getElementById('cam_${idx}').click()">
+                    <div style="text-align:center; opacity:0.4;"><div style="font-size:2.5rem">📸</div></div>
+                    <img id="prev_${idx}" class="photo-preview" style="display:none">
+                    <input type="file" accept="image/*" capture="environment" id="cam_${idx}" style="display:none" onchange="handleCam(${idx},'${c}')">
+                </div>
+                <div class="btn-price-grid">
+                    <div class="price-btn-cell"><div class="price-label">${DATA.names.t1}</div><button id="bt1_${idx}" class="p-btn" style="font-size:0.6rem; width:100%; border:3px solid var(--accent)" onclick="setType(${idx}, '${c}', 1)">${DATA.prices.p1}</button></div>
+                    <div class="price-btn-cell"><div class="price-label">${DATA.names.t3}</div><button id="bt3_${idx}" class="p-btn" style="font-size:0.6rem; width:100%;" onclick="setType(${idx}, '${c}', 3)">${DATA.prices.p3}</button></div>
+                    <div class="price-btn-cell"><div class="price-label">${DATA.names.t4}</div><button id="bt4_${idx}" class="p-btn" style="font-size:0.6rem; width:100%;" onclick="setType(${idx}, '${c}', 4)">${DATA.prices.p4}</button></div>
+                    <div class="price-btn-cell"><div class="price-label">СРЫВ</div><button id="bt2_${idx}" class="p-btn" style="font-size:0.6rem; width:100%; background:var(--red); color:#fff; border:none;" onclick="setType(${idx}, '${c}', 2)">0</button></div>
+                </div>
+            </div>`;
+        }).join("");
+
+        document.getElementById('reportFooter').style.display = 'block'; 
+        document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function handleCam(idx, client) {
+        const f = document.getElementById(`cam_${idx}`).files[0]; if(!f) return;
+        const r = new FileReader(); r.onload = (e) => {
+            const img = new Image(); img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas'); let w = img.width, h = img.height, max = 1000;
+                if(w > h) { if(w > max) { h *= max/w; w = max; } } else { if(h > max) { w *= max/h; h = max; } }
+                canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                curPhotos[client] = canvas.toDataURL('image/jpeg', 0.6);
+                document.getElementById(`prev_${idx}`).src = curPhotos[client]; document.getElementById(`prev_${idx}`).style.display = 'block';
+                haptic();
+            };
+        }; r.readAsDataURL(f);
+    }
+
+    function setType(idx, client, t) { 
+        haptic(); 
+        selectedTypes[client] = t; 
+        [1,2,3,4].forEach(typeId => {
+            let b = document.getElementById(`bt${typeId}_${idx}`);
+            if(b) b.style.border = (typeId === t) ? "3px solid var(--accent)" : "none";
+        });
+    }
+
+    function getCoords() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) return resolve({lat:null, lon:null});
+            navigator.geolocation.getCurrentPosition(
+                (pos) => resolve({lat: parseFloat(pos.coords.latitude), lon: parseFloat(pos.coords.longitude)}),
+                () => resolve({lat:null, lon:null}), { enableHighAccuracy: true, timeout: 5000 }
+            );
+        });
+    }
+
+    async function confirmReport() {
+        if(isSavingReport) return;
+        const it = DATA.list.find(x => x.id === curId);
+        const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
+        
+        for(let c of cls) {
+            if(selectedTypes[c] !== 2 && !curPhotos[c]) return alert(`Нет фото для клиента: ${c}`);
+        }
+
+        isSavingReport = true; haptic(); 
+        document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
+        const pos = await getCoords(); 
+        
+        if(!DATA.done[curId]) DATA.done[curId] = {}; 
+        DATA.done[curId][curP] = selectedTypes[cls[0]]; 
+
+        const tx = db.transaction("sync_queue", "readwrite"); 
+        const store = tx.objectStore("sync_queue");
+        const baseUUID = 'REP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+        
+        for (let client of cls) {
+            const t = selectedTypes[client];
+            const entryForServer = { 
+                action: "save_report", 
+                report_uuid: baseUUID + '-' + client, 
+                worker: DATA.workerName, 
+                city: DATA.city, 
+                image: curPhotos[client] ? curPhotos[client].split(',')[1] : null, 
+                address: it.s + (it.h ? " " + it.h : ""), 
+                entrance: curP, 
+                client: client, 
+                workType: ["", DATA.names.t1, "Срыв", DATA.names.t3, DATA.names.t4][t], 
+                price: [0, DATA.prices.p1, 0, DATA.prices.p3, DATA.prices.p4][t], 
+                lat: pos.lat, lon: pos.lon, ts: Date.now(), status: "Ожидание", 
+                full: curPhotos[client], 
+                licenseKey: DATA.license.key 
+            };
+            const entryForHistory = { ...entryForServer, full: null, image: null };
+            DATA.history.unshift(entryForHistory);
+            if(DATA.history.length > 100) DATA.history.length = 100;
+            store.add(entryForServer);
+        }
+        
+        tx.oncomplete = () => { 
+            saveCfg(); 
+            updateStats(); // Обновляем статистику и деньги мгновенно
+            render(); 
+            isSavingReport = false; 
+            document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; 
+            closeModal();
+            syncNow(); 
+            toast("В ОЧЕРЕДИ"); 
+        };
+    }
+
+    async function syncNow() {
+        if(syncing || !navigator.onLine || !db || !DATA.license.status) return;
+        syncing = true;
+        try {
+            const txR = db.transaction("sync_queue", "readonly");
+            const items = await new Promise(r => txR.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result));
+            const keys = await new Promise(r => txR.objectStore("sync_queue").getAllKeys().onsuccess = e => r(e.target.result));
+            if (items.length === 0) { syncing = false; return; }
+            document.getElementById('syncIndicator').style.display = 'block'; document.getElementById('syncIndicator').classList.add('active-sync');
+            for(let i=0; i<items.length; i++) {
+                document.getElementById('queueCount').innerText = `${i+1}/${items.length}`;
+                try {
+                    const res = await fetch(`${BOT_SERVER_URL}/upload`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(items[i]) });
+                    const resJ = await res.json();
+                    if(resJ.success) { let t = db.transaction("sync_queue","readwrite"); await new Promise(r => t.objectStore("sync_queue").delete(keys[i]).onsuccess = r); } else break;
+                } catch(e) { break; }
+            }
+        } finally { syncing = false; if(document.getElementById('syncIndicator')) document.getElementById('syncIndicator').classList.remove('active-sync'); updateSyncCount(); }
+    }
+
+    async function showMonitor() { monitorOpen = true; haptic(); const upd = async () => { if(!monitorOpen) return; const tx = db.transaction("sync_queue", "readonly"); const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result)); document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ"; document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Доставлено!</p>" : `<div style="padding:15px">${items.map(it => `<div style="background:var(--head-bg); padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.entrance})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }; upd(); }
+    function createFullBackup() { const blob = new Blob([JSON.stringify({ appData: DATA })], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click(); }
+    function restoreFullBackup(inp) { let f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { DATA = JSON.parse(e.target.result).appData; saveCfg(); location.reload(); } catch(err) { alert("Ошибка!"); } }; r.readAsText(f); }
+    function showSryvy() { haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ"; let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } } let h = "<div style='padding:15px'>"; for(let id in gr){ const it=DATA.list.find(x=>x.id===id); if(it) h+=`<div style="background:var(--head-bg); margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}${it.h ? ', '+it.h : ''}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; } document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
+    function showArchive() { haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:var(--head-bg); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.entrance})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; }); document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
+    function showArchivePhoto(idx) { const it = DATA.history[idx]; if(!it || !it.full) { document.getElementById('modalBody').innerHTML = `<div style="padding:20px; text-align:center;">Фото не сохранено в локальном архиве.<br><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; return; } document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; }
+    function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; if(document.getElementById('syncIndicator')) document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing && document.getElementById('queueCount')) document.getElementById('queueCount').innerText = c; }; }
+    
+    function updateStats() { 
+        let tot = 0; DATA.list.forEach(i => tot += i.p); 
+        let dn = 0, mon = 0; 
+        
+        DATA.history.forEach(it => {
+            if (it.workType !== "Срыв") mon += (it.price || 0);
+        });
+
+        for(let id in DATA.done) {
+            for(let p in DATA.done[id]) dn++;
+        }
+
+        if(document.getElementById('statMoney')) document.getElementById('statMoney').innerText = mon + " ₽"; 
+        if(document.getElementById('statProgress')) document.getElementById('statProgress').innerText = `${dn}/${tot}`; 
+        if(document.getElementById('mainProgress')) document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%"; 
+    }
+
+    function toggleMenu() { haptic(); Sfx.click(); document.getElementById('menu').classList.toggle('active'); }
+    function closeModal() { haptic(); document.getElementById('reportModal').style.display = 'none'; monitorOpen = false; }
+    function setLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; }
+    
+    function showWallet() { 
+        Sfx.click(); haptic(); 
+        document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
+        let counts = {t1:0, t3:0, t4:0};
+        DATA.history.forEach(it => {
+            if(it.workType === DATA.names.t1) counts.t1++;
+            if(it.workType === DATA.names.t3) counts.t3++;
+            if(it.workType === DATA.names.t4) counts.t4++;
+        });
+        document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts.t1}</p><p>${DATA.names.t3}: ${counts.t3}</p><p>${DATA.names.t4}: ${counts.t4}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`; 
+        document.getElementById('reportFooter').style.display = 'none'; 
+        document.getElementById('reportModal').style.display = 'flex'; 
+    }
+
+    window.onload = () => {
+        if(localStorage.getItem('logist_theme') === 'light') {
+            document.body.classList.add('light-theme');
+            if(document.getElementById('themeBtn')) document.getElementById('themeBtn').innerText = '🌙 ТЕМНАЯ ТЕМА';
+        }
+        const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
+        if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
+        if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
+        if(document.getElementById('licenseKey')) document.getElementById('licenseKey').value = DATA.license.key || "";
+        if(document.getElementById('p1')) {
+            document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
+            document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
+        }
+        checkLicenseUI(); openDB(); render();
+        updateMyPos();
+        setInterval(updateMyPos, 15000);
+
+            // Логика Service Worker и Обновления
+    if ('serviceWorker' in navigator) {
+        let refreshing = false;
+
+        // Следим за сменой контроллера (когда новый SW вступил в силу)
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+        });
+
+        navigator.serviceWorker.register('../sw.js').then(reg => {
+            // Если новый воркер уже ждет активации
+            if (reg.waiting) {
+                document.getElementById('update-banner').classList.add('show');
+            }
+
+            // Если воркер в процессе установки
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        document.getElementById('update-banner').classList.add('show');
                     }
                 });
-            })
-    );
-});
+            });
+        });
 
-// Слушаем команду на обновление из приложения
-self.addEventListener('message', (event) => {
-    if (event.data.action === 'skipWaiting') self.skipWaiting();
-});
+        // Кнопка ОБНОВИТЬ
+        document.getElementById('reload-app').onclick = () => {
+            haptic();
+            navigator.serviceWorker.getRegistration().then(reg => {
+                if (reg && reg.waiting) {
+                    // Отправляем сигнал на активацию
+                    reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                } else {
+                    // Если ждать нечего, просто скрываем и рефрешим
+                    document.getElementById('update-banner').classList.remove('show');
+                    window.location.reload();
+                }
+            });
+        };
+    }
+
+    };
+    setInterval(syncNow, 12000);
+</script>
+</body>
+</html>
