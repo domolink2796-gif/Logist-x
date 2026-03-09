@@ -223,7 +223,7 @@
     let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, curType = 1, audioCtx = null, monitorOpen = false, isSavingReport = false;
     let userPos = { lat: null, lon: null };
-    let isGeocodingBackground = false; // Флаг фонового процесса
+    let isGeocodingBackground = false; 
 
     const CLIENT_MAP = {
         "БИЛАЙН": "БИЛАЙН", "БИЛ": "БИЛАЙН", "BEELINE": "БИЛАЙН",
@@ -257,7 +257,6 @@
         if(p.lat) { userPos = p; render(); }
     }
 
-    // ТВОЯ ОБНОВЛЕННАЯ ФУНКЦИЯ (ФОНОВЫЙ РЕЖИМ)
     async function geocodeAllAddresses() {
         if(isGeocodingBackground) return toast("ПРОЦЕСС УЖЕ ИДЕТ...");
         
@@ -268,21 +267,21 @@
         const btn = document.getElementById('btnGeoCloud');
         const originalText = "📍 ПОЛУЧИТЬ КООРДИНАТЫ (КМ)";
         
-        toast("ЗАПУЩЕН ФОНОВЫЙ ПОИСК...");
+        toast("ЗАПУЩЕН ФОНОВЫЙ ПОИСК В Г. " + DATA.city.toUpperCase());
         
         for(let i=0; i < queue.length; i++) {
             let item = queue[i];
             
-            // Обновляем текст на кнопке в меню для контроля
             if(btn) btn.innerText = `📍 ПОИСК: ${i+1} / ${queue.length}`;
 
             try {
+                // ИСПРАВЛЕНО: Теперь город из DATA.city жестко подставляется в запрос
                 const response = await fetch(`${BOT_SERVER_URL}/api/geo-sync`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         cityFrom: DATA.city, 
-                        addressTo: `${DATA.city}, ${item.s}, ${item.h}`
+                        addressTo: `${DATA.city}, ${item.s}, ${item.h}` 
                     })
                 });
 
@@ -292,7 +291,6 @@
                     item.lat = res.coords.lat; 
                     item.lon = res.coords.lon;
                     
-                    // Сохраняем и перерисовываем точечно, не мешая юзеру
                     saveCfg(); 
                     render(); 
                 }
@@ -300,8 +298,7 @@
                 console.error("Ошибка спутника для: " + item.s); 
             }
             
-            // Пауза 1.5 сек, чтобы не забанили IP за частые запросы
-            await new Promise(r => setTimeout(r, 1500));
+            await new Promise(r => setTimeout(r, 1200));
         }
 
         isGeocodingBackground = false;
