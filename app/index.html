@@ -434,19 +434,42 @@
     }
 
     function checkLicenseUI() {
-        if (DATA.license.key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; }
-        const now = Date.now();
-        const active = DATA.license.key && Number(DATA.license.expiry) > now;
-        DATA.license.status = active;
-        if(document.getElementById('licenseLock')) document.getElementById('licenseLock').style.display = active ? 'none' : 'flex';
-        const h = document.getElementById('statLicense');
-        if(h) {
-            if(active) {
-                const d = Math.ceil((DATA.license.expiry - now) / 86400000);
-                h.innerText = (DATA.license.key === MASTER_KEY ? "∞" : d) + " дн."; h.style.color = "var(--accent)";
-            } else { h.innerText = "EXP"; h.style.color = "var(--red)"; }
+    // 1. Проверка Мастер-ключа (бесконечный доступ)
+    if (DATA.license.key === MASTER_KEY) { 
+        DATA.license.status = true; 
+        DATA.license.expiry = Date.now() + 315360000000; 
+    }
+    
+    const now = Date.now();
+    // 2. Лицензия активна, если ключ есть и дата в будущем
+    const active = DATA.license.key && Number(DATA.license.expiry) > now;
+    DATA.license.status = active;
+    
+    // Блокировка экрана, если доступ истек
+    if(document.getElementById('licenseLock')) {
+        document.getElementById('licenseLock').style.display = active ? 'none' : 'flex';
+    }
+    
+    // 3. ОБНОВЛЕНИЕ ЦИФРЫ В ШАПКЕ
+    const h = document.getElementById('statLicense');
+    if(h) {
+        if(active) {
+            // Считаем сколько полных дней осталось
+            const diff = DATA.license.expiry - now;
+            const days = Math.ceil(diff / 86400000);
+            
+            if (DATA.license.key === MASTER_KEY) {
+                h.innerText = "∞"; // Бесконечность для админа
+            } else {
+                h.innerText = days + " дн."; // Реальное кол-во дней для рабочего
+            }
+            h.style.color = "var(--accent)";
+        } else { 
+            h.innerText = "EXP"; // Истекло (Expired)
+            h.style.color = "var(--red)"; 
         }
     }
+}
 
     async function checkLicense() {
     const key = DATA.license.key; const worker = DATA.workerName; const devId = getDeviceId();
