@@ -354,7 +354,15 @@
             let item = queue[i];
             btn.innerText = `📍 ПОИСК: ${i+1} / ${queue.length}`;
             try {
-                const query = encodeURIComponent(`${DATA.city}, ${item.s}, ${item.h}`);
+            let cleanStreet = item.s
+                .replace(/^ф\s+/i, 'Фридриха ')
+                .replace(/^бр\s+/i, 'бульвар ')
+                .replace(/^пр\s+/i, 'проспект ')
+                .replace(/^пр-кт\s+/i, 'проспект ')
+                .replace(/^ул\s+/i, 'улица ');
+
+            const query = encodeURIComponent(`${DATA.city}, ${cleanStreet}, ${item.h}`);
+
                 const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1&addressdetails=1`);
                 const res = await response.json();
                 if(res && res.length > 0) {
