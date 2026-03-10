@@ -118,7 +118,6 @@
         .client-block { background: var(--box-bg); padding: 12px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; }
         .client-tag { font-weight: 900; color: var(--accent); font-size: 0.7rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* [ADD] НОВЫЙ СТИЛЬ: ЗОЛОТАЯ ПОДСВЕТКА ДЛЯ РАЙОНА */
         .card.same-district { 
             border: 2px solid #FFD700 !important; 
             background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), var(--card)) !important;
@@ -508,20 +507,33 @@
             if(search && !i.s.toLowerCase().includes(search) && !i.h.toString().includes(search)) return;
             let isSameDistrict = false;
             if (i.district) {
-                const prev = DATA.list[idx-1];
-                const next = DATA.list[idx+1];
-                if ((prev && prev.district === i.district) || (next && next.district === i.district)) {
-                    isSameDistrict = true;
-                }
+                const prev = DATA.list[idx-1]; const next = DATA.list[idx+1];
+                if ((prev && prev.district === i.district) || (next && next.district === i.district)) isSameDistrict = true;
             }
-            let finished = 0; if(DATA.done[i.id]) { for(let p=1; p<=i.p; p++) if(DATA.done[i.id][p]) finished++; }
-            const isDone = (finished === i.p && i.p > 0);
-            let pds = ""; for(let p=1; p<=i.p; p++){
+            
+            let finished = 0; 
+            let pds = ""; 
+            for(let p = 1; p <= i.p; p++){
+                // [FIX] Индикация: Берем статус первого клиента или старый формат
                 let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
-                pds += `<div class="p-btn ${st?'done-'+st:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
+                let displayType = (typeof st === 'object') ? Object.values(st)[0] : st;
+                
+                // Проверяем, закончен ли подъезд (все ли клиенты сделаны)
+                let isPodDone = false;
+                if(st) {
+                    const cls = i.clients.length > 0 ? i.clients : ["ОБЩИЙ"];
+                    if(typeof st === 'object') isPodDone = cls.every(c => st[c] !== undefined);
+                    else isPodDone = true;
+                }
+                if(isPodDone) finished++;
+
+                pds += `<div class="p-btn ${displayType?'done-'+displayType:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
             }
+
+            const isDone = (finished === i.p && i.p > 0);
             const addressText = i.h ? `${i.s}, ${i.h}` : i.s;
-            let distDisplay = i.km ? `<span class="dist-badge" style="background:rgba(35, 134, 54, 0.1); color:var(--green)">🚗 ${i.km} км ${i.time ? '| '+i.time+' мин' : ''}</span>` : `<span class="dist-badge" style="opacity:0.5">? км</span>`;
+            let distDisplay = i.km ? `<span class="dist-badge">🚗 ${i.km} км ${i.time ? '| '+i.time+' мин' : ''}</span>` : `<span class="dist-badge" style="opacity:0.5">? км</span>`;
+            
             html += `<div class="card ${isDone?'is-finished':''} ${isSameDistrict?'same-district':''}">
                 <div class="card-head">
                     <div style="flex:1; margin-right:10px; font-size:0.9rem;">
@@ -545,8 +557,12 @@
         const it = DATA.list.find(x => x.id === id);
         document.getElementById('modalTitle').innerText = `${it.s} (П. ${p})`;
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
+        
+        // [FIX] Если уже есть данные в DATA.done, подгружаем их
+        let existing = (DATA.done[id] && DATA.done[id][p]) ? DATA.done[id][p] : null;
+
         document.getElementById('modalBody').innerHTML = cls.map((c, idx) => {
-            selectedTypes[c] = 1; 
+            selectedTypes[c] = (existing && typeof existing === 'object' && existing[c]) ? existing[c] : 1; 
             return `
             <div class="client-block">
                 <div class="client-tag">${c}</div>
@@ -556,10 +572,10 @@
                     <input type="file" accept="image/*" capture="environment" id="cam_${idx}" style="display:none" onchange="handleCam(${idx},'${c}')">
                 </div>
                 <div class="btn-price-grid">
-                    <div class="price-btn-cell"><div class="price-label">${DATA.names.t1}</div><button id="bt1_${idx}" class="p-btn" style="font-size:0.6rem; width:100%; border:3px solid var(--accent)" onclick="setType(${idx}, '${c}', 1)">${DATA.prices.p1}</button></div>
-                    <div class="price-btn-cell"><div class="price-label">${DATA.names.t3}</div><button id="bt3_${idx}" class="p-btn" style="font-size:0.6rem; width:100%;" onclick="setType(${idx}, '${c}', 3)">${DATA.prices.p3}</button></div>
-                    <div class="price-btn-cell"><div class="price-label">${DATA.names.t4}</div><button id="bt4_${idx}" class="p-btn" style="font-size:0.6rem; width:100%;" onclick="setType(${idx}, '${c}', 4)">${DATA.prices.p4}</button></div>
-                    <div class="price-btn-cell"><div class="price-label">СРЫВ</div><button id="bt2_${idx}" class="p-btn" style="font-size:0.6rem; width:100%; background:var(--red); color:#fff; border:none;" onclick="setType(${idx}, '${c}', 2)">0</button></div>
+                    <div class="price-btn-cell"><div class="price-label">${DATA.names.t1}</div><button id="bt1_${idx}" class="p-btn" style="font-size:0.6rem; width:100%; ${selectedTypes[c]===1?'border:3px solid var(--accent)':''}" onclick="setType(${idx}, '${c}', 1)">${DATA.prices.p1}</button></div>
+                    <div class="price-btn-cell"><div class="price-label">${DATA.names.t3}</div><button id="bt3_${idx}" class="p-btn" style="font-size:0.6rem; width:100%; ${selectedTypes[c]===3?'border:3px solid var(--accent)':''}" onclick="setType(${idx}, '${c}', 3)">${DATA.prices.p3}</button></div>
+                    <div class="price-btn-cell"><div class="price-label">${DATA.names.t4}</div><button id="bt4_${idx}" class="p-btn" style="font-size:0.6rem; width:100%; ${selectedTypes[c]===4?'border:3px solid var(--accent)':''}" onclick="setType(${idx}, '${c}', 4)">${DATA.prices.p4}</button></div>
+                    <div class="price-btn-cell"><div class="price-label">СРЫВ</div><button id="bt2_${idx}" class="p-btn" style="font-size:0.6rem; width:100%; background:var(--red); color:#fff; ${selectedTypes[c]===2?'border:3px solid var(--accent)':''}" onclick="setType(${idx}, '${c}', 2)">0</button></div>
                 </div>
             </div>`;
         }).join("");
@@ -605,17 +621,25 @@
         if(isSavingReport) return;
         const it = DATA.list.find(x => x.id === curId);
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
+        
         for(let c of cls) if(selectedTypes[c] !== 2 && !curPhotos[c]) return alert(`Нет фото для клиента: ${c}`);
+        
         isSavingReport = true; haptic(); 
         document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
         const pos = await getCoords(); 
+        
         if(!DATA.done[curId]) DATA.done[curId] = {}; 
-        DATA.done[curId][curP] = selectedTypes[cls[0]]; 
+        if(!DATA.done[curId][curP]) DATA.done[curId][curP] = {}; 
+
         const tx = db.transaction("sync_queue", "readwrite"); 
         const store = tx.objectStore("sync_queue");
-        const baseUUID = 'REP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+        const baseUUID = 'REP-' + Date.now();
+
         for (let client of cls) {
             const t = selectedTypes[client];
+            // [FIX] Сохраняем каждого клиента в DATA.done
+            DATA.done[curId][curP][client] = t; 
+
             const entryForServer = { 
                 action: "save_report", 
                 report_uuid: baseUUID + '-' + client, 
@@ -631,11 +655,12 @@
                 full: curPhotos[client], 
                 licenseKey: DATA.license.key 
             };
-            const entryForHistory = { ...entryForServer, full: null, image: null };
-            DATA.history.unshift(entryForHistory);
+            
+            DATA.history.unshift({ ...entryForServer, full: null, image: null });
             if(DATA.history.length > 100) DATA.history.length = 100;
             store.add(entryForServer);
         }
+        
         tx.oncomplete = () => { 
             saveCfg(); updateStats(); render(); 
             isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; 
@@ -666,34 +691,50 @@
     async function showMonitor() { monitorOpen = true; haptic(); const upd = async () => { if(!monitorOpen) return; const tx = db.transaction("sync_queue", "readonly"); const items = await new Promise(r => tx.objectStore("sync_queue").getAll().onsuccess = e => r(e.target.result)); document.getElementById('modalTitle').innerText = "МОНИТОР ОТПРАВКИ"; document.getElementById('modalBody').innerHTML = items.length === 0 ? "<p style='padding:40px; text-align:center'>Доставлено!</p>" : `<div style="padding:15px">${items.map(it => `<div style="background:var(--head-bg); padding:10px; margin-bottom:5px; border-radius:10px; font-size:0.7rem"><b>${it.address} (п.${it.entrance})</b><br><span style="color:var(--accent)">${it.status}</span></div>`).join("")}<button class="btn-act btn-blue" style="margin-top:10px" onclick="syncing=false;syncNow();">🚀 СИНХРОНИЗИРОВАТЬ</button></div>`; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }; upd(); }
     function createFullBackup() { const blob = new Blob([JSON.stringify({ appData: DATA })], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `LOGISTX_Backup.json`; a.click(); }
     function restoreFullBackup(inp) { let f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { DATA = JSON.parse(e.target.result).appData; saveCfg(); location.reload(); } catch(err) { alert("Ошибка!"); } }; r.readAsText(f); }
-    function showSryvy() { haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ"; let gr = {}; for(let id in DATA.done){ for(let p in DATA.done[id]) if(DATA.done[id][p]===2) { if(!gr[id]) gr[id]=[]; gr[id].push(p); } } let h = "<div style='padding:15px'>"; for(let id in gr){ const it=DATA.list.find(x=>x.id===id); if(it) h+=`<div style="background:var(--head-bg); margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}${it.h ? ', '+it.h : ''}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; } document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
-    function showArchive() { haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:var(--head-bg); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.entrance})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; }); document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
+    function showSryvy() { haptic(); document.getElementById('modalTitle').innerText = "СРЫВЫ"; 
+        let gr = {}; 
+        for(let id in DATA.done){ 
+            for(let p in DATA.done[id]) {
+                let pod = DATA.done[id][p];
+                let isSryv = false;
+                if(typeof pod === 'object') isSryv = Object.values(pod).includes(2);
+                else isSryv = (pod === 2);
+                if(isSryv) { if(!gr[id]) gr[id]=[]; gr[id].push(p); }
+            }
+        } 
+        let h = "<div style='padding:15px'>"; for(let id in gr){ const it=DATA.list.find(x=>x.id===id); if(it) h+=`<div style="background:var(--head-bg); margin-bottom:10px; padding:12px; border-radius:10px;"><b>${it.s}${it.h ? ', '+it.h : ''}</b><br><span style="color:var(--red)">Подъезды: ${gr[id].join(", ")}</span></div>`; } document.getElementById('modalBody').innerHTML = h || "<p style='padding:40px; text-align:center'>Нет срывов</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
+    function showArchive() { haptic(); document.getElementById('modalTitle').innerText = "АРХИВ"; let h = "<div style='padding:15px; overflow-y:auto; flex:1;'>"; DATA.history.slice(0,50).forEach((it, idx) => { h += `<div style="background:var(--head-bg); margin-bottom:8px; padding:12px; border-radius:12px; border:1px solid var(--border);" onclick="showArchivePhoto(${idx})"><div style="font-size:0.6rem; opacity:0.6;">${new Date(it.ts).toLocaleString()}</div><div style="font-weight:800; font-size:0.85rem; color:var(--blue)">${it.address} (п.${it.entrance})</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:0.65rem;">${it.client || ''}: ${it.workType}</span><span style="font-weight:900; color:#3fb950;">${it.price}₽</span></div></div>`; }); document.getElementById('modalBody').innerHTML = h || "<p style='text-align:center; padding:20px;'>Пусто</p>"; document.getElementById('reportFooter').style.display = 'none'; document.getElementById('reportModal').style.display = 'flex'; }
     function showArchivePhoto(idx) { const it = DATA.history[idx]; if(!it || !it.full) { document.getElementById('modalBody').innerHTML = `<div style="padding:20px; text-align:center;">Фото не сохранено в локальном архиве.<br><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; return; } document.getElementById('modalBody').innerHTML = `<div style="padding:10px;"><img src="${it.full}" style="width:100%; border-radius:14px;"><button class="btn-act btn-dark" style="margin-top:20px" onclick="showArchive()">НАЗАД</button></div>`; }
     function updateSyncCount() { if(!db) return; db.transaction("sync_queue").objectStore("sync_queue").count().onsuccess = e => { let c = e.target.result; if(document.getElementById('syncIndicator')) document.getElementById('syncIndicator').style.display = c > 0 ? 'block' : 'none'; if(!syncing && document.getElementById('queueCount')) document.getElementById('queueCount').innerText = c; }; }
     
     function updateStats() { 
         let tot = 0; DATA.list.forEach(i => tot += i.p); 
-        let dn = 0, mon = 0; 
+        let dn = 0, mon = 0, sryvCount = 0; 
         
-        // Считаем деньги по объекту выполненных работ (DATA.done)
         for(let id in DATA.done) {
             for(let p in DATA.done[id]) {
-                dn++; // Считаем общее кол-во выполненных подъездов
-                let type = DATA.done[id][p];
-                if(type === 1) mon += DATA.prices.p1;
-                if(type === 3) mon += DATA.prices.p3;
-                if(type === 4) mon += DATA.prices.p4;
+                let podData = DATA.done[id][p];
+                if (podData && typeof podData === 'object') {
+                    for (let client in podData) {
+                        let type = podData[client];
+                        if(type === 1) mon += DATA.prices.p1;
+                        if(type === 3) mon += DATA.prices.p3;
+                        if(type === 4) mon += DATA.prices.p4;
+                        if(type === 2) sryvCount++;
+                    }
+                    dn++; 
+                } else if (typeof podData === 'number') {
+                    if(podData === 1) mon += DATA.prices.p1;
+                    if(podData === 3) mon += DATA.prices.p3;
+                    if(podData === 4) mon += DATA.prices.p4;
+                    if(podData === 2) sryvCount++;
+                    dn++;
+                }
             }
         }
 
         if(document.getElementById('statMoney')) document.getElementById('statMoney').innerText = mon + " ₽"; 
         if(document.getElementById('statProgress')) document.getElementById('statProgress').innerText = `${dn}/${tot}`; 
-        
-        // Считаем срывы для статистики
-        let sryvCount = 0;
-        for(let id in DATA.done) {
-            for(let p in DATA.done[id]) if(DATA.done[id][p] === 2) sryvCount++;
-        }
         if(document.getElementById('statSryv')) document.getElementById('statSryv').innerText = sryvCount;
         if(document.getElementById('mainProgress')) document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%"; 
     }
@@ -708,11 +749,15 @@
         let counts = {t1:0, t3:0, t4:0, t2:0};
         for(let id in DATA.done) {
             for(let p in DATA.done[id]) {
-                let type = DATA.done[id][p];
-                if(type === 1) counts.t1++;
-                if(type === 2) counts.t2++;
-                if(type === 3) counts.t3++;
-                if(type === 4) counts.t4++;
+                let podData = DATA.done[id][p];
+                if(typeof podData === 'object') {
+                    for(let c in podData) {
+                        let t = podData[c];
+                        if(t===1) counts.t1++; if(t===2) counts.t2++; if(t===3) counts.t3++; if(t===4) counts.t4++;
+                    }
+                } else {
+                    if(podData===1) counts.t1++; if(podData===2) counts.t2++; if(podData===3) counts.t3++; if(podData===4) counts.t4++;
+                }
             }
         }
         document.getElementById('modalBody').innerHTML = `
