@@ -434,36 +434,57 @@
     }
 
     function checkLicenseUI() {
-        if (DATA.license.key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; }
-        const now = Date.now();
-        const active = DATA.license.key && Number(DATA.license.expiry) > now;
-        DATA.license.status = active;
-        if(document.getElementById('licenseLock')) document.getElementById('licenseLock').style.display = active ? 'none' : 'flex';
-        const h = document.getElementById('statLicense');
-        if(h) {
-            if(active) {
-                const d = Math.ceil((DATA.license.expiry - now) / 86400000);
-                h.innerText = (DATA.license.key === MASTER_KEY ? "∞" : d) + " дн."; h.style.color = "var(--accent)";
-            } else { h.innerText = "EXP"; h.style.color = "var(--red)"; }
+    if (DATA.license.key === MASTER_KEY) { 
+        DATA.license.status = true; 
+        DATA.license.expiry = Date.now() + 315360000000; 
+    }
+    const now = Date.now();
+    
+    // ПРАВКА ТУТ: Превращаем текст даты в понятное для JS число
+    const expiryMs = new Date(DATA.license.expiry).getTime();
+    const active = DATA.license.key && expiryMs > now;
+    
+    DATA.license.status = active;
+    if(document.getElementById('licenseLock')) document.getElementById('licenseLock').style.display = active ? 'none' : 'flex';
+    
+    const h = document.getElementById('statLicense');
+    if(h) {
+        if(active) {
+            // Считаем дни правильно
+            const d = Math.ceil((expiryMs - now) / 86400000);
+            h.innerText = (DATA.license.key === MASTER_KEY ? "∞" : (d > 0 ? d : "0")) + " дн."; 
+            h.style.color = "var(--accent)";
+        } else { 
+            h.innerText = "EXP"; 
+            h.style.color = "var(--red)"; 
         }
     }
+}
 
-    async function checkLicense() {
-        const key = DATA.license.key; const worker = DATA.workerName; const devId = getDeviceId();
-        if (key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; saveCfg(); toast("MASTER OK"); return; }
-        if(!key || !worker) return alert("Введите ФИО и Ключ!");
-        const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
-        bars.forEach(b => b && (b.style.width = '50%'));
-        try {
-            const res = await fetch(`${BOT_SERVER_URL}/upload`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ action: 'check_license', licenseKey: key, workerName: worker, deviceId: devId })
-            });
-            const result = await res.json();
-            if(result.status === "active"{ DATA.license.expiry = Number(result.expiry) || Date.now() + (30*86400000) ; saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); } else { alert("ОТКАЗ: " + result.message); }
-        } catch(e) { alert("Ошибка связи!"); }
-        finally { bars.forEach(b => b && (b.style.width = '0%')); }
+async function checkLicense() {
+    const key = DATA.license.key; const worker = DATA.workerName; const devId = getDeviceId();
+    if (key === MASTER_KEY) { 
+        DATA.license.status = true; 
+        DATA.license.expiry = Date.now() + 315360000000; 
+        saveCfg(); toast("MASTER OK"); return; 
     }
+    if(!key || !worker) return alert("Введите ФИО и Ключ!");
+    const bars = [document.getElementById('lockLicBar'), document.getElementById('menuLicBar')];
+    bars.forEach(b => b && (b.style.width = '50%'));
+    try {
+        const res = await fetch(`${BOT_SERVER_URL}/upload`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ action: 'check_license', licenseKey: key, workerName: worker, deviceId: devId })
+        });
+        const result = await res.json();
+        if(result.status === "active") { 
+            // ПРАВКА ТУТ: Сохраняем дату как текст, как она пришла с сервера
+            DATA.license.expiry = result.expiry; 
+            saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); 
+        } else { alert("ОТКАЗ: " + result.message); }
+    } catch(e) { alert("Ошибка связи!"); }
+    finally { bars.forEach(b => b && (b.style.width = '0%')); }
+}
 
     async function saveAndCheckLock() { DATA.workerName = document.getElementById('lockWorkerName').value.trim(); DATA.license.key = document.getElementById('lockLicenseKey').value.trim().toUpperCase(); saveCfg(); await checkLicense(); }
 
