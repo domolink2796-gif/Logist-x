@@ -916,10 +916,17 @@ async function checkLicense() {
                 • <b>ГОСТ Р 52290:</b> Знаки навигации.
             </div>
             <p style="font-size: 0.75rem;">Установка табличек производится в целях обеспечения работы экстренных служб (МЧС, Скорая) без привлечения средств собственников.</p>
-            <div style="text-align: center; margin-top: 20px; opacity: 0.8;">
-                <div style="display: inline-block; border: 3px double var(--accent); padding: 8px; border-radius: 50%; font-size: 0.5rem; font-weight: 900; transform: rotate(-15deg);">СЛУЖБА<br>МОНИТОРИНГА<br>МКД</div>
+            
+            <div style="text-align: center; margin-top: 30px; position: relative; opacity: 0.9; transform: rotate(-10deg);">
+                <div style="display: inline-block; width: 130px; height: 130px; border: 3px solid #1e40af; border-radius: 50%; color: #1e40af; font-family: 'Times New Roman', serif; position: relative; box-sizing: border-box; background: rgba(30, 64, 175, 0.03); box-shadow: 0 0 2px rgba(30,64,175,0.3);">
+                    <div style="position: absolute; width: 100%; top: 15px; text-align: center; font-size: 9px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">МОНИТОРИНГ ЖИЛОГО ФОНДА</div>
+                    <div style="position: absolute; width: 100%; top: 40px; text-align: center; font-size: 36px; filter: grayscale(1) sepia(1) hue-rotate(190deg) saturate(3);">🦅</div>
+                    <div style="position: absolute; width: 100%; top: 75px; text-align: center; font-size: 11px; font-weight: 900; line-height: 1.1;">СЛУЖБА<br>КОНТРОЛЯ<br>МКД</div>
+                    <div style="position: absolute; width: 100%; bottom: 15px; text-align: center; font-size: 8px; text-transform: uppercase; opacity: 0.8;">г. ${city} | ОГРН 1157...</div>
+                </div>
             </div>
-            <button class="btn-act btn-dark" style="margin-top: 20px;" onclick="closeModal()">ЗАКРЫТЬ</button>
+            
+            <button class="btn-act btn-dark" style="margin-top: 30px;" onclick="closeModal()">ЗАКРЫТЬ</button>
         </div>
     `;
     document.getElementById('reportFooter').style.display = 'none';
