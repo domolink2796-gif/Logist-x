@@ -356,15 +356,12 @@
             btn.innerText = `📍 ПОИСК: ${i+1} / ${queue.length}`;
             try {
                 const query = encodeURIComponent(`${DATA.city}, ${item.s}, ${item.h}`);
-                // [MOD] ДОБАВЛЕН addressdetails=1 ДЛЯ ПОЛУЧЕНИЯ РАЙОНА
                 const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1&addressdetails=1`);
                 const res = await response.json();
                 if(res && res.length > 0) {
                     item.lat = parseFloat(res[0].lat); item.lon = parseFloat(res[0].lon);
-                    // [ADD] СОХРАНЕНИЕ НАЗВАНИЯ РАЙОНА
                     const addr = res[0].address;
                     item.district = addr.suburb || addr.city_district || addr.district || addr.neighbourhood || "";
-                    
                     if (userPos.lat) {
                         const road = await getRoadDist(userPos.lat, userPos.lon, item.lat, item.lon);
                         item.km = road.km; item.time = road.time;
@@ -509,8 +506,6 @@
         let html = "";
         DATA.list.forEach((i, idx) => {
             if(search && !i.s.toLowerCase().includes(search) && !i.h.toString().includes(search)) return;
-            
-            // [ADD] ЛОГИКА ОПРЕДЕЛЕНИЯ СОСЕДСТВА ПО РАЙОНУ
             let isSameDistrict = false;
             if (i.district) {
                 const prev = DATA.list[idx-1];
@@ -519,7 +514,6 @@
                     isSameDistrict = true;
                 }
             }
-
             let finished = 0; if(DATA.done[i.id]) { for(let p=1; p<=i.p; p++) if(DATA.done[i.id][p]) finished++; }
             const isDone = (finished === i.p && i.p > 0);
             let pds = ""; for(let p=1; p<=i.p; p++){
@@ -528,8 +522,6 @@
             }
             const addressText = i.h ? `${i.s}, ${i.h}` : i.s;
             let distDisplay = i.km ? `<span class="dist-badge" style="background:rgba(35, 134, 54, 0.1); color:var(--green)">🚗 ${i.km} км ${i.time ? '| '+i.time+' мин' : ''}</span>` : `<span class="dist-badge" style="opacity:0.5">? км</span>`;
-            
-            // [MOD] ДОБАВЛЕН КЛАСС same-district И ВЫВОД РАЙОНА
             html += `<div class="card ${isDone?'is-finished':''} ${isSameDistrict?'same-district':''}">
                 <div class="card-head">
                     <div style="flex:1; margin-right:10px; font-size:0.9rem;">
@@ -553,7 +545,6 @@
         const it = DATA.list.find(x => x.id === id);
         document.getElementById('modalTitle').innerText = `${it.s} (П. ${p})`;
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
-        
         document.getElementById('modalBody').innerHTML = cls.map((c, idx) => {
             selectedTypes[c] = 1; 
             return `
@@ -572,7 +563,6 @@
                 </div>
             </div>`;
         }).join("");
-
         document.getElementById('reportFooter').style.display = 'block'; 
         document.getElementById('reportModal').style.display = 'flex';
     }
@@ -615,22 +605,15 @@
         if(isSavingReport) return;
         const it = DATA.list.find(x => x.id === curId);
         const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
-        
-        for(let c of cls) {
-            if(selectedTypes[c] !== 2 && !curPhotos[c]) return alert(`Нет фото для клиента: ${c}`);
-        }
-
+        for(let c of cls) if(selectedTypes[c] !== 2 && !curPhotos[c]) return alert(`Нет фото для клиента: ${c}`);
         isSavingReport = true; haptic(); 
         document.getElementById('confirmBtn').innerText = "ПОЛУЧЕНИЕ GPS...";
         const pos = await getCoords(); 
-        
         if(!DATA.done[curId]) DATA.done[curId] = {}; 
         DATA.done[curId][curP] = selectedTypes[cls[0]]; 
-
         const tx = db.transaction("sync_queue", "readwrite"); 
         const store = tx.objectStore("sync_queue");
         const baseUUID = 'REP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
-        
         for (let client of cls) {
             const t = selectedTypes[client];
             const entryForServer = { 
@@ -653,16 +636,10 @@
             if(DATA.history.length > 100) DATA.history.length = 100;
             store.add(entryForServer);
         }
-        
         tx.oncomplete = () => { 
-            saveCfg(); 
-            updateStats(); 
-            render(); 
-            isSavingReport = false; 
-            document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; 
-            closeModal();
-            syncNow(); 
-            toast("В ОЧЕРЕДИ"); 
+            saveCfg(); updateStats(); render(); 
+            isSavingReport = false; document.getElementById('confirmBtn').innerText = "ОТПРАВИТЬ ОТЧЕТ"; 
+            closeModal(); syncNow(); toast("В ОЧЕРЕДИ"); 
         };
     }
 
@@ -698,16 +675,26 @@
         let tot = 0; DATA.list.forEach(i => tot += i.p); 
         let dn = 0, mon = 0; 
         
-        DATA.history.forEach(it => {
-            if (it.workType !== "Срыв") mon += (it.price || 0);
-        });
-
+        // Считаем деньги по объекту выполненных работ (DATA.done)
         for(let id in DATA.done) {
-            for(let p in DATA.done[id]) dn++;
+            for(let p in DATA.done[id]) {
+                dn++; // Считаем общее кол-во выполненных подъездов
+                let type = DATA.done[id][p];
+                if(type === 1) mon += DATA.prices.p1;
+                if(type === 3) mon += DATA.prices.p3;
+                if(type === 4) mon += DATA.prices.p4;
+            }
         }
 
         if(document.getElementById('statMoney')) document.getElementById('statMoney').innerText = mon + " ₽"; 
         if(document.getElementById('statProgress')) document.getElementById('statProgress').innerText = `${dn}/${tot}`; 
+        
+        // Считаем срывы для статистики
+        let sryvCount = 0;
+        for(let id in DATA.done) {
+            for(let p in DATA.done[id]) if(DATA.done[id][p] === 2) sryvCount++;
+        }
+        if(document.getElementById('statSryv')) document.getElementById('statSryv').innerText = sryvCount;
         if(document.getElementById('mainProgress')) document.getElementById('mainProgress').style.width = (tot > 0 ? (dn/tot)*100 : 0) + "%"; 
     }
 
@@ -718,13 +705,29 @@
     function showWallet() { 
         Sfx.click(); haptic(); 
         document.getElementById('modalTitle').innerText = "КОШЕЛЕК"; 
-        let counts = {t1:0, t3:0, t4:0};
-        DATA.history.forEach(it => {
-            if(it.workType === DATA.names.t1) counts.t1++;
-            if(it.workType === DATA.names.t3) counts.t3++;
-            if(it.workType === DATA.names.t4) counts.t4++;
-        });
-        document.getElementById('modalBody').innerHTML = `<div style="padding:30px; text-align:center"><p>${DATA.names.t1}: ${counts.t1}</p><p>${DATA.names.t3}: ${counts.t3}</p><p>${DATA.names.t4}: ${counts.t4}</p><h1 style="color:var(--green); font-size:2.5rem; font-weight:900;">${document.getElementById('statMoney').innerText}</h1></div>`; 
+        let counts = {t1:0, t3:0, t4:0, t2:0};
+        for(let id in DATA.done) {
+            for(let p in DATA.done[id]) {
+                let type = DATA.done[id][p];
+                if(type === 1) counts.t1++;
+                if(type === 2) counts.t2++;
+                if(type === 3) counts.t3++;
+                if(type === 4) counts.t4++;
+            }
+        }
+        document.getElementById('modalBody').innerHTML = `
+            <div style="padding:20px; text-align:center">
+                <div style="background:var(--head-bg); padding:15px; border-radius:20px; margin-bottom:15px;">
+                    <p style="margin:5px 0;">${DATA.names.t1}: <b>${counts.t1}</b></p>
+                    <p style="margin:5px 0;">${DATA.names.t3}: <b>${counts.t3}</b></p>
+                    <p style="margin:5px 0;">${DATA.names.t4}: <b>${counts.t4}</b></p>
+                    <p style="margin:5px 0; color:var(--red)">Срывы: <b>${counts.t2}</b></p>
+                </div>
+                <h1 style="color:var(--green); font-size:2.8rem; font-weight:900; margin:0;">
+                    ${document.getElementById('statMoney').innerText}
+                </h1>
+                <p style="font-size:0.7rem; opacity:0.5; margin-top:10px;">Расчет по актуальным ценам</p>
+            </div>`; 
         document.getElementById('reportFooter').style.display = 'none'; 
         document.getElementById('reportModal').style.display = 'flex'; 
     }
@@ -755,9 +758,7 @@
             });
             navigator.serviceWorker.register('../sw.js').then(reg => {
                 reg.update();
-                if (reg.waiting) {
-                    document.getElementById('update-banner').style.display = 'flex';
-                }
+                if (reg.waiting) document.getElementById('update-banner').style.display = 'flex';
                 reg.addEventListener('updatefound', () => {
                     const newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
@@ -771,16 +772,12 @@
                 haptic();
                 document.getElementById('update-banner').style.display = 'none';
                 navigator.serviceWorker.getRegistration().then(reg => {
-                    if (reg && reg.waiting) {
-                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-                    } else {
-                        window.location.reload();
-                    }
+                    if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    else window.location.reload();
                 });
             };
         }
     };
-    
     setInterval(syncNow, 12000);
 </script>
 </body>
