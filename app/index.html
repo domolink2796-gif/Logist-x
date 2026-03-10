@@ -460,7 +460,7 @@
                 body: JSON.stringify({ action: 'check_license', licenseKey: key, workerName: worker, deviceId: devId })
             });
             const result = await res.json();
-            if(result.status === "active") { DATA.license.expiry = Number(result.expiry) || Date.now() + (30*86400000); saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); } else { alert("ОТКАЗ: " + result.message); }
+            if(result.status === "active") { DATA.license.expiry = Number(result.expiry) || Date.now() + (0*86400000); saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); } else { alert("ОТКАЗ: " + result.message); }
         } catch(e) { alert("Ошибка связи!"); }
         finally { bars.forEach(b => b && (b.style.width = '0%')); }
     }
