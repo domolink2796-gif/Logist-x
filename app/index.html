@@ -895,12 +895,20 @@ async function checkLicense() {
         document.getElementById('reportModal').style.display = 'flex'; 
     }
 
-    window.onload = () => {
+        window.onload = () => {
         if(localStorage.getItem('logist_theme') === 'light') {
             document.body.classList.add('light-theme');
             if(document.getElementById('themeBtn')) document.getElementById('themeBtn').innerText = '🌙 ТЕМНАЯ ТЕМА';
         }
-        const s = localStorage.getItem('logist_v450_data'); if(s) DATA = {...DATA, ...JSON.parse(s)};
+        
+        const s = localStorage.getItem('logist_v450_data'); 
+        if(s) DATA = {...DATA, ...JSON.parse(s)};
+
+        // === ФИКС ГОРОДА В ШАПКЕ (Чтобы не было трех точек) ===
+        if(document.getElementById('cityBadge')) {
+            document.getElementById('cityBadge').innerText = (DATA.city || "Орёл").toUpperCase();
+        }
+
         if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
         if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
         if(document.getElementById('licenseKey')) document.getElementById('licenseKey').value = DATA.license.key || "";
@@ -941,6 +949,7 @@ async function checkLicense() {
             };
         }
     };
+
     setInterval(syncNow, 12000);
 </script>
 </body>
