@@ -430,8 +430,7 @@
         DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudomona";
         if(document.getElementById('cityBadge')) document.getElementById('cityBadge').innerText = DATA.city.toUpperCase();
         localStorage.setItem('logist_v450_data', JSON.stringify(DATA));
-        checkLicenseUI();
-    }
+        
 
     function checkLicenseUI() {
     // 1. Проверка Мастер-ключа (бесконечный доступ)
