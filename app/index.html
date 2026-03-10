@@ -206,7 +206,6 @@
             <span class="app-name">LOGIST_X_57</span>
             <div style="display:flex; gap:8px;">
                 <button id="syncIndicator" onclick="showMonitor()">📦 <span id="queueCount">0</span></button>
-                <button onclick="showLegalShield()" style="background:var(--red); color:#fff; border:none; padding:8px 12px; border-radius:12px; font-size:0.6rem; font-weight:900;">⚖️ ЗАКОН</button>
                 <span id="cityBadge" style="background:rgba(245,158,11,0.1); color: var(--accent); padding: 8px 18px; border-radius: 12px; font-size: 0.7rem; font-weight: 900;">...</span>
             </div>
         </div>
@@ -270,8 +269,11 @@
             </div>
         </div>
     </div>
-    <div class="bot-bar">
+       <div class="bot-bar">
         <button class="bb-btn" style="background: linear-gradient(135deg, #f59e0b, #b45309); color: #000;" onclick="showWallet()">💰 КОШЕЛЕК</button>
+        
+        <button class="bb-btn" style="background: #161b22; color: #f59e0b; border: 1px solid #f59e0b;" onclick="showLegalShield()">⚖️ ЗАКОН</button>
+        
         <button class="bb-btn" style="background: linear-gradient(135deg, #ef4444, #991b1b); color: #fff;" onclick="showSryvy()">⚠️ СРЫВЫ</button>
     </div>
 
