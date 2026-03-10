@@ -422,9 +422,9 @@
         DATA.license.key = document.getElementById('licenseKey')?.value.trim().toUpperCase() || DATA.license.key;
         DATA.workerName = document.getElementById('workerName')?.value.trim() || DATA.workerName;
         DATA.city = document.getElementById('cityName')?.value.trim() || DATA.city || "Орёл";
-        DATA.prices.p1 = parseInt(document.getElementById('p1')?.value) || 50;
-        DATA.prices.p3 = parseInt(document.getElementById('p3')?.value) || 25;
-        DATA.prices.p4 = parseInt(document.getElementById('p4')?.value) || 40;
+        DATA.prices.p1 = parseInt(document.getElementById('p1')?.value) || 500;
+        DATA.prices.p3 = parseInt(document.getElementById('p3')?.value) || 300;
+        DATA.prices.p4 = parseInt(document.getElementById('p4')?.value) || 100;
         DATA.names.t1 = document.getElementById('t1_name')?.value || "Монтаж";
         DATA.names.t3 = document.getElementById('t3_name')?.value || "Замена рекламы";
         DATA.names.t4 = document.getElementById('t4_name')?.value || "Pseudomona";
@@ -434,49 +434,19 @@
     }
 
     function checkLicenseUI() {
-    const now = Date.now();
-    
-    // 1. Проверка на Мастер-ключ
-    if (DATA.license.key === MASTER_KEY) {
-        DATA.license.status = true;
-        // Ставим срок на 10 лет вперед, если это мастер-ключ
-        if (!DATA.license.expiry || DATA.license.expiry < now + 315360000000) {
-            DATA.license.expiry = now + 315360000000;
+        if (DATA.license.key === MASTER_KEY) { DATA.license.status = true; DATA.license.expiry = Date.now() + 315360000000; }
+        const now = Date.now();
+        const active = DATA.license.key && Number(DATA.license.expiry) > now;
+        DATA.license.status = active;
+        if(document.getElementById('licenseLock')) document.getElementById('licenseLock').style.display = active ? 'none' : 'flex';
+        const h = document.getElementById('statLicense');
+        if(h) {
+            if(active) {
+                const d = Math.ceil((DATA.license.expiry - now) / 86400000);
+                h.innerText = (DATA.license.key === MASTER_KEY ? "∞" : d) + " дн."; h.style.color = "var(--accent)";
+            } else { h.innerText = "EXP"; h.style.color = "var(--red)"; }
         }
     }
-
-    // 2. Принудительное приведение к числу для расчетов
-    const expiryTime = Number(DATA.license.expiry) || 0;
-    const isActive = DATA.license.key && expiryTime > now;
-    
-    DATA.license.status = isActive;
-
-    // 3. Управление экраном блокировки (ID: licenseLock)
-    const lockScreen = document.getElementById('licenseLock');
-    if (lockScreen) {
-        lockScreen.style.display = isActive ? 'none' : 'flex';
-    }
-
-    // 4. Обновление счетчика дней в шапке (ID: statLicense)
-    const statusDisplay = document.getElementById('statLicense');
-    if (statusDisplay) {
-        if (isActive) {
-            if (DATA.license.key === MASTER_KEY) {
-                statusDisplay.innerText = "∞";
-                statusDisplay.style.color = "var(--accent)";
-            } else {
-                const diff = expiryTime - now;
-                const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                statusDisplay.innerText = daysLeft + " дн.";
-                statusDisplay.style.color = "var(--accent)";
-            }
-        } else {
-            statusDisplay.innerText = "EXP";
-            statusDisplay.style.color = "var(--red)";
-        }
-    }
-}
-
 
     async function checkLicense() {
         const key = DATA.license.key; const worker = DATA.workerName; const devId = getDeviceId();
@@ -490,7 +460,7 @@
                 body: JSON.stringify({ action: 'check_license', licenseKey: key, workerName: worker, deviceId: devId })
             });
             const result = await res.json();
-            if(result.status === "active") { DATA.license.expiry = Number(result.expiry) || Date.now() ; saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); } else { alert("ОТКАЗ: " + result.message); }
+            if(result.status === "active") { DATA.license.expiry = Number(result.expiry) || Date.now() + (30*86400000); saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); } else { alert("ОТКАЗ: " + result.message); }
         } catch(e) { alert("Ошибка связи!"); }
         finally { bars.forEach(b => b && (b.style.width = '0%')); }
     }
