@@ -212,12 +212,14 @@
         <div class="sort-row">
             <input type="text" id="search" class="search-box" style="flex:1" placeholder="Поиск по адресу..." oninput="render()">
             <button class="nav-btn" style="background:var(--accent); box-shadow:none; white-space:nowrap;" onclick="sortByDistance()">🚀 БЛИЖАЙШИЕ</button>
-        </div>
+                </div>
+        <div class="stats-dashboard">
             <div class="stat-block"><span class="stat-label">Доход</span><span id="statMoney" class="stat-val" style="color:#3fb950">0 ₽</span></div>
             <div class="stat-block"><span class="stat-label">Готово</span><span id="statProgress" class="stat-val">0/0</span></div>
             <div class="stat-block"><span class="stat-label">Срывы</span><span id="statSryv" class="stat-val" style="color:#f85149">0</span></div>
             <div class="stat-block"><span class="stat-label">Доступ</span><span id="statLicense" class="stat-val" style="color:var(--accent)">-</span></div>
         </div>
+
         <div class="progress-container"><div id="mainProgress" class="progress-bar"></div></div>
     </header>
     <div class="menu-toggle" onclick="toggleMenu()">⚙️ МЕНЮ И НАСТРОЙКИ</div>
