@@ -353,13 +353,18 @@
         for(let i=0; i < queue.length; i++) {
             let item = queue[i];
             btn.innerText = `📍 ПОИСК: ${i+1} / ${queue.length}`;
-            try {
-            let cleanStreet = item.s
-                .replace(/^ф\s+/i, 'Фридриха ')
-                .replace(/^бр\s+/i, 'бульвар ')
-                .replace(/^пр\s+/i, 'проспект ')
-                .replace(/^пр-кт\s+/i, 'проспект ')
-                .replace(/^ул\s+/i, 'улица ');
+                        try {
+                // 1. ПЕРЕВОДЧИК: Исправляем "фр", "ф", "пр-д" и прочее
+                let cleanStreet = item.s
+                    .replace(/\./g, '')           // Убираем точки (ул. -> ул)
+                    .replace(/^фр?\s+/i, 'Фридриха ') // Поймет и "ф", и "фр"
+                    .replace(/^бр\s+/i, 'бульвар ')
+                    .replace(/^пр-кт\s+/i, 'проспект ')
+                    .replace(/^пр-д\s+/i, 'проезд ')
+                    .replace(/^пр\s+/i, 'проспект ')
+                    .replace(/^пер\s+/i, 'переулок ')
+                    .replace(/^ул\s+/i, 'улица ')
+                    .replace(/^ш\s+/i, 'шоссе ');
 
             const query = encodeURIComponent(`${DATA.city}, ${cleanStreet}, ${item.h}`);
 
