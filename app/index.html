@@ -169,6 +169,37 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             cursor: pointer;
         }
+       .cl-badge {
+    background: rgba(255, 140, 0, 0.1) !important;
+    color: #ff8c00 !important;
+    border: 1px solid #ff8c00 !important;
+    font-weight: 900 !important;
+    padding: 4px 10px !important;
+    border-radius: 8px !important;
+    display: inline-block;
+    margin: 2px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    
+    /* Эффект неона */
+    box-shadow: 0 0 5px #ff4500, inset 0 0 5px #ff4500;
+    text-shadow: 0 0 10px #fff, 0 0 20px #ff8c00;
+
+    /* Анимация перелива */
+    animation: neon-glow 2s infinite alternate;
+}
+
+@keyframes neon-glow {
+    0% {
+        box-shadow: 0 0 5px #ff4500, inset 0 0 2px #ff4500;
+        filter: brightness(1);
+    }
+    100% {
+        box-shadow: 0 0 15px #ff8c00, inset 0 0 8px #ff8c00;
+        filter: brightness(1.3);
+    }
+}
+
     </style>
 </head>
 <body onclick="resumeAudio()">
@@ -568,7 +599,7 @@ async function checkLicense() {
         }, 100);
     }
 
-    function render() {
+        function render() {
         const box = document.getElementById('content'), search = (document.getElementById('search')?.value || "").toLowerCase();
         let html = "";
         DATA.list.forEach((i, idx) => {
@@ -582,11 +613,8 @@ async function checkLicense() {
             let finished = 0; 
             let pds = ""; 
             for(let p = 1; p <= i.p; p++){
-                // [FIX] Индикация: Берем статус первого клиента или старый формат
                 let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
                 let displayType = (typeof st === 'object') ? Object.values(st)[0] : st;
-                
-                // Проверяем, закончен ли подъезд (все ли клиенты сделаны)
                 let isPodDone = false;
                 if(st) {
                     const cls = i.clients.length > 0 ? i.clients : ["ОБЩИЙ"];
@@ -594,13 +622,12 @@ async function checkLicense() {
                     else isPodDone = true;
                 }
                 if(isPodDone) finished++;
-
                 pds += `<div class="p-btn ${displayType?'done-'+displayType:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
             }
 
             const isDone = (finished === i.p && i.p > 0);
             const addressText = i.h ? `${i.s}, ${i.h}` : i.s;
-            let distDisplay = i.km ? `<span class="dist-badge">🚗 ${i.km} км ${i.time ? '| '+i.time+' мин' : ''}</span>` : `<span class="dist-badge" style="opacity:0.5">? км</span>`;
+            let distDisplay = i.km ? `<span class="dist-badge">🚗 ${i.km} км</span>` : "";
             
             html += `<div class="card ${isDone?'is-finished':''} ${isSameDistrict?'same-district':''}">
                 <div class="card-head">
@@ -614,7 +641,8 @@ async function checkLicense() {
                 <div class="pods">${pds}</div>
             </div>`;
         });
-        box.innerHTML = html || "<p style='text-align:center; opacity:0.1; padding:50px;'>СПИСОК ПУСТ</p>"; updateStats();
+        box.innerHTML = html || "<p style='text-align:center; opacity:0.1; padding:50px;'>СПИСОК ПУСТ</p>"; 
+        updateStats();
     }
 
     function openNav(addr) { haptic(); window.open(`https://yandex.ru/maps/?text=${encodeURIComponent(DATA.city + " " + addr)}`); }
