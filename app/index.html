@@ -270,7 +270,8 @@
     <div id="menu" class="controls">
         <div class="block-box">
             <div class="block-title">🎨 НАСТРОЙКИ ИНТЕРФЕЙСА:</div>
-            <button class="btn-act btn-dark" id="themeBtn" onclick="toggleTheme()" style="margin-bottom:0;">☀️ СВЕТЛАЯ ТЕМА</button>
+            <button class="btn-act btn-dark" id="themeBtn" onclick="toggleTheme()">☀️ СВЕТЛАЯ ТЕМА</button>
+            <button class="btn-act btn-dark" id="hideFinishedBtn" onclick="toggleHideFinished()" style="margin-bottom:0;">👁️ СКРЫВАТЬ ГОТОВЫЕ: ВЫКЛ</button>
         </div>
 
         <div class="block-box">
@@ -358,7 +359,7 @@
     const MASTER_KEY = atob(_MS_ENCRYPTED);
     document.addEventListener('contextmenu', e => e.preventDefault());
     
-    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", customClient: "", license: {key: "", expiry: 0, status: false}, history: [] };
+    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", customClient: "", license: {key: "", expiry: 0, status: false}, history: [], hideFinished: false };
     let curId, curP, curPhotos = {}, db, syncing = false, audioCtx = null, monitorOpen = false, isSavingReport = false;
     let selectedTypes = {}; 
     let userPos = { lat: null, lon: null };
@@ -430,6 +431,31 @@
         }
         updateDistrictFilters();
         render();
+    }
+
+    // ФУНКЦИЯ СКРЫТИЯ ГОТОВЫХ
+    function toggleHideFinished() {
+        haptic();
+        DATA.hideFinished = !DATA.hideFinished;
+        saveCfg();
+        updateHideBtnUI();
+        render();
+        toast(DATA.hideFinished ? "ГОТОВЫЕ СКРЫТЫ" : "ГОТОВЫЕ ПОКАЗАНЫ");
+    }
+
+    function updateHideBtnUI() {
+        const btn = document.getElementById('hideFinishedBtn');
+        if(btn) {
+            if(DATA.hideFinished) {
+                btn.innerText = '🙈 СКРЫВАТЬ ГОТОВЫЕ: ВКЛ';
+                btn.classList.add('btn-green');
+                btn.classList.remove('btn-dark');
+            } else {
+                btn.innerText = '👁️ СКРЫВАТЬ ГОТОВЫЕ: ВЫКЛ';
+                btn.classList.add('btn-dark');
+                btn.classList.remove('btn-green');
+            }
+        }
     }
 
     async function getRoadDist(lat1, lon1, lat2, lon2) {
@@ -695,6 +721,11 @@ async function checkLicense() {
             }
 
             const isDone = (finished === i.p && i.p > 0);
+
+            // === ФУНКЦИЯ ЧИСТЫЙ ЛИСТ ===
+            // Если включен режим скрытия и дом готов — просто пропускаем его
+            if (DATA.hideFinished && isDone) return; 
+
             const addressText = i.h ? `${i.s}, ${i.h}` : i.s;
             let distDisplay = i.km ? `<span class="dist-badge">🚗 ${i.km} км</span>` : "";
             
@@ -1059,7 +1090,7 @@ async function checkLicense() {
             document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
             document.getElementById('t1_name').value = DATA.names.t1; document.getElementById('t3_name').value = DATA.names.t3; document.getElementById('t4_name').value = DATA.names.t4;
         }
-        checkLicenseUI(); openDB(); render();
+        checkLicenseUI(); updateHideBtnUI(); openDB(); render();
         updateDistrictFilters(); // Отображаем фильтры при загрузке, если координаты уже есть
         updateMyPos();
         setInterval(updateMyPos, 15000);
