@@ -277,6 +277,7 @@
             <div class="block-title">👤 ПРОФИЛЬ И СВЯЗЬ:</div>
             <input type="text" id="workerName" class="std-input" placeholder="Твое ФИО" oninput="saveCfg()">
             <input type="text" id="cityName" class="std-input" placeholder="Город (напр. Сочи)" oninput="saveCfg()">
+            <input type="text" id="customClient" class="std-input" placeholder="Свой клиент для всех адресов" oninput="saveCfg(); render();">
             <input type="text" id="licenseKey" class="std-input" placeholder="Ключ" oninput="saveCfg()">
             <div id="menuLicProgress" class="lic-progress"><div id="menuLicBar" class="lic-bar"></div></div>
             <button class="btn-act btn-blue" onclick="checkLicense()">ОБНОВИТЬ СТАТУС</button>
@@ -357,7 +358,7 @@
     const MASTER_KEY = atob(_MS_ENCRYPTED);
     document.addEventListener('contextmenu', e => e.preventDefault());
     
-    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", license: {key: "", expiry: 0, status: false}, history: [] };
+    let DATA = { list: [], done: {}, prices: {p1:500, p3:300, p4:100}, names: {t1: "Монтаж", t3: "Замена рекламы", t4: "Pseudomona"}, city: "Орёл", workerName: "", customClient: "", license: {key: "", expiry: 0, status: false}, history: [] };
     let curId, curP, curPhotos = {}, db, syncing = false, audioCtx = null, monitorOpen = false, isSavingReport = false;
     let selectedTypes = {}; 
     let userPos = { lat: null, lon: null };
@@ -366,7 +367,7 @@
     // Переменная для активных фильтров районов
     let activeDistricts = [];
 
-          const CLIENT_MAP = {
+    const CLIENT_MAP = {
         "БИЛАЙН": "БИЛАЙН", "БИЛ": "БИЛАЙН", "BEELINE": "БИЛАЙН",
         "МТС": "МТС", "MTS": "МТС",
         "МЕГАФОН": "МЕГАФОН", "МЕГА": "МЕГАФОН",
@@ -390,6 +391,14 @@
         "РЫБА": "РЫБА"
     };
 
+    // ФУНКЦИЯ ДЛЯ ВНЕДРЕНИЯ КАСТОМНОГО КЛИЕНТА
+    function getEffectiveClients(item) {
+        let cls = [...(item.clients || [])];
+        if (DATA.customClient && !cls.includes(DATA.customClient)) {
+            cls.push(DATA.customClient);
+        }
+        return cls.length > 0 ? cls : ["ОБЩИЙ"];
+    }
 
     // ФУНКЦИЯ ОБНОВЛЕНИЯ ФИЛЬТРОВ РАЙОНОВ
     function updateDistrictFilters() {
@@ -541,6 +550,8 @@
         DATA.license.key = document.getElementById('licenseKey')?.value.trim().toUpperCase() || DATA.license.key;
         DATA.workerName = document.getElementById('workerName')?.value.trim() || DATA.workerName;
         DATA.city = document.getElementById('cityName')?.value.trim() || DATA.city || "Орёл";
+        let ccInput = document.getElementById('customClient');
+        if(ccInput !== null) DATA.customClient = ccInput.value.trim().toUpperCase();
         DATA.prices.p1 = parseInt(document.getElementById('p1')?.value) || 500;
         DATA.prices.p3 = parseInt(document.getElementById('p3')?.value) || 300;
         DATA.prices.p4 = parseInt(document.getElementById('p4')?.value) || 100;
@@ -559,7 +570,6 @@
     }
     const now = Date.now();
     
-    // ПРАВКА ТУТ: Превращаем текст даты в понятное для JS число
     const expiryMs = new Date(DATA.license.expiry).getTime();
     const active = DATA.license.key && expiryMs > now;
     
@@ -569,7 +579,6 @@
     const h = document.getElementById('statLicense');
     if(h) {
         if(active) {
-            // Считаем дни правильно
             const d = Math.ceil((expiryMs - now) / 86400000);
             h.innerText = (DATA.license.key === MASTER_KEY ? "∞" : (d > 0 ? d : "0")) + " дн."; 
             h.style.color = "var(--accent)";
@@ -597,7 +606,6 @@ async function checkLicense() {
         });
         const result = await res.json();
         if(result.status === "active") { 
-            // ПРАВКА ТУТ: Сохраняем дату как текст, как она пришла с сервера
             DATA.license.expiry = result.expiry; 
             saveCfg(); Sfx.ok(); toast("ДОСТУП РАЗРЕШЕН"); 
         } else { alert("ОТКАЗ: " + result.message); }
@@ -674,10 +682,13 @@ async function checkLicense() {
                 let st = (DATA.done[i.id] && DATA.done[i.id][p]) ? DATA.done[i.id][p] : 0;
                 let displayType = (typeof st === 'object') ? Object.values(st)[0] : st;
                 let isPodDone = false;
+                
+                // Применяем эффективных клиентов (базовые + кастомный)
+                const cls = getEffectiveClients(i);
+                
                 if(st) {
-                    const cls = i.clients.length > 0 ? i.clients : ["ОБЩИЙ"];
                     if(typeof st === 'object') isPodDone = cls.every(c => st[c] !== undefined);
-                    else isPodDone = true;
+                    else isPodDone = true; // для старых сохранений
                 }
                 if(isPodDone) finished++;
                 pds += `<div class="p-btn ${displayType?'done-'+displayType:''}" onclick="openReport('${i.id}', ${p})">${p}</div>`;
@@ -687,6 +698,8 @@ async function checkLicense() {
             const addressText = i.h ? `${i.s}, ${i.h}` : i.s;
             let distDisplay = i.km ? `<span class="dist-badge">🚗 ${i.km} км</span>` : "";
             
+            const cls = getEffectiveClients(i);
+            
             html += `<div class="card ${isDone?'is-finished':''} ${isSameDistrict?'same-district':''}">
                 <div class="card-head">
                     <div style="flex:1; margin-right:10px; font-size:0.9rem;">
@@ -695,7 +708,7 @@ async function checkLicense() {
                     </div>
                     <button class="nav-btn" onclick="openNav('${i.s} ${i.h}')">🧭 КАРТА</button>
                 </div>
-                <div class="cl-badges">${i.clients.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
+                <div class="cl-badges">${cls.map(c=>`<span class="cl-badge">${c}</span>`).join("")}</div>
                 <div class="pods">${pds}</div>
             </div>`;
         });
@@ -710,7 +723,8 @@ async function checkLicense() {
         haptic(); curId = id; curP = p; curPhotos = {}; selectedTypes = {}; 
         const it = DATA.list.find(x => x.id === id);
         document.getElementById('modalTitle').innerText = `${it.s} (П. ${p})`;
-        const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
+        
+        const cls = getEffectiveClients(it);
         
         // [FIX] Если уже есть данные в DATA.done, подгружаем их
         let existing = (DATA.done[id] && DATA.done[id][p]) ? DATA.done[id][p] : null;
@@ -774,7 +788,8 @@ async function checkLicense() {
     async function confirmReport() {
         if(isSavingReport) return;
         const it = DATA.list.find(x => x.id === curId);
-        const cls = it.clients.length > 0 ? it.clients : ["ОБЩИЙ"];
+        
+        const cls = getEffectiveClients(it);
         
         for(let c of cls) if(selectedTypes[c] !== 2 && !curPhotos[c]) return alert(`Нет фото для клиента: ${c}`);
         
@@ -1038,6 +1053,7 @@ async function checkLicense() {
 
         if(document.getElementById('workerName')) document.getElementById('workerName').value = DATA.workerName || "";
         if(document.getElementById('cityName')) document.getElementById('cityName').value = DATA.city || "";
+        if(document.getElementById('customClient')) document.getElementById('customClient').value = DATA.customClient || "";
         if(document.getElementById('licenseKey')) document.getElementById('licenseKey').value = DATA.license.key || "";
         if(document.getElementById('p1')) {
             document.getElementById('p1').value = DATA.prices.p1; document.getElementById('p3').value = DATA.prices.p3; document.getElementById('p4').value = DATA.prices.p4;
